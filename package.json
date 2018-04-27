@@ -1,0 +1,31 @@
+{
+  "name": "detritus-client-rest",
+  "version": "0.0.1",
+  "description": "a nodejs library to interact with all, or most, of discord's rest endpoints",
+  "main": "./lib/index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/detritusjs/client-rest.git"
+  },
+  "keywords": [
+    "nodejs",
+    "discord",
+    "rest",
+    "library"
+  ],
+  "author": "cakedan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/detritusjs/client-rest/issues"
+  },
+  "homepage": "https://github.com/detritusjs/client-rest#readme",
+  "dependencies": {
+    "detritus-rest": "^0.0.4"
+  }
+}
