@@ -1,6 +1,6 @@
 {
   "name": "detritus-client-rest",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "a nodejs library to interact with all, or most, of discord's rest endpoints",
   "main": "./lib/index.js",
   "directories": {
@@ -26,6 +26,6 @@
   },
   "homepage": "https://github.com/detritusjs/client-rest#readme",
   "dependencies": {
-    "detritus-rest": "^0.0.6"
+    "detritus-rest": "^0.0.7"
   }
 }
