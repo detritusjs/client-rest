@@ -26,6 +26,6 @@
   },
   "homepage": "https://github.com/detritusjs/client-rest#readme",
   "dependencies": {
-    "detritus-rest": "^0.0.8"
+    "detritus-rest": "^0.0.9"
   }
 }
