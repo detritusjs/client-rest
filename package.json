@@ -1,21 +1,29 @@
 {
   "name": "detritus-client-rest",
-  "version": "0.2.0",
-  "description": "a nodejs library to interact with all, or most, of discord's rest endpoints",
-  "main": "./lib/index.js",
-  "directories": {
-    "lib": "lib"
+  "version": "0.3.0",
+  "description": "a typescript library to interact with all, or most, of discord's rest endpoints",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*"
+  ],
+  "dependencies": {
+    "detritus-rest": "^0.2.5"
   },
+  "devDependencies": {
+    "@types/node": "^12.0.10"
+  },
+  "peerDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/detritusjs/client-rest.git"
   },
   "keywords": [
-    "nodejs",
-    "discord",
     "rest",
     "library"
   ],
@@ -24,9 +32,5 @@
   "bugs": {
     "url": "https://github.com/detritusjs/client-rest/issues"
   },
-  "homepage": "https://github.com/detritusjs/client-rest#readme",
-  "dependencies": {
-    "detritus-rest": "^0.1.0",
-    "detritus-utils": "^0.0.5"
-  }
+  "homepage": "https://github.com/detritusjs/client-rest#readme"
 }
