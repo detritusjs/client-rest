@@ -3359,7 +3359,9 @@ export class Client {
   async sendDownloadText(
     number: string,
   ): Promise<any> {
-    const body = {number};
+    const body = {
+      phone_number: number,
+    };
     if (this.clientsideChecks) {
 
     }
