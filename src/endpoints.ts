@@ -557,7 +557,7 @@ export const Api = Object.freeze({
     `/users/@me/sessions/:currentSessionId:/activities/:applicationId:/${ActivityActionTypes.JOIN_REQUEST}/:userId:`,
   ME_AGREEMENTS:
     '/users/@me/agreements',
-  ME_APPLICATION_ACHIVEMENTS:
+  ME_APPLICATION_achievementS:
     '/users/@me/applications/:applicationId:/achievements',
   ME_APPLICATION_ENTITLEMENTS:
     '/users/@me/applications/:applicationId:/entitlements',
@@ -836,7 +836,7 @@ export const Api = Object.freeze({
   USER_ACTIVITY_SPECTATE:
     `/users/:userId:/sessions/:sessionId:/activities/:applicationId:/${ActivityActionTypes.SPECTATE}`,
   USER_APPLICATION_ACHIEVEMENT:
-    '/users/:userId:/applications/:applicationId:/achivements/:achivementId:',
+    '/users/:userId:/applications/:applicationId:/achievements/:achievementId:',
   USER_AVATAR:
     '/users/:userId:/avatars/:hash:.jpg',
   USER_CHANNELS:

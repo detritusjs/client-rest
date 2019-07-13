@@ -52,6 +52,7 @@ interface RequestOptions {
   body?: any,
   dataOnly?: boolean,
   files?: Array<RequestFile>,
+  fingerprint?: string,
   headers?: {[key: string]: string},
   jsonify?: boolean,
   method?: string,
@@ -85,15 +86,17 @@ export class Client {
   _authType: AuthTypes;
   buckets: BucketCollection;
   clientsideChecks: boolean;
+  fingerprint?: string;
   globalBucket: Bucket;
   restClient: RestClient;
-  token: string;
+  token?: string;
 
-  constructor(token: string, options?: {
+  constructor(token?: string, options?: {
     authType?: string | number,
     baseUrl?: string,
     bucketsExpireIn?: number,
     clientsideChecks?: boolean,
+    fingerprint?: string,
     globalBucket?: Bucket,
     settings?: any,
   }) {
@@ -116,6 +119,7 @@ export class Client {
       expireIn: options.bucketsExpireIn,
     });
     this.clientsideChecks = <boolean> options.clientsideChecks;
+    this.fingerprint = options.fingerprint,
     this.globalBucket = options.globalBucket || new Bucket('global');
     this.token = token;
 
@@ -138,11 +142,14 @@ export class Client {
   }
 
   get tokenFormatted(): string {
-    const authType = this.authType;
-    if (authType) {
-      return `${authType} ${this.token}`;
+    if (this.token) {
+      const authType = this.authType;
+      if (authType) {
+        return `${authType} ${this.token}`;
+      }
+      return this.token;
     }
-    return this.token;
+    return '';
   }
 
   setAuthType(type: string | number): void {
@@ -179,8 +186,16 @@ export class Client {
       request.options.headers['x-super-properties'] = defaultHeaders['x-super-properties'];
 
       if (options.useAuth || options.useAuth === undefined) {
-        request.options.headers['authorization'] = this.tokenFormatted;
+        if (this.token) {
+          request.options.headers['authorization'] = this.tokenFormatted;
+        } else if (this.fingerprint) {
+          request.options.headers['x-fingerprint'] = this.fingerprint;
+        }
       }
+    }
+  
+    if (options.fingerprint) {
+      request.options.headers['x-fingerprint'] = options.fingerprint;
     }
 
     if (options.token) {
@@ -582,11 +597,11 @@ export class Client {
       reason?: string,
     } = {},
   ): Promise<any> {
+    const params = {guildId, userId};
     const query = {
       'delete-message-days': options.deleteMessageDays,
       reason: options.reason,
     };
-    const params = {guildId, userId};
     if (this.clientsideChecks) {
 
     }
@@ -729,6 +744,70 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.POST,
         path: Api.LOBBIES,
+      },
+    });
+  }
+
+  async createMeBillingPaymentSource(
+    options: {
+      billingAddress: {
+        city: string,
+        country: string,
+        line1: string,
+        line2: string,
+        name: string,
+        postalCode: string,
+        state: string,
+      },
+      paymentGateway: string,
+      token: string,
+    }
+  ): Promise<any> {
+    const body = {
+      billing_address: {
+        city: options.billingAddress.city,
+        country: options.billingAddress.country,
+        line_1: options.billingAddress.line1,
+        line_2: options.billingAddress.line2,
+        name: options.billingAddress.name,
+        postal_code: options.billingAddress.postalCode,
+        state: options.billingAddress.state,
+      },
+      payment_gateway: options.paymentGateway,
+      token: options.token,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.ME_BILLING_PAYMENT_SOURCES,
+      },
+    });
+  }
+
+  async createMeBillingSubscription(
+    options: {
+      paymentGatewayPlanId: string,
+      paymentSourceId: string,
+      trialId?: string,
+    },
+  ): Promise<any> {
+    const body = {
+      payment_gateway_plan_id: options.paymentGatewayPlanId,
+      payment_source_id: options.paymentSourceId,
+      trial_id: options.trialId,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.ME_BILLING_SUBSCRIPTIONS,
       },
     });
   }
@@ -1057,6 +1136,38 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.DELETE,
         path: Api.LOBBY,
+        params,
+      },
+    });
+  }
+
+  async deleteMeBillingPaymentSource(
+    paymentSourceId: string,
+  ): Promise<any> {
+    const params = {paymentSourceId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.DELETE,
+        path: Api.ME_BILLING_PAYMENT_SOURCE,
+        params,
+      },
+    });
+  }
+
+  async deleteMeBillingSubscription(
+    subscriptionId: string,
+  ): Promise<any> {
+    const params = {subscriptionId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.DELETE,
+        path: Api.ME_BILLING_SUBSCRIPTION,
         params,
       },
     });
@@ -1701,6 +1812,74 @@ export class Client {
     });
   }
 
+  async editMeBillingPaymentSource(
+    paymentSourceId: string,
+    options: {
+      billingAddress?: {
+        city: string,
+        country: string,
+        line1: string,
+        line2: string,
+        name: string,
+        postalCode: string,
+        state: string,
+      },
+      default?: boolean,
+    } = {},
+  ): Promise<any> {
+    const body = {
+      billing_address: (options.billingAddress) && {
+        city: options.billingAddress.city,
+        country: options.billingAddress.country,
+        line_1: options.billingAddress.line1,
+        line_2: options.billingAddress.line2,
+        name: options.billingAddress.name,
+        postal_code: options.billingAddress.postalCode,
+        state: options.billingAddress.state,
+      },
+      default: options.default,
+    };
+    const params = {paymentSourceId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.PATCH,
+        path: Api.ME_BILLING_PAYMENT_SOURCE,
+        params,
+      },
+    });
+  }
+
+  async editMeBillingSubscription(
+    subscriptionId: string,
+    options: {
+      paymentGatewayPlanId?: string,
+      paymentSourceId?: string,
+      status?: string,
+    } = {},
+  ): Promise<any> {
+    const body = {
+      payment_gateway_plan_id: options.paymentGatewayPlanId,
+      payment_source_id: options.paymentSourceId,
+      status: options.status,
+    };
+    const params = {subscriptionId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.PATCH,
+        path: Api.ME_BILLING_SUBSCRIPTION,
+        params,
+      },
+    });
+  }
+
   async editMessage(
     channelId: string,
     messageId: string,
@@ -1983,12 +2162,22 @@ export class Client {
     });
   }
 
-  async fetchApplications(
-    guildId: string,
-    channelId?: string,
+  async fetchActivities(): Promise<any> {
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.ACTIVITIES,
+      },
+    });
+  }
+
+  async fetchApplicationNews(
+    applicationIds: string | Array<string>,
   ): Promise<any> {
-    const query = {channel_id: channelId};
-    const params = {guildId};
+    // this one requires the array to be urlencoded in one param
+    const query = {
+      application_ids: String(applicationIds),
+    };
     if (this.clientsideChecks) {
 
     }
@@ -1996,7 +2185,105 @@ export class Client {
       query,
       route: {
         method: RestConstants.HTTPMethods.GET,
-        path: Api.GUILD_APPLICATIONS,
+        path: Api.APPLICATION_NEWS,
+      },
+    });
+  }
+
+  async fetchApplicationNewsId(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.APPLICATION_NEWS_ID,
+        params,
+      },
+    });
+  }
+
+  async fetchApplicationsPublic(
+    applicationIds: string | Array<string>,
+  ): Promise<any> {
+    const query = {application_ids: applicationIds};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.APPLICATIONS_PUBLIC,
+      },
+    });
+  }
+
+  async fetchApplicationsTrendingGlobal(): Promise<any> {
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.APPLICATIONS_TRENDING_GLOBAL,
+      },
+    });
+  }
+
+  fetchAuthConsentRequired(): Promise<any> {
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.AUTH_CONSENT_REQUIRED,
+      },
+    });
+  }
+
+  async fetchChannel(
+    channelId: string,
+  ): Promise<any> {
+    const params = {channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.CHANNEL,
+        params,
+      },
+    });
+  }
+
+  async fetchChannelCall(
+    channelId: string,
+  ): Promise<any> {
+    // checks if the channel is callable
+    const params = {channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.CHANNEL_CALL,
+        params,
+      },
+    });
+  }
+
+  async fetchChannelInvites(
+    channelId: string,
+  ): Promise<any> {
+    const params = {channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.CHANNEL_INVITES,
         params,
       },
     });
@@ -2034,6 +2321,22 @@ export class Client {
     });
   }
 
+  fetchExperiments(
+    fingerprint?: string,
+  ): Promise<any> {
+    const headers: {[key: string]: string} = {};
+    if (fingerprint) {
+      headers['x-fingerprint'] = <string> fingerprint;
+    }
+    return this.request({
+      headers,
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.EXPERIMENTS,
+      },
+    });
+  }
+
   fetchGateway(): Promise<any> {
     return this.request({
       route: {
@@ -2052,6 +2355,15 @@ export class Client {
     });
   }
 
+  fetchGuilds(): Promise<any> {
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.GUILDS,
+      },
+    });
+  }
+
   async fetchGuild(
     guildId: string,
   ): Promise<any> {
@@ -2063,6 +2375,102 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.GET,
         path: Api.GUILD,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildApplications(
+    guildId: string,
+    channelId?: string,
+  ): Promise<any> {
+    const params = {guildId};
+    const query = {channel_id: channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.GUILD_APPLICATIONS,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildAuditLogs(
+    guildId: string,
+    options: {
+      actionType?: number,
+      before?: string,
+      limit?: number,
+      userId?: string,
+    },
+  ): Promise<any> {
+    const params = {guildId};
+    const query = {
+      action_type: options.actionType,
+      before: options.before,
+      limit: options.limit,
+      user_id: options.userId,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.GUILD_AUDIT_LOGS,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildBans(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.GUILD_BANS,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildChannels(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.GUILD_CHANNELS,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildEmbed(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.GUILD_EMBED,
         params,
       },
     });
@@ -2101,6 +2509,128 @@ export class Client {
     });
   }
 
+  async fetchGuildIntegrations(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.GUILD_INTEGRATIONS,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildInvites(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.GUILD_INVITES,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildMembers(
+    guildId: string,
+    options: {
+      after?: string,
+      limit?: number,
+    } = {},
+  ): Promise<any> {
+    const params = {guildId};
+    const query = {
+      after: options.after,
+      limit: options.limit,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.GUILD_EMOJIS,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildMember(
+    guildId: string,
+    userId: string,
+  ): Promise<any> {
+    const params = {guildId, userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.GUILD_MEMBER,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildPruneCount(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.GUILD_PRUNE,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildRoles(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.GUILD_ROLES,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildVanityUrl(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.GUILD_VANITY_URL,
+        params,
+      },
+    });
+  }
+
   async fetchGuildWebhooks(
     guildId: string,
   ): Promise<any> {
@@ -2117,6 +2647,29 @@ export class Client {
     });
   }
 
+  async fetchInvite(
+    code: string,
+    options: {
+      withCounts?: boolean,
+    } = {},
+  ): Promise<any> {
+    const params = {code};
+    const query = {
+      with_counts: options.withCounts,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.INVITE,
+        params,
+      },
+    });
+  }
+
   fetchMe(): Promise<any> {
     return this.request({
       route: {
@@ -2125,10 +2678,303 @@ export class Client {
     });
   }
 
+  fetchMeBillingPaymentSources(): Promise<any> {
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.ME_BILLING_PAYMENT_SOURCES,
+      }
+    })
+  }
+
+  async fetchMeBillingPayments(
+    options: {
+      beforeId?: string,
+      limit?: number,
+    } = {},
+  ): Promise<any> {
+    const query = {
+      limit: options.limit,
+      before_id: options.beforeId,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.ME_BILLING_PAYMENTS,
+      },
+    });
+  }
+
+  fetchMeBillingSubscriptions(): Promise<any> {
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.ME_BILLING_SUBSCRIPTIONS,
+      },
+    });
+  }
+
   fetchMeConnections(): Promise<any> {
     return this.request({
       route: {
         path: Api.ME_CONNECTIONS,
+      },
+    });
+  }
+
+  async fetchMeConnectionAccessToken(
+    platform: string,
+    accountId: string,
+  ): Promise<any> {
+    const params = {platform, accountId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.ME_CONNECTION_ACCESS_TOKEN,
+        params,
+      },
+    });
+  }
+
+  async fetchMeConnectionSubreddits(
+    accountId: string,
+  ): Promise<any> {
+    const params = {accountId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.ME_CONNECTION_REDDIT_SUBREDDITS,
+        params,
+      },
+    });
+  }
+
+  async fetchMeFeedSettings(
+    options: {
+      includeAutosubscribedGames?: boolean,
+    } = {},
+  ): Promise<any> {
+    const query = {
+      include_autosubscribed_game: options.includeAutosubscribedGames,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.ME_FEED_SETTINGS,
+      },
+    });
+  }
+
+  async fetchMentions(
+    options: {
+      after?: string,
+      around?: string,
+      before?: string,
+      everyone?: boolean,
+      limit?: number,
+      roles?: boolean,
+    } = {},
+  ): Promise<any> {
+    const query = {
+      after: options.after,
+      around: options.around,
+      before: options.before,
+      everyone: options.everyone,
+      limit: options.limit,
+      roles: options.roles,
+    };
+    if (this.clientsideChecks) {
+      if (query.limit !== undefined) {
+        if (query.limit < 1 || 100 < query.limit) {
+          throw new Error('Limit has to be between 1 and 100');
+        }
+      }
+      if (
+        (query.after && query.around) ||
+        (query.after && query.before) ||
+        (query.around && query.before)
+      ) {
+        throw new Error('Choose between around, before, or after, cannot have more than one.');
+      }
+    }
+    return this.request({
+      query,
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.ME_MENTIONS,
+      },
+    });
+  }
+
+  async fetchMessage(
+    channelId: string,
+    messageId: string,
+  ): Promise<any> {
+    const params = {channelId, messageId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.CHANNEL_MESSAGE,
+        params,
+      },
+    });
+  }
+
+  async fetchMessages(
+    channelId: string,
+    options: {
+      after?: string,
+      around?: string,
+      before?: string,
+      limit?: number,
+    } = {},
+  ): Promise<any> {
+    const params = {channelId};
+    const query = {
+      after: options.after,
+      around: options.around,
+      before: options.before,
+      limit: options.limit,
+    };
+    if (this.clientsideChecks) {
+      if (query.limit !== undefined) {
+        if (query.limit < 1 || 100 < query.limit) {
+          throw new Error('Limit has to be between 1 and 100');
+        }
+      }
+      if (
+        (query.after && query.around) ||
+        (query.after && query.before) ||
+        (query.around && query.before)
+      ) {
+        throw new Error('Choose between around, before, or after, cannot have more than one.');
+      }
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.CHANNEL_MESSAGE,
+        params,
+      },
+    });
+  }
+
+  fetchOauth2Applications(): Promise<any> {
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.OAUTH2_APPLICATIONS,
+      },
+    });
+  }
+
+  async fetchOauth2Application(
+    applicationId: string = '@me',
+  ): Promise<any> {
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.OAUTH2_APPLICATION,
+        params,
+      },
+    });
+  }
+
+  fetchOauth2Tokens(): Promise<any> {
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.OAUTH2_TOKENS,
+      },
+    });
+  }
+
+  async fetchOauth2Token(
+    tokenId: string,
+  ): Promise<any> {
+    const params = {tokenId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.OAUTH2_TOKEN,
+        params,
+      },
+    });
+  }
+
+  async fetchPinnedMessages(
+    channelId: string,
+  ): Promise<any> {
+    const params = {channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.CHANNEL_PINS,
+        params,
+      },
+    });
+  }
+
+  async fetchReactions(
+    channelId: string,
+    messageId: string,
+    emoji: string,
+    options: {
+      after?: string,
+      before?: string,
+      limit?: number,
+    } = {},
+  ): Promise<any> {
+    const params = {channelId, messageId, emoji};
+    const query = {
+      after: options.after,
+      before: options.before,
+      limit: options.limit,
+    };
+    if (this.clientsideChecks) {
+      //params
+      if (query.limit !== undefined) {
+        if (query.limit < 1 || 100 < query.limit) {
+          throw new Error('Limit has to be between 1 and 100');
+        }
+      }
+      if (query.after && query.before) {
+        throw new Error('Choose between after or before, cannot have more than one.');
+      }
+    }
+    return this.request({
+      query,
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.CHANNEL_MESSAGE_REACTIONS,
+        params,
       },
     });
   }
@@ -2144,6 +2990,38 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.GET,
         path: Api.USER,
+        params,
+      },
+    });
+  }
+
+  async fetchUserChannels(
+    userId: string = '@me',
+  ): Promise<any> {
+    const params = {userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.USER_CHANNELS,
+        params,
+      },
+    });
+  }
+
+  async fetchUserProfile(
+    userId: string,
+  ): Promise<any> {
+    const params = {userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.USER_PROFILE,
         params,
       },
     });
@@ -2182,6 +3060,39 @@ export class Client {
     });
   }
 
+  fetchVoiceIce(): Promise<any> {
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.VOICE_ICE,
+      },
+    });
+  }
+
+  async fetchVoiceRegions(
+    guildId?: string,
+  ): Promise<any> {
+    const route: {
+      method: string,
+      path: string,
+      params: {[key: string]: string},
+    } = {
+      method: RestConstants.HTTPMethods.GET,
+      path: Api.VOICE_REGIONS,
+      params: {},
+    };
+
+    if (guildId) {
+      route.path = Api.GUILD_REGIONS;
+      route.params.guildId = <string> guildId;
+      if (this.clientsideChecks) {
+
+      }
+    }
+
+    return this.request({route});
+  }
+
   integrationJoin(integrationId: string): Promise<any> {
     return this.request({
       route: {
@@ -2217,7 +3128,9 @@ export class Client {
     });
   }
 
-  async leaveGuild(guildId: string): Promise<any> {
+  async leaveGuild(
+    guildId: string,
+  ): Promise<any> {
     const params = {guildId};
     if (this.clientsideChecks) {
 
@@ -2270,6 +3183,40 @@ export class Client {
     });
   }
 
+  async removeGuildMemberRole(
+    guildId: string,
+    userId: string,
+    roleId: string,
+  ): Promise<any> {
+    const params = {guildId, userId, roleId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.DELETE,
+        path: Api.GUILD_MEMBER_ROLE,
+        params,
+      },
+    });
+  }
+
+  async removeMention(
+    messageId: string,
+  ): Promise<any> {
+    const params = {messageId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.DELETE,
+        path: Api.ME_MENTION,
+        params,
+      },
+    });
+  }
+
   async removeRecipient(
     channelId: string,
     userId: string,
@@ -2285,6 +3232,91 @@ export class Client {
         params,
       },
     });
+  }
+
+  async search(
+    searchType: 'channel' | 'guild',
+    searchId: string,
+    options: SearchOptions = {},
+    retry: boolean = true,
+    retryNumber: number = 0,
+  ): Promise<any> {
+    const route: {
+      method: string,
+      path: string,
+      params: {[key: string]: string},
+    } = {
+      method: RestConstants.HTTPMethods.GET,
+      path: '',
+      params: {},
+    };
+    switch (searchType) {
+      case 'channel': {
+        route.path = Api.CHANNEL_MESSAGES_SEARCH;
+        route.params.channelId = searchId;
+      }; break;
+      case 'guild': {
+        route.path = Api.GUILD_SEARCH;
+        route.params.guildId = searchId;
+      }; break;
+      default: {
+        throw new Error('Invalid Search Type');
+      };
+    }
+
+    const query = {
+      attachment_extensions: options.attachmentExtensions,
+      attachment_filename: options.attachmentFilename,
+      author_id: options.authorId,
+      channel_id: options.channelId,
+      content: options.content,
+      has: options.has,
+      include_nsfw: options.includeNSFW,
+      max_id: options.maxId,
+      mentions: options.mentions,
+      min_id: options.minId,
+    };
+    if (this.clientsideChecks) {
+
+    }
+
+    const response = await this.request({
+      dataOnly: false,
+      query,
+      route,
+    });
+    const body = await response.body();
+    if (response.status === 202 && retry) {
+      if (5 < ++retryNumber) {
+        throw new Error('Retried 5 times, stopping the search.');
+      }
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          this.search(searchType, searchId, options, retry, retryNumber)
+            .then(resolve)
+            .catch(reject);
+        }, body['retry_after'] || 5000);
+      });
+    }
+    return body;
+  }
+
+  async searchChannel(
+    channelId: string,
+    options: SearchOptions = {},
+    retry: boolean = true,
+    retryNumber: number = 0,
+  ): Promise<any> {
+    return this.search('channel', channelId, options, retry, retryNumber);
+  }
+
+  async searchGuild(
+    guildId: string,
+    options: SearchOptions = {},
+    retry: boolean = true,
+    retryNumber: number = 0,
+  ): Promise<any> {
+    return this.search('guild', guildId, options, retry, retryNumber);
   }
 
   async searchLobbies(
@@ -2315,6 +3347,44 @@ export class Client {
     });
   }
 
+  async sendDownloadText(
+    number: string,
+  ): Promise<any> {
+    const body = {number};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.DOWNLOAD_SMS,
+      },
+    });
+  }
+
+  async sendFriendRequest(
+    options: {
+      discriminator: string,
+      username: string,
+    },
+  ): Promise<any> {
+    const body = {
+      discriminator: options.discriminator,
+      username: options.username,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.ME_RELATIONSHIPS,
+      },
+    });
+  }
+
   async sendLobbyData(
     lobbyId: string,
     data: string,
@@ -2329,6 +3399,48 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.POST,
         path: Api.LOBBY_SEND,
+        params,
+      },
+    });
+  }
+
+  async startChannelCallRinging(
+    channelId: string,
+    options: {
+      recipients?: Array<string>,
+    } = {},
+  ): Promise<any> {
+    const body = {recipients: options.recipients};
+    const params = {channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.CHANNEL_CALL_RING,
+        params,
+      },
+    });
+  }
+
+  async stopChannelCallRinging(
+    channelId: string,
+    options: {
+      recipients?: Array<string>,
+    } = {},
+  ): Promise<any> {
+    const body = {recipients: options.recipients};
+    const params = {channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.CHANNEL_CALL_STOP_RINGING,
         params,
       },
     });
@@ -2369,6 +3481,22 @@ export class Client {
     });
   }
 
+  async triggerTyping(
+    channelId: string,
+  ): Promise<any> {
+    const params = {channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.CHANNEL_TYPING,
+        params,
+      },
+    });
+  }
+
   async unAckChannel(channelId: string): Promise<any> {
     const params = {channelId};
     if (this.clientsideChecks) {
@@ -2381,6 +3509,26 @@ export class Client {
         method: RestConstants.HTTPMethods.DELETE,
         path: Api.CHANNEL_MESSAGES_ACK,
         params,
+      },
+    });
+  }
+
+  async verifyCaptcha(
+    options: {
+      captchaKey: string
+    },
+  ): Promise<any> {
+    const body = {
+      captcha_key: options.captchaKey,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.ME_CAPTCHA_VERIFY,
       },
     });
   }
@@ -2447,4 +3595,17 @@ interface CreateGuildRole {
   mentionable?: boolean,
   name?: string,
   permissions?: number,
+}
+
+interface SearchOptions {
+  attachmentFilename?: string | Array<string>,
+  attachmentExtensions?: string | Array<string>,
+  authorId?: string | Array<string>,
+  channelId?: string,
+  content?: string,
+  has?: string | Array<string>,
+  includeNSFW?: boolean,
+  maxId?: string,
+  mentions?: string | Array<string>,
+  minId?: string,
 }
