@@ -51,6 +51,7 @@ interface RequestFile {
 interface RequestOptions {
   body?: any,
   dataOnly?: boolean,
+  errorOnRatelimit?: boolean,
   files?: Array<RequestFile>,
   fingerprint?: string,
   headers?: {[key: string]: string},
@@ -86,6 +87,7 @@ export class Client {
   _authType: AuthTypes;
   buckets: BucketCollection;
   clientsideChecks: boolean;
+  errorOnRatelimit?: boolean;
   fingerprint?: string;
   globalBucket: Bucket;
   restClient: RestClient;
@@ -96,6 +98,7 @@ export class Client {
     baseUrl?: string,
     bucketsExpireIn?: number,
     clientsideChecks?: boolean,
+    errorOnRatelimit?: boolean,
     fingerprint?: string,
     globalBucket?: Bucket,
     settings?: any,
@@ -104,6 +107,7 @@ export class Client {
       baseUrl: Api.URL_STABLE + Api.PATH,
       bucketsExpireIn: 30,
       clientsideChecks: true,
+      errorOnRatelimit: false,
     }, options);
 
     this.restClient = new RestClient({
@@ -119,6 +123,7 @@ export class Client {
       expireIn: options.bucketsExpireIn,
     });
     this.clientsideChecks = <boolean> options.clientsideChecks;
+    this.errorOnRatelimit = options.errorOnRatelimit;
     this.fingerprint = options.fingerprint,
     this.globalBucket = options.globalBucket || new Bucket('global');
     this.token = token;
@@ -171,7 +176,9 @@ export class Client {
     if (typeof(options) === 'string') {
       options = <RequestOptions> {url: options, ...defaults};
     } else {
-      options = Object.assign({}, defaults, options);
+      options = Object.assign({
+        errorOnRatelimit: this.errorOnRatelimit,
+      }, defaults, options);
     }
 
     const request = await this.restClient.createRequest(options);
@@ -203,8 +210,8 @@ export class Client {
     }
 
     let response: Response;
-    const restRequest = new RestRequest(this, request);
-    if (restRequest.bucket) {
+    const restRequest = new RestRequest(this, request, options);
+    if (restRequest.bucket && !options.errorOnRatelimit) {
       const bucket = <Bucket> restRequest.bucket;
       response = await new Promise((resolve, reject) => {
         const delayed = {request: restRequest, resolve, reject};

@@ -24,12 +24,19 @@ const RatelimitHeaders = Object.freeze({
 export class RestRequest {
   bucket?: Bucket;
   client: Client;
+  errorOnRatelimit?: boolean;
   maxRetries: number;
   request: Request;
   retries: number;
   retryDelay: number;
 
-  constructor(client: Client, request: Request) {
+  constructor(
+    client: Client,
+    request: Request,
+    options: {
+      errorOnRatelimit?: boolean,
+    } = {},
+  ) {
     this.client = client;
     this.request = request;
 
@@ -58,6 +65,7 @@ export class RestRequest {
       }
     }
 
+    this.errorOnRatelimit = options.errorOnRatelimit;
     this.maxRetries = 5;
     this.retries = 0;
     this.retryDelay = 2000;
@@ -75,7 +83,7 @@ export class RestRequest {
 
   sendRequest(): Promise<Response> {
     return new Promise((resolve, reject) => {
-      if (this.bucket) {
+      if (this.bucket && !this.errorOnRatelimit) {
         if (this.client.globalBucket.locked) {
           return this.client.globalBucket.add({request: this, resolve, reject});
         }
@@ -132,9 +140,9 @@ export class RestRequest {
         }
       }
 
-      if (response.statusCode === 429) {
+      if (response.statusCode === 429 && !this.errorOnRatelimit) {
         // ratelimited, retry
-        const retryAfter = parseInt(response.headers['retry-after']);
+        const retryAfter = parseInt(response.headers[RatelimitHeaders.RETRY_AFTER]);
         return new Promise((resolve, reject) => {
           const delayed = {request: this, resolve, reject};
           if (response.headers[RatelimitHeaders.GLOBAL] === 'true') {
