@@ -518,9 +518,11 @@ export class Client {
       // both cannot be empty
     }
     return this.request({
+      body,
       route: {
         method: RestConstants.HTTPMethods.POST,
         path: Api.USER_CHANNELS,
+        params: {userId: '@me'},
       },
     });
   }
