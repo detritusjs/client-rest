@@ -5,7 +5,7 @@ import {
 
 
 const safeCharacter = '@';
-function URIEncodeWrap(unsafe: {[key: string]: any}): object {
+function URIEncodeWrap(unsafe: {[key: string]: any}): any {
   const safe: {[key: string]: any} = {};
   for (let key in unsafe) {
     const path = unsafe[key];
