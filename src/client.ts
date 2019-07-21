@@ -78,10 +78,20 @@ interface RequestOptions {
 };
 
 
-const defaults = {
+const requestDefaults = {
   dataOnly: true,
 };
 
+export interface ClientOptions {
+  authType?: string | number,
+  baseUrl?: string,
+  bucketsExpireIn?: number,
+  clientsideChecks?: boolean,
+  errorOnRatelimit?: boolean,
+  fingerprint?: string,
+  globalBucket?: Bucket,
+  settings?: any,
+}
 
 export class Client {
   _authType: AuthTypes;
@@ -93,16 +103,7 @@ export class Client {
   restClient: RestClient;
   token?: string;
 
-  constructor(token?: string, options?: {
-    authType?: string | number,
-    baseUrl?: string,
-    bucketsExpireIn?: number,
-    clientsideChecks?: boolean,
-    errorOnRatelimit?: boolean,
-    fingerprint?: string,
-    globalBucket?: Bucket,
-    settings?: any,
-  }) {
+  constructor(token?: string, options?: ClientOptions) {
     options = Object.assign({
       baseUrl: Api.URL_STABLE + Api.PATH,
       bucketsExpireIn: 30,
@@ -174,11 +175,11 @@ export class Client {
 
   async request(options?: RequestOptions | string): Promise<any> {
     if (typeof(options) === 'string') {
-      options = <RequestOptions> {url: options, ...defaults};
+      options = <RequestOptions> {url: options, ...requestDefaults};
     } else {
       options = Object.assign({
         errorOnRatelimit: this.errorOnRatelimit,
-      }, defaults, options);
+      }, requestDefaults, options);
     }
 
     const request = await this.restClient.createRequest(options);
@@ -428,6 +429,26 @@ export class Client {
         method: RestConstants.HTTPMethods.PUT,
         path: Api.CHANNEL_RECIPIENT,
         params,
+      },
+    });
+  }
+
+  async authorizeIpAddress(
+    options: {
+      token: string,
+    },
+  ): Promise<any> {
+    const body = {
+      token: options.token,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.AUTH_AUTHORIZE_IP,
       },
     });
   }
@@ -1096,6 +1117,23 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.DELETE,
         path: Api.GUILD_INTEGRATIONS,
+        params,
+      },
+    });
+  }
+
+  async deleteGuildPremiumSubscription(
+    guildId: string,
+    subscriptionId: string,
+  ): Promise<any> {
+    const params = {guildId, subscriptionId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.DELETE,
+        path: Api.GUILD_PREMIUM_SUBSCRIPTION,
         params,
       },
     });
@@ -2215,6 +2253,15 @@ export class Client {
     });
   }
 
+  fetchApplications(): Promise<any> {
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.APPLICATIONS,
+      },
+    });
+  }
+
   async fetchApplicationsPublic(
     applicationIds: string | Array<string>,
   ): Promise<any> {
@@ -2314,6 +2361,15 @@ export class Client {
     });
   }
 
+  fetchConsentRequired(): Promise<any> {
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.AUTH_CONSENT_REQUIRED,
+      },
+    });
+  }
+
   async fetchConnectionAuthorizeUrl(
     platform: string,
   ): Promise<any> {
@@ -2360,6 +2416,33 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.GET,
         path: Api.GATEWAY_BOT,
+      },
+    });
+  }
+
+  async fetchGiftCode(
+    code: string,
+    options: {
+      countryCode?: string,
+      withApplication?: boolean,
+      withSubscriptionPlan?: boolean,
+    } = {},
+  ): Promise<any> {
+    const params = {code};
+    const query = {
+      country_code: options.countryCode,
+      with_application: options.withApplication,
+      with_subscription_plan: options.withSubscriptionPlan,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.ENTITLEMENTS_GIFT_CODE,
+        params,
       },
     });
   }
@@ -2587,6 +2670,22 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.GET,
         path: Api.GUILD_MEMBER,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildPremiumSubscriptions(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.GUILD_PREMIUM_SUBSCRIPTIONS,
         params,
       },
     });
@@ -2988,6 +3087,57 @@ export class Client {
     });
   }
 
+  async fetchStorePublishedListingsSkus(
+    applicationId: string,
+  ): Promise<any> {
+    const query = {
+      application_id: applicationId,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.STORE_PUBLISHED_LISTINGS_SKUS,
+      },
+      useAuth: false,
+    });
+  }
+
+  async fetchStorePublishedListingsSku(
+    skuId: string,
+  ): Promise<any> {
+    const query = {skuId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.STORE_PUBLISHED_LISTINGS_SKU,
+      },
+    });
+  }
+
+  async fetchStorePublishedListingsSkuSubscriptionPlans(
+    skuId: string,
+  ): Promise<any> {
+    const query = {skuId};
+    if (this.clientsideChecks) {
+      
+    }
+    return this.request({
+      query,
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.STORE_PUBLISHED_LISTINGS_SKU_SUBSCRIPTION_PLANS,
+      },
+    });
+  }
+
   async fetchUser(
     userId: string,
   ): Promise<any> {
@@ -3102,6 +3252,26 @@ export class Client {
     return this.request({route});
   }
 
+  async forgotPassword(
+    options: {
+      email: string,
+    },
+  ): Promise<any> {
+    const body = {
+      email: options.email,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.AUTH_PASSWORD_FORGOT,
+      },
+    });
+  }
+
   integrationJoin(integrationId: string): Promise<any> {
     return this.request({
       route: {
@@ -3149,6 +3319,191 @@ export class Client {
         method: RestConstants.HTTPMethods.DELETE,
         path: Api.ME_GUILD,
         params,
+      },
+    });
+  }
+
+  async login(
+    options: {
+      captchaKey?: string,
+      email: string,
+      giftCodeSKUId?: string,
+      loginSource?: string,
+      password: string,
+      undelete?: boolean,
+    },
+  ): Promise<any> {
+    const body = {
+      captcha_key: options.captchaKey,
+      email: options.email,
+      gift_code_sku_id: options.giftCodeSKUId,
+      login_source: options.loginSource,
+      password: options.password,
+      undelete: options.undelete,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.AUTH_LOGIN,
+      },
+    });
+  }
+
+  async loginMfaSms(
+    options: {
+      code: string,
+      giftCodeSKUId?: string,
+      loginSource?: string,
+      ticket: string,
+    },
+  ): Promise<any> {
+    const body = {
+      code: options.code,
+      gift_code_sku_id: options.giftCodeSKUId,
+      login_source: options.loginSource,
+      ticket: options.ticket,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.AUTH_MFA_SMS,
+      },
+    });
+  }
+
+  async loginMfaSmsSend(
+    options: {
+      ticket: string,
+    },
+  ): Promise<any> {
+    const body = {
+      ticket: options.ticket,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.AUTH_MFA_SMS_SEND,
+      },
+    });
+  }
+
+  async loginMfaTotp(
+    options: {
+      code: string,
+      giftCodeSKUId?: string,
+      loginSource?: string,
+      ticket: string,
+    },
+  ): Promise<any> {
+    const body = {
+      code: options.code,
+      gift_code_sku_id: options.giftCodeSKUId,
+      login_source: options.loginSource,
+      ticket: options.ticket,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.AUTH_MFA_TOTP,
+      },
+    });
+  }
+
+  async logout(
+    options: {
+      provider?: string,
+      token?: string,
+      voipProvider?: string,
+      voipToken?: string,
+    } = {},
+  ): Promise<any> {
+    const body = {
+      provider: options.provider,
+      token: options.token,
+      voip_provider: options.voipProvider,
+      voip_token: options.voipToken,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.AUTH_LOGOUT,
+      },
+    });
+  }
+
+  async redeemGiftCode(
+    code: string,
+    options: {
+      channelId?: string,
+    } = {},
+  ): Promise<any> {
+    const body = {
+      channel_id: options.channelId,
+    };
+    const params = {code};
+    if (this.clientsideChecks) {
+      
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.ENTITLEMENTS_GIFT_CODE_REDEEM,
+        params,
+      },
+    });
+  }
+
+  async register(
+    options: {
+      captchaKey?: string,
+      consent: boolean,
+      email: string,
+      fingerprint?: string,
+      giftCodeSKUId?: string,
+      invite?: string,
+      password: string,
+      username: string,
+    },
+  ): Promise<any> {
+    const body = {
+      captcha_key: options.captchaKey,
+      consent: options.consent,
+      email: options.email,
+      fingerprint: options.fingerprint,
+      gift_code_sku_id: options.giftCodeSKUId,
+      invite: options.invite,
+      password: options.password,
+      username: options.username,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.AUTH_REGISTER,
       },
     });
   }
@@ -3239,6 +3594,62 @@ export class Client {
         method: RestConstants.HTTPMethods.DELETE,
         path: Api.CHANNEL_RECIPIENT,
         params,
+      },
+    });
+  }
+
+  async resetPassword(
+    options: {
+      password: string,
+      pushProvider?: string,
+      pushToken?: string,
+      pushVoipProvider?: string,
+      pushVoipToken?: string,
+      token: string,
+    },
+  ): Promise<any> {
+    const body = {
+      password: options.password,
+      push_provider: options.pushProvider,
+      push_token: options.pushToken,
+      push_voip_provider: options.pushVoipProvider,
+      push_voip_token: options.pushVoipToken,
+      token: options.token,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.AUTH_PASSWORD_RESET,
+      },
+    });
+  }
+
+  async resetPasswordMfa(
+    options: {
+      code: string,
+      password: string,
+      ticket: string,
+      token: string,
+    },
+  ): Promise<any> {
+    const body = {
+      code: options.code,
+      password: options.password,
+      ticket: options.ticket,
+      token: options.token,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.AUTH_PASSWORD_RESET,
       },
     });
   }
@@ -3524,6 +3935,28 @@ export class Client {
     });
   }
 
+  async verify(
+    options: {
+      captchaKey: string,
+      token?: string,
+    },
+  ): Promise<any> {
+    const body = {
+      captcha_key: options.captchaKey,
+      token: options.token,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.AUTH_VERIFY,
+      },
+    });
+  }
+
   async verifyCaptcha(
     options: {
       captchaKey: string
@@ -3540,6 +3973,15 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.POST,
         path: Api.ME_CAPTCHA_VERIFY,
+      },
+    });
+  }
+
+  verifyResend(): Promise<any> {
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.AUTH_VERIFY_RESEND,
       },
     });
   }

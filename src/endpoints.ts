@@ -5,7 +5,7 @@ import {
 
 
 const safeCharacter = '@';
-function URIEncodeWrap(unsafe: {[key: string]: any}) {
+function URIEncodeWrap(unsafe: {[key: string]: any}): object {
   const safe: {[key: string]: any} = {};
   for (let key in unsafe) {
     const path = unsafe[key];
@@ -13,7 +13,7 @@ function URIEncodeWrap(unsafe: {[key: string]: any}) {
       safe[key] = path;
       continue;
     }
-    safe[key] = (...args: Array<any>) => {
+    safe[key] = (...args: Array<any>): string => {
       args = args.map((arg) => {
         if (!arg) {
           return arg;
@@ -25,8 +25,10 @@ function URIEncodeWrap(unsafe: {[key: string]: any}) {
           return (char === safeCharacter) ? char : encodeURIComponent(char);
         }).join('');
       });
+      return path(...args);
     };
   }
+  return Object.freeze(safe);
 }
 
 export const Assets = URIEncodeWrap({
