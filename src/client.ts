@@ -584,6 +584,22 @@ export class Client {
     });
   }
 
+  async createChannelStoreListingGrantEntitlement(
+    channelId: string,
+  ): Promise<any> {
+    const params = {channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.CHANNEL_STORE_LISTING_ENTITLEMENT_GRANT,
+        params,
+      },
+    });
+  }
+
   async createGuild(
     options: {
       channels?: Array<CreateGuildChannel>,
@@ -650,11 +666,13 @@ export class Client {
     options: CreateGuildChannel,
   ): Promise<any> {
     const body = {
+      branch_id: options.branchId,
       bitrate: options.bitrate,
       name: options.name,
       nsfw: options.nsfw,
       parent_id: options.parentId,
       permission_overwrites: options.permissionOverwrites,
+      sku_id: options.skuId,
       topic: options.topic,
       type: options.type,
       user_limit: options.userLimit,
@@ -2340,6 +2358,22 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.GET,
         path: Api.CHANNEL_INVITES,
+        params,
+      },
+    });
+  }
+
+  async fetchChannelStoreListing(
+    channelId: string,
+  ): Promise<any> {
+    const params = {channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.CHANNEL_STORE_LISTING,
         params,
       },
     });
@@ -4032,11 +4066,13 @@ interface CreatePermissionOverwrite {
 }
 
 interface CreateGuildChannel {
+  branchId?: string,
   bitrate?: number,
   name: string,
   nsfw?: boolean,
   parentId?: string,
   permissionOverwrites?: Array<CreatePermissionOverwrite>,
+  skuId?: string,
   topic?: string,
   type: number,
   userLimit?: number,
