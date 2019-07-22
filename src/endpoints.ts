@@ -803,7 +803,9 @@ export const Api = Object.freeze({
     '/teams/:teamId:/members',
   TEAM_MEMBER:
     '/teams/:teamId:/members/:userId:',
-  TEAM_PAYOUT_IFRAME:
+  TEAM_PAYOUTS:
+    '/teams/:teamId:/payouts',
+  TEAM_PAYOUTS_IFRAME:
     '/teams/:teamId:/payouts/onboarding',
 
   TRACK:

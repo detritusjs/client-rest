@@ -265,6 +265,20 @@ export class Client {
     });
   }
 
+  async acceptTeamInvite(token: string): Promise<any> {
+    const body = {token};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.TEAMS_INVITE_ACCEPT,
+      },
+    });
+  }
+
   async ackChannelMessage(
     channelId: string,
     messageId: string,
@@ -428,6 +442,31 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.PUT,
         path: Api.CHANNEL_RECIPIENT,
+        params,
+      },
+    });
+  }
+
+  async addTeamMember(
+    teamId: string,
+    options: {
+      discriminator: string,
+      username: string,
+    },
+  ): Promise<any> {
+    const body = {
+      discriminator: options.discriminator,
+      username: options.username,
+    };
+    const params = {teamId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.TEAM_MEMBERS,
         params,
       },
     });
@@ -991,6 +1030,28 @@ export class Client {
     });
   }
 
+  async createTeam(
+    options: {
+      icon?: Buffer | string | null,
+      name?: string,
+    },
+  ): Promise<any> {
+    const body = {
+      icon: bufferToBase64(options.icon),
+      name: options.name,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.TEAMS,
+      },
+    });
+  }
+
   async createWebhook(
     channelId: string,
     options: {
@@ -1319,6 +1380,27 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.DELETE,
         path: Api.ME_RELATIONSHIP,
+        params,
+      },
+    });
+  }
+
+  async deleteTeam(
+    teamId: string,
+    options: {
+      code?: string,
+    },
+  ): Promise<any> {
+    const body = {code: options.code};
+    const params = {teamId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.TEAM_DELETE,
         params,
       },
     });
@@ -2019,6 +2101,35 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.PATCH,
         path: Api.ME_SETTINGS,
+      },
+    });
+  }
+
+  async editTeam(
+    teamId: string,
+    options: {
+      code?: string,
+      icon?: Buffer | string | null,
+      name?: string,
+      ownerUserId?: string,
+    },
+  ): Promise<any> {
+    const body = {
+      code: options.code,
+      icon: bufferToBase64(options.icon),
+      name: options.name,
+      owner_user_id: options.ownerUserId,
+    };
+    const params = {teamId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.PATCH,
+        path: Api.TEAM,
+        params,
       },
     });
   }
@@ -3018,8 +3129,19 @@ export class Client {
     });
   }
 
-  fetchOauth2Applications(): Promise<any> {
+  async fetchOauth2Applications(
+    options: {
+      withTeamApplications?: boolean,
+    } = {},
+  ): Promise<any> {
+    const query = {
+      with_team_applications: options.withTeamApplications,
+    };
+    if (this.clientsideChecks) {
+
+    }
     return this.request({
+      query,
       route: {
         method: RestConstants.HTTPMethods.GET,
         path: Api.OAUTH2_APPLICATIONS,
@@ -3168,6 +3290,94 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.GET,
         path: Api.STORE_PUBLISHED_LISTINGS_SKU_SUBSCRIPTION_PLANS,
+      },
+    });
+  }
+
+  fetchTeams(): Promise<any> {
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.TEAMS,
+      },
+    });
+  }
+
+  async fetchTeam(teamId: string): Promise<any> {
+    const params = {teamId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.TEAM,
+        params,
+      },
+    });
+  }
+
+  async fetchTeamApplications(teamId: string): Promise<any> {
+    const params = {teamId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.TEAM_APPLICATIONS,
+        params,
+      },
+    });
+  }
+
+  async fetchTeamMembers(teamId: string): Promise<any> {
+    const params = {teamId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.TEAM_MEMBERS,
+        params,
+      },
+    });
+  }
+
+  async fetchTeamMember(teamId: string, userId: string): Promise<any> {
+    const params = {teamId, userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.TEAM_MEMBER,
+        params,
+      },
+    });
+  }
+
+  async fetchTeamPayouts(
+    teamId: string,
+    options: {
+      limit?: number,
+    } = {},
+  ): Promise<any> {
+    const params = {teamId};
+    const query = {
+      limit: options.limit,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.TEAM_PAYOUTS,
+        params,
       },
     });
   }
@@ -3627,6 +3837,23 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.DELETE,
         path: Api.CHANNEL_RECIPIENT,
+        params,
+      },
+    });
+  }
+
+  async removeTeamMember(
+    teamId: string,
+    userId: string,
+  ): Promise<any> {
+    const params = {teamId, userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.DELETE,
+        path: Api.TEAM_MEMBER,
         params,
       },
     });
