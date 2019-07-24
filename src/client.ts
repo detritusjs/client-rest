@@ -1144,7 +1144,7 @@ export class Client {
     });
   }
 
-  async deleteChannelPermission(
+  async deleteChannelOverwrite(
     channelId: string,
     overwriteId: string,
   ): Promise<any> {
@@ -1564,13 +1564,13 @@ export class Client {
     });
   }
 
-  async editChannelPermission(
+  async editChannelOverwrite(
     channelId: string,
     overwriteId: string,
     options: {
       allow?: number,
       deny?: number,
-      type?: 'member' | 'role',
+      type?: string,
     } = {},
   ): Promise<any> {
     const body = {
@@ -3754,6 +3754,30 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.POST,
         path: Api.AUTH_LOGOUT,
+      },
+    });
+  }
+
+  async messageSuppressEmbeds(
+    channelId: string,
+    messageId: string,
+    options: {
+      suppress?: boolean,
+    } = {},
+  ): Promise<any> {
+    const body = {
+      suppress: options.suppress,
+    };
+    const params = {channelId, messageId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.CHANNEL_MESSAGE_SUPPRESS_EMBEDS,
+        params,
       },
     });
   }

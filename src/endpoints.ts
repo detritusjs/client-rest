@@ -99,6 +99,13 @@ export const EmbedUrls = URIEncodeWrap({
     `https://www.youtube.com/embed/${videoId}?rel=0&showinfo=0&controls=1&origin=https://discordapp.com`,
 });
 
+export const Gift = URIEncodeWrap({
+  LONG: (code: string): string =>
+    `https://discordapp.com/gifts/${code}`,
+  SHORT: (code: string): string =>
+    `https://discord.gift/${code}`,
+});
+
 export const Invite = URIEncodeWrap({
   LONG: (code: string): string =>
     `https://discordapp.com/invite/${code}`,
@@ -110,8 +117,12 @@ export const Routes = URIEncodeWrap({
   URL: 'https://discordapp.com',
   INDEX:
     '/',
+  404:
+    '/404',
   APP:
     '/app',
+  ACKNOWLEDGEMENTS:
+    '/acknowledgements',
   ACTIVITY:
     '/activity',
   APPLICATION_LIBRARY:
@@ -134,22 +145,32 @@ export const Routes = URIEncodeWrap({
     '/billing/payments',
   BILLING_PREMIUM:
     '/billing/premium',
+  BRANDING:
+    '/branding',
   CHANGELOGS:
     '/settings/changelogs',
   CHANGELOGS_DATE: (date: string): string =>
     `/settings/changelogs/${date}`,
   CHANNEL: (guildId: string | null, channelId: string): string => 
     `/channels/${guildId || '@me'}/${channelId}`,
+  COMPANY:
+    '/company',
   CONNECTIONS: (platform: string): string =>
     `/connections/${platform}`,
+  DEV_NEWSLETTER:
+    '/dev-newsletter',
   DISABLE_EMAIL_NOTIFICATIONS:
     '/disable-email-notifications',
+  DOWNLOAD:
+    '/download',
   FRIENDS:
     '/channels/@me',
   GIFT_CODE: (code: string): string =>
     `/gifts/${code}`,
   GIFT_CODE_LOGIN: (code: string): string =>
     `/gifts/${code}/login`,
+  GUIDELINES:
+    '/guidelines',
   GUILD: (guildId: string): string =>
     `/channels/${guildId || '@me'}`,
   GUILD_CREATE:
@@ -158,18 +179,34 @@ export const Routes = URIEncodeWrap({
     '/guild-discovery',
   HANDOFF:
     '/handoff',
+  HYPESQUAD:
+    '/hypesquad',
+  HYPESQUAD_RIOT:
+    '/hypesquad-riot',
   INVITE: (code: string): string =>
     `/invite/${code}`,
   INVITE_PROXY: (channelId: string): string =>
     `/invite-proxy/${channelId}`,
+  JOBS:
+    '/jobs',
+  JOB: (jobId: string) =>
+    `/jobs/${jobId}`,
+  LICENSES:
+    '/licenses',
   LOGIN:
     '/login',
   LOGIN_HANDOFF:
     '/login/handoff',
+  LOGIN_REDIRECT_TO: (redirectTo: string) =>
+    `/login?redirect_to=${redirectTo}`,
   ME:
     '/channels/@me',
   MESSAGE: (guildId: string | null, channelId: string, messageId: string): string =>
     `/channels/${guildId || '@me'}/${channelId}/${messageId}`,
+  NEWSLETTER:
+    '/newsletter',
+  NITRO:
+    '/nitro',
   OAUTH2_AUTHORIZE:
     '/oauth2/authorize',
   OAUTH2_AUTHORIZED:
@@ -178,22 +215,60 @@ export const Routes = URIEncodeWrap({
     '/oauth2/error',
   OAUTH2_WHITELIST_ACCEPT:
     '/oauth2/whitelist/accept',
+  OPEN_SOURCE:
+    '/open-source',
   OVERLAY: (buildId: string, port: number): string =>
     `/overlay?build_id=${buildId}&rpc=${port}`,
+  PARTNERS:
+    '/partners',
   POPOUT_WINDOW:
     '/popout',
+  PRIVACY:
+    '/privacy',
+  PRIVACY_2017:
+    '/privacy-2017',
   REGISTER:
     '/register',
+  REGISTER_REDIRECT_TO: (redirectTo: string) =>
+    `/register?redirect_to=${redirectTo}`,
   RESET:
     '/reset',
+  RICH_PRESENCE:
+    '/rich-presence',
+  SECURITY:
+    '/security',
+  SELL_YOUR_GAME:
+    '/sell-your-game',
+  SELL_YOUR_GAMES:
+    '/sell-your-games',
   SETTINGS: (section: string): string =>
     `/settings/${section}`,
+  SETTINGS_HYPESQUAD_ONLINE:
+    '/settings/hypesquad-online',
   SETTINGS_SUB: (section: string, subsection: string) =>
     `/settings/${section}/${subsection}`,
+  STORE_BROWSE:
+    '/store/browse',
+  STORE_BROWSE_NITRO:
+    '/store/browser?type=nitro',
+  STORE_SKU: (skuId: string) =>
+    `/store/skus/${skuId}`,
+  STORE_SKU_STORE_LISTING_ID: (skuId: string, storeListingId: string) =>
+    `/store/skus/${skuId}?store_listing_id=${storeListingId}`,
+  STORE_TERMS:
+    '/store-terms',
+  STREAMKIT:
+    '/streamkit',
+  TERMS:
+    '/terms',
   USER: (userId: string): string =>
     `/users/${userId}`,
+  VERIFICATION:
+    '/verification',
   VERIFY:
     '/verify',
+  WARFRAME:
+    '/warframe',
   WELCOME: (guildId: string, channelId: string, type: number | string): string =>
     `/welcome/${guildId}/${channelId}/${type}`,
   XBOX_EDU:
@@ -362,6 +437,8 @@ export const Api = Object.freeze({
     '/channels/:channelId:/messages/:messageId:/reactions/:emoji:',
   CHANNEL_MESSAGE_REACTION_USER:
     '/channels/:channelId:/messages/:messageId:/reactions/:emoji:/:userId:',
+  CHANNEL_MESSAGE_SUPPRESS_EMBEDS:
+    '/channels/:channelId:/messages/:messageId:/suppress-embeds',
   CHANNEL_PERMISSIONS:
     '/channels/:channelId:/permissions',
   CHANNEL_PERMISSION:
