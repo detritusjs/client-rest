@@ -216,7 +216,7 @@ export const Api = Object.freeze({
   APPLICATION_NEWS:
     '/application-news',
   APPLICATION_NEWS_ID:
-    '/application-news/:applicationNewsId:',
+    '/application-news/:newsId:',
 
   APPLICATIONS:
     '/applications',

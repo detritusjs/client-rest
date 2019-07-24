@@ -571,6 +571,38 @@ export class Client {
     });
   }
 
+  async createApplicationNews(
+    options: {
+      applicationId: string,
+      channelId: string,
+      description?: string,
+      messageId: string,
+      thumbnailOverride?: Buffer | string,
+      title?: string,
+      url?: string,
+    },
+  ): Promise<any> {
+    const body = {
+      application_id: options.applicationId,
+      channel_id: options.channelId,
+      description: options.description,
+      message_id: options.messageId,
+      thumbnail_override: bufferToBase64(options.thumbnailOverride),
+      title: options.title,
+      url: options.url,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.APPLICATION_NEWS,
+      },
+    });
+  }
+
   async createDm(
     options: {
       recipientId?: string,
@@ -1389,7 +1421,7 @@ export class Client {
     teamId: string,
     options: {
       code?: string,
-    },
+    } = {},
   ): Promise<any> {
     const body = {code: options.code};
     const params = {teamId};
@@ -1457,6 +1489,37 @@ export class Client {
         path: Api.ME_DISABLE_ACCOUNT,
       },
     });
+  }
+
+  async editApplicationNews(
+    newsId: string,
+    options: {
+      channelId?: string,
+      description?: string,
+      messageId?: string,
+      thumbnail?: Buffer | string,
+      title?: string,
+    } = {},
+  ): Promise<any> {
+    const body = {
+      channel_id: options.channelId,
+      description: options.description,
+      message_id: options.messageId,
+      thumbnail: bufferToBase64(options.thumbnail),
+      title: options.title,
+    };
+    const params = {newsId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.PATCH,
+        path: Api.APPLICATION_NEWS_ID,
+        params,
+      },
+    })
   }
 
   async editChannel(
@@ -2112,7 +2175,7 @@ export class Client {
       icon?: Buffer | string | null,
       name?: string,
       ownerUserId?: string,
-    },
+    } = {},
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -2348,7 +2411,7 @@ export class Client {
   }
 
   async fetchApplicationNews(
-    applicationIds: string | Array<string>,
+    applicationIds?: string | Array<string>,
   ): Promise<any> {
     // this one requires the array to be urlencoded in one param
     const query = {
@@ -2367,9 +2430,9 @@ export class Client {
   }
 
   async fetchApplicationNewsId(
-    applicationId: string,
+    newsId: string,
   ): Promise<any> {
-    const params = {applicationId};
+    const params = {newsId};
     if (this.clientsideChecks) {
 
     }
