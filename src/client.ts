@@ -5,7 +5,6 @@ import {
   Client as RestClient,
   Constants as RestConstants,
   Response,
-  Route,
 } from 'detritus-rest';
 
 import { BucketCollection, Bucket } from './bucket';
@@ -17,6 +16,8 @@ import {
 import { AuthTypes, Package } from './constants';
 import { Api } from './endpoints';
 import { RestRequest } from './request';
+
+import * as Types from './types';
 
 
 const defaultHeaders: {[key: string]: string} = {
@@ -39,43 +40,6 @@ defaultHeaders['x-super-properties'] = Buffer.from(
     os_version: os.release(),
   })
 ).toString('base64');
-
-
-interface RequestFile {
-  contentType?: string,
-  data: any,
-  filename?: string,
-  name?: string,
-};
-
-interface RequestOptions {
-  body?: any,
-  dataOnly?: boolean,
-  errorOnRatelimit?: boolean,
-  files?: Array<RequestFile>,
-  fingerprint?: string,
-  headers?: {[key: string]: string},
-  jsonify?: boolean,
-  method?: string,
-  multipart?: boolean,
-  path?: string,
-  query?: {
-    [key: string]: any,
-  },
-  route?: Route | {
-    method?: string,
-    params?: {[key: string]: string},
-    path?: string,
-    urlPath?: null,
-  },
-  settings?: {
-    multipartJsonKey?: string,
-    timeout?: number,
-  },
-  token?: string,
-  url?: string | URL,
-  useAuth?: boolean,
-};
 
 
 const requestDefaults = {
@@ -107,7 +71,6 @@ export class Client {
     options = Object.assign({
       baseUrl: Api.URL_STABLE + Api.PATH,
       bucketsExpireIn: 30,
-      clientsideChecks: true,
       errorOnRatelimit: false,
     }, options);
 
@@ -123,7 +86,7 @@ export class Client {
     this.buckets = new BucketCollection({
       expireIn: options.bucketsExpireIn,
     });
-    this.clientsideChecks = <boolean> options.clientsideChecks;
+    this.clientsideChecks = !!(options.clientsideChecks || options.clientsideChecks === undefined);
     this.errorOnRatelimit = options.errorOnRatelimit;
     this.fingerprint = options.fingerprint,
     this.globalBucket = options.globalBucket || new Bucket('global');
@@ -173,9 +136,11 @@ export class Client {
     }
   }
 
-  async request(options?: RequestOptions | string): Promise<any> {
+  async request(
+    options?: Types.RequestOptions | string,
+  ): Promise<any> {
     if (typeof(options) === 'string') {
-      options = <RequestOptions> {url: options, ...requestDefaults};
+      options = <Types.RequestOptions> {url: options, ...requestDefaults};
     } else {
       options = Object.assign({
         errorOnRatelimit: this.errorOnRatelimit,
@@ -340,10 +305,7 @@ export class Client {
   async addConnection(
     platform: string,
     accountId: string,
-    options: {
-      name: string,
-      friendSync?: boolean,
-    },
+    options: Types.AddConnection,
   ): Promise<any> {
     const body = {
       name: options.name,
@@ -366,13 +328,7 @@ export class Client {
   async addGuildMember(
     guildId: string,
     userId: string,
-    options: {
-      accessToken: string,
-      deaf?: boolean,
-      mute?: boolean,
-      nick?: string,
-      roles?: Array<string>,
-    },
+    options: Types.AddGuildMember,
   ): Promise<any> {
     const body = {
       access_token: options.accessToken,
@@ -449,10 +405,7 @@ export class Client {
 
   async addTeamMember(
     teamId: string,
-    options: {
-      discriminator: string,
-      username: string,
-    },
+    options: Types.AddTeamMember,
   ): Promise<any> {
     const body = {
       discriminator: options.discriminator,
@@ -473,9 +426,7 @@ export class Client {
   }
 
   async authorizeIpAddress(
-    options: {
-      token: string,
-    },
+    options: Types.AuthorizeIpAddress,
   ): Promise<any> {
     const body = {
       token: options.token,
@@ -494,10 +445,7 @@ export class Client {
 
   async beginGuildPrune(
     guildId: string,
-    options: {
-      days?: number,
-      computePruneCount?: boolean,
-    } = {},
+    options: Types.BeginGuildPrune = {},
   ): Promise<any> {
     const params = {guildId};
     const query = {
@@ -543,14 +491,7 @@ export class Client {
 
   async connectionCallback(
     platform: string,
-    options: {
-      code: string,
-      friendSync: boolean,
-      fromContinuation: boolean,
-      insecure?: boolean,
-      openIdParams: Object,
-      state: string, 
-    },
+    options: Types.ConnectionCallback,
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -572,15 +513,7 @@ export class Client {
   }
 
   async createApplicationNews(
-    options: {
-      applicationId: string,
-      channelId: string,
-      description?: string,
-      messageId: string,
-      thumbnailOverride?: Buffer | string,
-      title?: string,
-      url?: string,
-    },
+    options: Types.CreateApplicationNews,
   ): Promise<any> {
     const body = {
       application_id: options.applicationId,
@@ -603,37 +536,9 @@ export class Client {
     });
   }
 
-  async createDm(
-    options: {
-      recipientId?: string,
-      recipients?: Array<string>,
-    } = {},
-  ): Promise<any> {
-    const body = {
-      recipient_id: options.recipientId,
-      recipients: options.recipients,
-    };
-    if (this.clientsideChecks) {
-      // both cannot be empty
-    }
-    return this.request({
-      body,
-      route: {
-        method: RestConstants.HTTPMethods.POST,
-        path: Api.USER_CHANNELS,
-        params: {userId: '@me'},
-      },
-    });
-  }
-
   async createChannelInvite(
     channelId: string,
-    options: {
-      maxAge?: number,
-      maxUses?: number,
-      temporary?: boolean,
-      unique?: boolean,
-    } = {},
+    options: Types.CreateChannelInvite = {},
   ): Promise<any> {
     const body = {
       max_age: options.maxAge,
@@ -671,17 +576,28 @@ export class Client {
     });
   }
 
-  async createGuild(
-    options: {
-      channels?: Array<CreateGuildChannel>,
-      defaultMessageNotifications?: number,
-      explicitContentFilter?: number,
-      icon?: Buffer | string,
-      name: string,
-      region: string,
-      roles?: Array<CreateGuildRole>,
-      verificationLevel?: number,
+  async createDm(
+    options: Types.CreateDm = {},
+  ): Promise<any> {
+    const body = {
+      recipient_id: options.recipientId,
+      recipients: options.recipients,
+    };
+    if (this.clientsideChecks) {
+      // both cannot be empty
     }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.USER_CHANNELS,
+        params: {userId: '@me'},
+      },
+    });
+  }
+
+  async createGuild(
+    options: Types.CreateGuild,
   ): Promise<any> {
     const body = {
       channels: options.channels,
@@ -709,10 +625,7 @@ export class Client {
   async createGuildBan(
     guildId: string,
     userId: string,
-    options: {
-      deleteMessageDays?: string,
-      reason?: string,
-    } = {},
+    options: Types.CreateGuildBan = {},
   ): Promise<any> {
     const params = {guildId, userId};
     const query = {
@@ -734,7 +647,7 @@ export class Client {
 
   async createGuildChannel(
     guildId: string,
-    options: CreateGuildChannel,
+    options: Types.CreateGuildChannel,
   ): Promise<any> {
     const body = {
       branch_id: options.branchId,
@@ -764,11 +677,7 @@ export class Client {
 
   async createGuildEmoji(
     guildId: string,
-    options: {
-      name: string,
-      image: Buffer | string,
-      roles?: Array<string>,
-    },
+    options: Types.CreateGuildEmoji,
   ): Promise<any> {
     const body = {
       name: options.name,
@@ -792,10 +701,7 @@ export class Client {
 
   async createGuildIntegration(
     guildId: string,
-    options: {
-      id: string,
-      type: string,
-    },
+    options: Types.CreateGuildIntegration,
   ): Promise<any> {
     const body = {
       id: options.id,
@@ -817,7 +723,7 @@ export class Client {
 
   async createGuildRole(
     guildId: string,
-    options: CreateGuildRole = {},
+    options: Types.CreateGuildRole = {},
   ): Promise<any> {
     const body = {
       color: options.color,
@@ -842,13 +748,7 @@ export class Client {
 
   async createLobby(
     applicationId: string,
-    options: {
-      capacity?: number,
-      locked?: boolean,
-      metadata?: any,
-      ownerId?: string,
-      type?: number,
-    } = {},
+    options: Types.CreateLobby = {},
   ): Promise<any> {
     const body = {
       application_id: applicationId,
@@ -868,19 +768,7 @@ export class Client {
   }
 
   async createMeBillingPaymentSource(
-    options: {
-      billingAddress: {
-        city: string,
-        country: string,
-        line1: string,
-        line2: string,
-        name: string,
-        postalCode: string,
-        state: string,
-      },
-      paymentGateway: string,
-      token: string,
-    }
+    options: Types.CreateMeBillingPaymentSource,
   ): Promise<any> {
     const body = {
       billing_address: {
@@ -908,11 +796,7 @@ export class Client {
   }
 
   async createMeBillingSubscription(
-    options: {
-      paymentGatewayPlanId: string,
-      paymentSourceId: string,
-      trialId?: string,
-    },
+    options: Types.CreateMeBillingSubscription,
   ): Promise<any> {
     const body = {
       payment_gateway_plan_id: options.paymentGatewayPlanId,
@@ -931,21 +815,10 @@ export class Client {
     });
   }
 
-  async createMessage(channelId: string, options: {
-    activity?: {
-      partyId?: string,
-      sessionId?: string,
-      type?: number,
-    },
-    applicationId?: string,
-    content?: string,
-    embed?: CreateChannelMessageEmbed,
-    file?: RequestFile,
-    files?: Array<RequestFile>,
-    hasSpoiler?: boolean,
-    nonce?: string,
-    tts?: boolean,
-  } = {}): Promise<any> {
+  async createMessage(
+    channelId: string,
+    options: Types.CreateMessage = {},
+  ): Promise<any> {
     const body: {
       activity?: {
         party_id?: string,
@@ -991,7 +864,7 @@ export class Client {
       }
     }
 
-    const files: Array<RequestFile> = [];
+    const files: Array<Types.RequestFile> = [];
     if (options.file) {
       files.push(options.file);
     }
@@ -1063,10 +936,7 @@ export class Client {
   }
 
   async createTeam(
-    options: {
-      icon?: Buffer | string | null,
-      name?: string,
-    },
+    options: Types.CreateTeam = {},
   ): Promise<any> {
     const body = {
       icon: bufferToBase64(options.icon),
@@ -1086,10 +956,7 @@ export class Client {
 
   async createWebhook(
     channelId: string,
-    options: {
-      avatar?: string,
-      name: string,
-    },
+    options: Types.CreateWebhook,
   ): Promise<any> {
     const body = {
       avatar: options.avatar,
@@ -1110,10 +977,7 @@ export class Client {
   }
 
   async deleteAccount(
-    options: {
-      code?: string,
-      password: string,
-    },
+    options: Types.DeleteAccount,
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -1180,9 +1044,7 @@ export class Client {
 
   async deleteGuild(
     guildId: string,
-    options: {
-      code?: string,
-    },
+    options: Types.DeleteGuild = {},
   ): Promise<any> {
     const body = {code: options.code};
     const params = {guildId};
@@ -1419,9 +1281,7 @@ export class Client {
 
   async deleteTeam(
     teamId: string,
-    options: {
-      code?: string,
-    } = {},
+    options: Types.DeleteTeam = {},
   ): Promise<any> {
     const body = {code: options.code};
     const params = {teamId};
@@ -1473,10 +1333,7 @@ export class Client {
   }
 
   async disableAccount(
-    options: {
-      code?: string,
-      password: string,
-    },
+    options: Types.DisableAccount,
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -1493,13 +1350,7 @@ export class Client {
 
   async editApplicationNews(
     newsId: string,
-    options: {
-      channelId?: string,
-      description?: string,
-      messageId?: string,
-      thumbnail?: Buffer | string,
-      title?: string,
-    } = {},
+    options: Types.EditApplicationNews = {},
   ): Promise<any> {
     const body = {
       channel_id: options.channelId,
@@ -1524,18 +1375,7 @@ export class Client {
 
   async editChannel(
     channelId: string,
-    options: {
-      bitrate?: number,
-      icon?: Buffer | string,
-      name?: string,
-      nsfw?: boolean,
-      parentId?: string,
-      permissionOverwrites?: Array<CreatePermissionOverwrite>,
-      position?: string,
-      topic?: string,
-      userLimit?: number,
-      rateLimitPerUser?: number,
-    } = {},
+    options: Types.EditChannel = {},
   ): Promise<any> {
     const body = {
       bitrate: options.bitrate,
@@ -1567,11 +1407,7 @@ export class Client {
   async editChannelOverwrite(
     channelId: string,
     overwriteId: string,
-    options: {
-      allow?: number,
-      deny?: number,
-      type?: string,
-    } = {},
+    options: Types.EditChannelOverwrite = {},
   ): Promise<any> {
     const body = {
       allow: options.allow,
@@ -1595,10 +1431,7 @@ export class Client {
   async editConnection(
     platform: string,
     accountId: string,
-    options: {
-      friendSync?: boolean,
-      visibility?: boolean,
-    } = {},
+    options: Types.EditConnection = {},
   ): Promise<any> {
     return this.request({
       body: {
@@ -1615,25 +1448,7 @@ export class Client {
 
   async editGuild(
     guildId: string,
-    options: {
-      afkChannelId?: string,
-      afkTimeout?: number,
-      banner?: Buffer | string,
-      code?: string,
-      defaultMessageNotifications?: string,
-      description?: string,
-      explicitContentFilter?: number,
-      features?: Array<string>,
-      icon?: Buffer | string | null,
-      name?: string,
-      ownerId?: string,
-      preferredLocale?: string,
-      region?: string,
-      splash?: Buffer | string | null,
-      systemChannelFlags?: number,
-      systemChannelId?: string,
-      verificationLevel?: number,
-    } = {},
+    options: Types.EditGuild = {},
   ): Promise<any> {
     const body = {
       afk_channel_id: options.afkChannelId,
@@ -1671,12 +1486,7 @@ export class Client {
 
   async editGuildChannels(
     guildId: string,
-    channels: Array<{
-      id: string,
-      lockPermissions?: boolean,
-      parentId?: string,
-      position?: number,
-    }>,
+    channels: Types.EditGuildChannels,
   ): Promise<any> {
     const body: Array<{
       id: string,
@@ -1709,10 +1519,7 @@ export class Client {
 
   async editGuildEmbed(
     guildId: string,
-    options: {
-      channelId?: string,
-      enabled: boolean,
-    },
+    options: Types.EditGuildEmbed,
   ): Promise<any> {
     const body = {
       channel_id: options.channelId,
@@ -1735,10 +1542,7 @@ export class Client {
   async editGuildEmoji(
     guildId: string,
     emojiId: string,
-    options: {
-      name?: string,
-      roles?: Array<string>,
-    } = {},
+    options: Types.EditGuildEmoji = {},
   ): Promise<any> {
     const body = {
       name: options.name,
@@ -1761,11 +1565,7 @@ export class Client {
   async editGuildIntegration(
     guildId: string,
     integrationId: string,
-    options: {
-      enableEmoticons?: boolean,
-      expireBehavior?: number,
-      expireGracePeriod?: number,
-    } = {},
+    options: Types.EditGuildIntegration = {},
   ): Promise<any> {
     const body = {
       enable_emoticons: options.enableEmoticons,
@@ -1789,13 +1589,7 @@ export class Client {
   async editGuildMember(
     guildId: string,
     userId: string,
-    options: {
-      channelId?: string | null,
-      deaf?: boolean,
-      mute?: boolean,
-      nick?: string,
-      roles?: Array<string>,
-    } = {},
+    options: Types.EditGuildMember = {},
   ): Promise<any> {
     const body = {
       channel_id: options.channelId,
@@ -1818,12 +1612,9 @@ export class Client {
     });
   }
 
-  async editGuildMFALevel(
+  async editGuildMfaLevel(
     guildId: string,
-    options: {
-      code: string,
-      level: number,
-    },
+    options: Types.EditGuildMfaLevel,
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -1866,13 +1657,7 @@ export class Client {
   async editGuildRole(
     guildId: string,
     roleId: string,
-    options: {
-      color?: number,
-      hoist?: boolean,
-      mentionable?: boolean,
-      name?: string,
-      permissions?: number,
-    } = {},
+    options: Types.EditGuildRole = {},
   ): Promise<any> {
     const body = {
       color: options.color,
@@ -1895,24 +1680,18 @@ export class Client {
     });
   }
 
-  async editGuildRoles(
+  async editGuildRolePositions(
     guildId: string,
-    roles: Array<{
-      id: string,
-      lockPermissions?: boolean,
-      position?: number,
-    }>
+    roles: Types.EditGuildRolePositions,
   ): Promise<any> {
     const body: Array<{
       id: string,
-      lock_permissions?: boolean,
       position?: number,
     }> = [];
     const params = {guildId};
     for (let oldRole of roles) {
       const role = {
         id: oldRole.id,
-        lock_permissions: oldRole.lockPermissions,
         position: oldRole.position,
       };
       if (this.clientsideChecks) {
@@ -1951,13 +1730,7 @@ export class Client {
 
   async editLobby(
     lobbyId: string,
-    options: {
-      capacity?: number,
-      locked?: boolean,
-      metadata?: any,
-      ownerId?: string,
-      type?: number,
-    } = {},
+    options: Types.EditLobby = {},
   ): Promise<any> {
     const body = {
       capacity: options.capacity,
@@ -1983,9 +1756,7 @@ export class Client {
   async editLobbyMember(
     lobbyId: string,
     userId: string,
-    options: {
-      metadata?: any,
-    } = {},
+    options: Types.EditLobbyMember = {},
   ): Promise<any> {
     const body = {metadata: options.metadata};
     const params = {lobbyId, userId};
@@ -2003,12 +1774,17 @@ export class Client {
   }
 
   async editMe(
-    options: {
-      flags?: number,
-    } = {},
+    options: Types.EditMe = {},
   ): Promise<any> {
     const body = {
+      avatar: bufferToBase64(options.avatar),
+      code: options.code,
+      discriminator: options.discriminator,
+      email: options.email,
       flags: options.flags,
+      new_password: options.newPassword,
+      password: options.password,
+      username: options.username,
     };
     if (this.clientsideChecks) {
 
@@ -2024,18 +1800,7 @@ export class Client {
 
   async editMeBillingPaymentSource(
     paymentSourceId: string,
-    options: {
-      billingAddress?: {
-        city: string,
-        country: string,
-        line1: string,
-        line2: string,
-        name: string,
-        postalCode: string,
-        state: string,
-      },
-      default?: boolean,
-    } = {},
+    options: Types.EditMeBillingPaymentSource = {},
   ): Promise<any> {
     const body = {
       billing_address: (options.billingAddress) && {
@@ -2065,11 +1830,7 @@ export class Client {
 
   async editMeBillingSubscription(
     subscriptionId: string,
-    options: {
-      paymentGatewayPlanId?: string,
-      paymentSourceId?: string,
-      status?: string,
-    } = {},
+    options: Types.EditMeBillingSubscription = {},
   ): Promise<any> {
     const body = {
       payment_gateway_plan_id: options.paymentGatewayPlanId,
@@ -2093,11 +1854,7 @@ export class Client {
   async editMessage(
     channelId: string,
     messageId: string,
-    options: {
-      content?: string,
-      embed?: CreateChannelMessageEmbed,
-      mentions?: Array<any>, // idk, the sourcecode has this
-    } = {},
+    options: Types.EditMessage = {},
   ): Promise<any> {
     const body = {
       content: options.content,
@@ -2156,7 +1913,7 @@ export class Client {
   }
 
   async editSettings(
-    options: any = {},
+    options: Types.EditSettings = {},
   ): Promise<any> {
     const body = Object.assign({}, options);
     return this.request({
@@ -2170,12 +1927,7 @@ export class Client {
 
   async editTeam(
     teamId: string,
-    options: {
-      code?: string,
-      icon?: Buffer | string | null,
-      name?: string,
-      ownerUserId?: string,
-    } = {},
+    options: Types.EditTeam = {},
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -2197,44 +1949,13 @@ export class Client {
     });
   }
 
-  async editUser(
-    options: {
-      avatar?: Buffer | string | null,
-      discriminator?: number | string,
-      email?: string,
-      newPassword?: string,
-      password?: string,
-      username?: string,
-    } = {},
-  ): Promise<any> {
-    const body = {
-      avatar: bufferToBase64(options.avatar),
-      discriminator: options.discriminator,
-      email: options.email,
-      new_password: options.newPassword,
-      password: options.password,
-      username: options.username,
-    };
-
-    if (this.clientsideChecks) {
-
-    }
-    return this.request({
-      body,
-      route: {
-        method: RestConstants.HTTPMethods.PATCH,
-        path: Api.ME,
-      },
-    });
+  async editUser(options: Types.EditMe): Promise<any> {
+    return this.editMe(options);
   }
 
   async editWebhook(
     webhookId: string,
-    options: {
-      avatar?: Buffer | string | null,
-      channelId?: string,
-      name?: string,
-    } = {},
+    options: Types.EditWebhook = {},
   ): Promise<any> {
     const body = {
       avatar: bufferToBase64(options.avatar),
@@ -2258,13 +1979,11 @@ export class Client {
   async editWebhookToken(
     webhookId: string,
     token: string,
-    options: {
-      avatar?: Buffer | string | null,
-      name?: string,
-    } = {},
+    options: Types.EditWebhook = {},
   ): Promise<any> {
     const body = {
       avatar: bufferToBase64(options.avatar),
+      channel_id: options.channelId,
       name: options.name,
     };
     const params = {webhookId, token};
@@ -2284,17 +2003,7 @@ export class Client {
   async executeWebhook(
     webhookId: string,
     token: string,
-    options: {
-      avatarUrl?: string,
-      content?: string,
-      embed?: CreateChannelMessageEmbed,
-      embeds?: Array<CreateChannelMessageEmbed>,
-      file?: RequestFile,
-      files?: Array<RequestFile>,
-      tts?: boolean,
-      username?: string,
-      wait?: boolean,
-    } = {},
+    options: Types.ExecuteWebhook = {},
     compatibleType?: string,
   ): Promise<any> {
     const body: {
@@ -2309,7 +2018,7 @@ export class Client {
       tts: options.tts,
       username: options.username,
     };
-    const files: Array<RequestFile> = [];
+    const files: Array<Types.RequestFile> = [];
     const params = {webhookId, token};
     const query: {wait?: boolean} = {};
     const route = {
@@ -2630,11 +2339,7 @@ export class Client {
 
   async fetchGiftCode(
     code: string,
-    options: {
-      countryCode?: string,
-      withApplication?: boolean,
-      withSubscriptionPlan?: boolean,
-    } = {},
+    options: Types.FetchGiftCode = {},
   ): Promise<any> {
     const params = {code};
     const query = {
@@ -2701,12 +2406,7 @@ export class Client {
 
   async fetchGuildAuditLogs(
     guildId: string,
-    options: {
-      actionType?: number,
-      before?: string,
-      limit?: number,
-      userId?: string,
-    },
+    options: Types.FetchGuildAuditLogs,
   ): Promise<any> {
     const params = {guildId};
     const query = {
@@ -2843,10 +2543,7 @@ export class Client {
 
   async fetchGuildMembers(
     guildId: string,
-    options: {
-      after?: string,
-      limit?: number,
-    } = {},
+    options: Types.FetchGuildMembers = {},
   ): Promise<any> {
     const params = {guildId};
     const query = {
@@ -2965,9 +2662,7 @@ export class Client {
 
   async fetchInvite(
     code: string,
-    options: {
-      withCounts?: boolean,
-    } = {},
+    options: Types.FetchInvite = {},
   ): Promise<any> {
     const params = {code};
     const query = {
@@ -3004,10 +2699,7 @@ export class Client {
   }
 
   async fetchMeBillingPayments(
-    options: {
-      beforeId?: string,
-      limit?: number,
-    } = {},
+    options: Types.FetchMeBillingPayments = {},
   ): Promise<any> {
     const query = {
       limit: options.limit,
@@ -3076,9 +2768,7 @@ export class Client {
   }
 
   async fetchMeFeedSettings(
-    options: {
-      includeAutosubscribedGames?: boolean,
-    } = {},
+    options: Types.FetchMeFeedSettings = {},
   ): Promise<any> {
     const query = {
       include_autosubscribed_game: options.includeAutosubscribedGames,
@@ -3096,14 +2786,7 @@ export class Client {
   }
 
   async fetchMentions(
-    options: {
-      after?: string,
-      around?: string,
-      before?: string,
-      everyone?: boolean,
-      limit?: number,
-      roles?: boolean,
-    } = {},
+    options: Types.FetchMentions = {},
   ): Promise<any> {
     const query = {
       after: options.after,
@@ -3155,12 +2838,7 @@ export class Client {
 
   async fetchMessages(
     channelId: string,
-    options: {
-      after?: string,
-      around?: string,
-      before?: string,
-      limit?: number,
-    } = {},
+    options: Types.FetchMessages = {},
   ): Promise<any> {
     const params = {channelId};
     const query = {
@@ -3193,9 +2871,7 @@ export class Client {
   }
 
   async fetchOauth2Applications(
-    options: {
-      withTeamApplications?: boolean,
-    } = {},
+    options: Types.FetchOauth2Applications = {},
   ): Promise<any> {
     const query = {
       with_team_applications: options.withTeamApplications,
@@ -3273,11 +2949,7 @@ export class Client {
     channelId: string,
     messageId: string,
     emoji: string,
-    options: {
-      after?: string,
-      before?: string,
-      limit?: number,
-    } = {},
+    options: Types.FetchReactions = {},
   ): Promise<any> {
     const params = {channelId, messageId, emoji};
     const query = {
@@ -3424,9 +3096,7 @@ export class Client {
 
   async fetchTeamPayouts(
     teamId: string,
-    options: {
-      limit?: number,
-    } = {},
+    options: Types.FetchTeamPayouts = {},
   ): Promise<any> {
     const params = {teamId};
     const query = {
@@ -3560,9 +3230,7 @@ export class Client {
   }
 
   async forgotPassword(
-    options: {
-      email: string,
-    },
+    options: Types.ForgotPassword,
   ): Promise<any> {
     const body = {
       email: options.email,
@@ -3579,7 +3247,9 @@ export class Client {
     });
   }
 
-  integrationJoin(integrationId: string): Promise<any> {
+  integrationJoin(
+    integrationId: string,
+  ): Promise<any> {
     return this.request({
       route: {
         method: RestConstants.HTTPMethods.POST,
@@ -3591,10 +3261,7 @@ export class Client {
 
   async joinGuild(
     guildId: string,
-    options: {
-      lurker?: boolean,
-      sessionId?: string,
-    } = {},
+    options: Types.JoinGuild = {},
   ): Promise<any> {
     const params = {guildId};
     const query = {
@@ -3631,14 +3298,7 @@ export class Client {
   }
 
   async login(
-    options: {
-      captchaKey?: string,
-      email: string,
-      giftCodeSKUId?: string,
-      loginSource?: string,
-      password: string,
-      undelete?: boolean,
-    },
+    options: Types.Login,
   ): Promise<any> {
     const body = {
       captcha_key: options.captchaKey,
@@ -3661,12 +3321,7 @@ export class Client {
   }
 
   async loginMfaSms(
-    options: {
-      code: string,
-      giftCodeSKUId?: string,
-      loginSource?: string,
-      ticket: string,
-    },
+    options: Types.LoginMfaSms,
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -3687,9 +3342,7 @@ export class Client {
   }
 
   async loginMfaSmsSend(
-    options: {
-      ticket: string,
-    },
+    options: Types.LoginMfaSmsSend,
   ): Promise<any> {
     const body = {
       ticket: options.ticket,
@@ -3707,12 +3360,7 @@ export class Client {
   }
 
   async loginMfaTotp(
-    options: {
-      code: string,
-      giftCodeSKUId?: string,
-      loginSource?: string,
-      ticket: string,
-    },
+    options: Types.LoginMfaTotp,
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -3733,12 +3381,7 @@ export class Client {
   }
 
   async logout(
-    options: {
-      provider?: string,
-      token?: string,
-      voipProvider?: string,
-      voipToken?: string,
-    } = {},
+    options: Types.Logout = {},
   ): Promise<any> {
     const body = {
       provider: options.provider,
@@ -3761,9 +3404,7 @@ export class Client {
   async messageSuppressEmbeds(
     channelId: string,
     messageId: string,
-    options: {
-      suppress?: boolean,
-    } = {},
+    options: Types.MessageSuppressEmbeds = {},
   ): Promise<any> {
     const body = {
       suppress: options.suppress,
@@ -3784,9 +3425,7 @@ export class Client {
 
   async redeemGiftCode(
     code: string,
-    options: {
-      channelId?: string,
-    } = {},
+    options: Types.RedeemGiftCode = {},
   ): Promise<any> {
     const body = {
       channel_id: options.channelId,
@@ -3806,16 +3445,7 @@ export class Client {
   }
 
   async register(
-    options: {
-      captchaKey?: string,
-      consent: boolean,
-      email: string,
-      fingerprint?: string,
-      giftCodeSKUId?: string,
-      invite?: string,
-      password: string,
-      username: string,
-    },
+    options: Types.Register,
   ): Promise<any> {
     const body = {
       captcha_key: options.captchaKey,
@@ -3859,7 +3489,7 @@ export class Client {
   async removeGuildMember(
     guildId: string,
     userId: string,
-    options: {reason?: string} = {},
+    options: Types.RemoveGuildMember = {},
   ): Promise<any> {
     const params = {guildId, userId};
     const query = {
@@ -3947,14 +3577,7 @@ export class Client {
   }
 
   async resetPassword(
-    options: {
-      password: string,
-      pushProvider?: string,
-      pushToken?: string,
-      pushVoipProvider?: string,
-      pushVoipToken?: string,
-      token: string,
-    },
+    options: Types.ResetPassword,
   ): Promise<any> {
     const body = {
       password: options.password,
@@ -3977,12 +3600,7 @@ export class Client {
   }
 
   async resetPasswordMfa(
-    options: {
-      code: string,
-      password: string,
-      ticket: string,
-      token: string,
-    },
+    options: Types.ResetPasswordMfa,
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -4005,7 +3623,7 @@ export class Client {
   async search(
     searchType: 'channel' | 'guild',
     searchId: string,
-    options: SearchOptions = {},
+    options: Types.SearchOptions = {},
     retry: boolean = true,
     retryNumber: number = 0,
   ): Promise<any> {
@@ -4071,7 +3689,7 @@ export class Client {
 
   async searchChannel(
     channelId: string,
-    options: SearchOptions = {},
+    options: Types.SearchOptions = {},
     retry: boolean = true,
     retryNumber: number = 0,
   ): Promise<any> {
@@ -4080,7 +3698,7 @@ export class Client {
 
   async searchGuild(
     guildId: string,
-    options: SearchOptions = {},
+    options: Types.SearchOptions = {},
     retry: boolean = true,
     retryNumber: number = 0,
   ): Promise<any> {
@@ -4134,10 +3752,7 @@ export class Client {
   }
 
   async sendFriendRequest(
-    options: {
-      discriminator: string,
-      username: string,
-    },
+    options: Types.SendFriendRequest,
   ): Promise<any> {
     const body = {
       discriminator: options.discriminator,
@@ -4176,9 +3791,7 @@ export class Client {
 
   async startChannelCallRinging(
     channelId: string,
-    options: {
-      recipients?: Array<string>,
-    } = {},
+    options: Types.StartChannelCallRinging = {},
   ): Promise<any> {
     const body = {recipients: options.recipients};
     const params = {channelId};
@@ -4197,9 +3810,7 @@ export class Client {
 
   async stopChannelCallRinging(
     channelId: string,
-    options: {
-      recipients?: Array<string>,
-    } = {},
+    options: Types.StopChannelCallRinging = {},
   ): Promise<any> {
     const body = {recipients: options.recipients};
     const params = {channelId};
@@ -4267,7 +3878,9 @@ export class Client {
     });
   }
 
-  async unAckChannel(channelId: string): Promise<any> {
+  async unAckChannel(
+    channelId: string,
+  ): Promise<any> {
     const params = {channelId};
     if (this.clientsideChecks) {
       verifyData(params, {
@@ -4284,10 +3897,7 @@ export class Client {
   }
 
   async verify(
-    options: {
-      captchaKey: string,
-      token?: string,
-    },
+    options: Types.Verify,
   ): Promise<any> {
     const body = {
       captcha_key: options.captchaKey,
@@ -4306,9 +3916,7 @@ export class Client {
   }
 
   async verifyCaptcha(
-    options: {
-      captchaKey: string
-    },
+    options: Types.VerifyCaptcha,
   ): Promise<any> {
     const body = {
       captcha_key: options.captchaKey,
@@ -4333,82 +3941,4 @@ export class Client {
       },
     });
   }
-}
-
-interface CreateChannelMessageEmbed {
-  author?: {
-    iconUrl?: string,
-    name?: string,
-    url?: string,
-  },
-  color?: number,
-  description?: string,
-  fields: Array<{
-    inline?: boolean,
-    name: string,
-    value: string,
-  }>,
-  footer?: {
-    iconUrl?: string,
-    text: string,
-  },
-  image?: {
-    url?: string,
-  },
-  provider?: {
-    name?: string,
-    url?: string,
-  },
-  thumbnail?: {
-    url?: string,
-  },
-  timestamp?: string,
-  title?: string,
-  type?: string,
-  url?: string,
-  video?: {
-    url?: string,
-  },
-}
-
-
-interface CreatePermissionOverwrite {
-  id: string,
-  type: 'role' | 'member',
-  allow: number,
-  deny: number,
-}
-
-interface CreateGuildChannel {
-  branchId?: string,
-  bitrate?: number,
-  name: string,
-  nsfw?: boolean,
-  parentId?: string,
-  permissionOverwrites?: Array<CreatePermissionOverwrite>,
-  skuId?: string,
-  topic?: string,
-  type: number,
-  userLimit?: number,
-}
-
-interface CreateGuildRole {
-  color?: number,
-  hoist?: boolean,
-  mentionable?: boolean,
-  name?: string,
-  permissions?: number,
-}
-
-interface SearchOptions {
-  attachmentFilename?: string | Array<string>,
-  attachmentExtensions?: string | Array<string>,
-  authorId?: string | Array<string>,
-  channelId?: string,
-  content?: string,
-  has?: string | Array<string>,
-  includeNSFW?: boolean,
-  maxId?: string,
-  mentions?: string | Array<string>,
-  minId?: string,
 }
