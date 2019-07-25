@@ -277,9 +277,10 @@ export interface EditChannel {
   parentId?: string,
   permissionOverwrites?: Array<CreateChannelOverwrite>,
   position?: string,
-  topic?: string,
-  userLimit?: number,
   rateLimitPerUser?: number,
+  topic?: string,
+  type?: number,
+  userLimit?: number,
 }
 
 export interface EditChannelOverwrite {

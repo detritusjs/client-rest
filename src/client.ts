@@ -1385,9 +1385,10 @@ export class Client {
       parent_id: options.parentId,
       permission_overwrites: options.permissionOverwrites,
       position: options.position,
-      topic: options.topic,
-      user_limit: options.userLimit,
       rate_limit_per_user: options.rateLimitPerUser,
+      topic: options.topic,
+      type: options.type,
+      user_limit: options.userLimit,
     };
     const params = {channelId};
 
