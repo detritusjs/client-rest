@@ -2198,6 +2198,20 @@ export class Client {
     });
   }
 
+  async fetchDms(userId: string = '@me'): Promise<any> {
+    const params = {userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.USER_CHANNELS,
+        params,
+      },
+    });
+  }
+
   async fetchChannel(
     channelId: string,
   ): Promise<any> {
