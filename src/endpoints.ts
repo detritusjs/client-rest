@@ -940,7 +940,7 @@ export const Api = Object.freeze({
   WEBHOOK:
     '/webhooks/:webhookId:',
   WEBHOOK_TOKEN:
-    '/webhooks/:webhookId:/token',
+    '/webhooks/:webhookId:/:token:',
   WEBHOOK_TOKEN_GITHUB:
     '/webhooks/:webhookId:/github',
   WEBHOOK_TOKEN_SLACK:

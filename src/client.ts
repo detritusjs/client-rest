@@ -817,8 +817,11 @@ export class Client {
 
   async createMessage(
     channelId: string,
-    options: Types.CreateMessage = {},
+    options: Types.CreateMessage | string = {},
   ): Promise<any> {
+    if (typeof(options) === 'string') {
+      options = {content: options};
+    }
     const body: {
       activity?: {
         party_id?: string,
