@@ -2880,9 +2880,10 @@ export class Client {
       }
     }
     return this.request({
+      query,
       route: {
         method: RestConstants.HTTPMethods.GET,
-        path: Api.CHANNEL_MESSAGE,
+        path: Api.CHANNEL_MESSAGES,
         params,
       },
     });
