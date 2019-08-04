@@ -44,8 +44,12 @@ export const Assets = URIEncodeWrap({
 export const CDN = URIEncodeWrap({
   URL: 'https://cdn.discordapp.com',
 
-  APP_ASSETS: (applicationId: string, hash: string, format: string = 'png'): string =>
+  APP_ASSET: (applicationId: string, hash: string, format: string = 'png'): string =>
     `/app-assets/${applicationId}/${hash}.${format}`,
+  APP_ASSET_ACHIEVEMENT: (applicationId: string, achievementId: string, hash: string): string =>
+    `/app-assets/${applicationId}/achievements/${achievementId}/icons/${hash}`,
+  APP_ASSET_STORE: (applicationId: string, assetId: string, format: string = 'png'): string =>
+    `/app-assets/${applicationId}/store/${assetId}.${format}`,
   APP_ICON: (applicationId: string, hash: string, format: string = 'png'): string =>
     `/app-icons/${applicationId}/${hash}.${format}`,
   APPLICATION_BACKGROUND: (applicationId: string): string =>
@@ -58,14 +62,16 @@ export const CDN = URIEncodeWrap({
     `/embed/avatars/${discriminator % 5}.png`,
   CHANNEL_ICON: (channelId: string, hash: string, format: string = 'png'): string =>
     `/channel-icons/${channelId}/${hash}.${format}`,
-  GAME_ICON: (gameId: string, hash: string, format: string = 'png'): string =>
-    `/game-assets/${gameId}/${hash}.${format}`,
+  GUILD_BANNER: (guildId: string, hash: string, format: string = 'png'): string =>
+    `/banners/${guildId}/${hash}.${format}`,
   GUILD_ICON: (guildId: string, hash: string, format: string = 'png'): string =>
     `/icons/${guildId}/${hash}.${format}`,
   GUILD_SPLASH: (guildId: string, hash: string, format: string = 'png'): string =>
     `/splashes/${guildId}/${hash}.${format}`,
-  EMOJI: (emojiId: string, format: string = 'png') =>
+  EMOJI: (emojiId: string, format: string = 'png'): string =>
     `/emojis/${emojiId}.${format}`,
+  TEAM_ICON: (teamId: string, hash: string, format: string = 'png'): string =>
+    `/team-icons/${teamId}/${hash}.${format}`,
 
   CUSTOM_SPOTIFY: (hash: string): string =>
     `https://i.scdn.co/image/${hash}`,

@@ -148,15 +148,13 @@ export class Client {
     }
 
     const request = await this.restClient.createRequest(options);
-    if (request.options.headers['user-agent'] !== defaultHeaders['user-agent']) {
-      request.options.headers['user-agent'] = defaultHeaders['user-agent'];
-    }
-
     if (
       (this.restClient.baseUrl instanceof URL) &&
       (request.url.host === this.restClient.baseUrl.host)
     ) {
-      request.options.headers['x-super-properties'] = defaultHeaders['x-super-properties'];
+      if (!('x-super-properties' in request.options.headers)) {
+        request.options.headers['x-super-properties'] = defaultHeaders['x-super-properties'];
+      }
 
       if (options.useAuth || options.useAuth === undefined) {
         if (this.token) {
