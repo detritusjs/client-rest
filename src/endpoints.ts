@@ -31,6 +31,17 @@ function URIEncodeWrap(unsafe: {[key: string]: any}): any {
   return Object.freeze(safe);
 }
 
+
+export const Urls = Object.freeze({
+  CANARY: 'https://canary.discordapp.com/',
+  CDN: 'https://cdn.discordapp.com/',
+  GIFT: 'https://discord.gift/',
+  INVITE: 'https://discord.gg/',
+  MEDIA: 'https://media.discordapp.net/',
+  ROUTER: 'https://router.discordapp.net/',
+  STABLE: 'https://discordapp.com/',
+});
+
 export const Assets = URIEncodeWrap({
   URL: 'https://discordapp.com/assets',
 

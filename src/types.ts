@@ -101,7 +101,7 @@ export interface CreateChannelMessageEmbed {
   },
   color?: number,
   description?: string,
-  fields: Array<{
+  fields?: Array<{
     inline?: boolean,
     name: string,
     value: string,
