@@ -4,29 +4,33 @@ import {
 } from './constants';
 
 
+type URIEncodeWrapFunc = (...args: Array<any>) => string;
+type URIEncodeWrapped = {[key: string]: string | URIEncodeWrapFunc};
+
 const safeCharacter = '@';
-function URIEncodeWrap(unsafe: {[key: string]: any}): any {
-  const safe: {[key: string]: any} = {};
+function URIEncodeWrap(unsafe: URIEncodeWrapped): URIEncodeWrapped {
+  const safe: URIEncodeWrapped = {};
   for (let key in unsafe) {
     const path = unsafe[key];
     if (typeof(path) !== 'function') {
       safe[key] = path;
       continue;
     }
-    safe[key] = (...args: Array<any>): string => {
+    safe[key] = <URIEncodeWrapFunc> ((...args) => {
       args = args.map((arg) => {
         if (!arg) {
           return arg;
         }
-        if (!arg.includes(safeCharacter)) {
-          return encodeURIComponent(arg);
+        const value = String(arg);
+        if (!value.includes(safeCharacter)) {
+          return encodeURIComponent(value);
         }
-        return String(arg).split('').map((char) => {
+        return value.split('').map((char) => {
           return (char === safeCharacter) ? char : encodeURIComponent(char);
         }).join('');
       });
       return path(...args);
-    };
+    });
   }
   return Object.freeze(safe);
 }
@@ -69,8 +73,8 @@ export const CDN = URIEncodeWrap({
     `/store-directory-assets/applications/${applicationId}/trailer.mp4`,
   AVATAR: (userId: string, hash: string, format: string = 'png'): string =>
     `/avatars/${userId}/${hash}.${format}`,
-  AVATAR_DEFAULT: (discriminator: any): string =>
-    `/embed/avatars/${discriminator % 5}.png`,
+  AVATAR_DEFAULT: (discriminator: number | string): string =>
+    `/embed/avatars/${+(discriminator) % 5}.png`,
   CHANNEL_ICON: (channelId: string, hash: string, format: string = 'png'): string =>
     `/channel-icons/${channelId}/${hash}.${format}`,
   GUILD_BANNER: (guildId: string, hash: string, format: string = 'png'): string =>
