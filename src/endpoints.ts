@@ -5,7 +5,7 @@ import {
 
 
 type URIEncodeWrapFunc = (...args: Array<any>) => string;
-type URIEncodeWrapped = {[key: string]: string | URIEncodeWrapFunc};
+type URIEncodeWrapped = {[key: string]: any};
 
 const safeCharacter = '@';
 function URIEncodeWrap(unsafe: URIEncodeWrapped): URIEncodeWrapped {
