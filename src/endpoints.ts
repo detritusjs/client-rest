@@ -158,6 +158,10 @@ export const Routes = URIEncodeWrap({
     '/store/browse',
   APPLICATION_STORE_BROWSE_SORT: (sort: string): string =>
     `/store/browse?genre=all&sort=${sort}`,
+  APPLICATION_STORE_LISTING_APPLICATION: (applicationId: string, slug?: string): string =>
+    `/store/applications/${applicationId}` + ((slug) ? `/${slug}` : ''),
+  APPLICATION_STORE_LISTING_SKU: (skuId: string, slug?: string): string =>
+    `/store/skus/${skuId}` + ((slug) ? `/${slug}` : ''),
   AUTHORIZE_IP:
     '/authorize-ip',
   BILLING_BRAINTREE_POPUP_BRIDGE_CALLBACK:
