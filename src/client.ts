@@ -1383,7 +1383,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: RestConstants.HTTPMethods.DELETE,
         path: Api.OAUTH2_APPLICATION_ASSET,
         params,
       },
