@@ -3,7 +3,6 @@ import { URL } from 'url';
 
 import {
   Client as RestClient,
-  Constants as RestConstants,
   Response,
 } from 'detritus-rest';
 
@@ -13,7 +12,7 @@ import {
   Types as VerifyTypes,
   verifyData,
 } from './clientsidechecks';
-import { AuthTypes, Package } from './constants';
+import { AuthTypes, HTTPMethods, Package } from './constants';
 import { Api } from './endpoints';
 import { RestRequest } from './request';
 
@@ -214,7 +213,7 @@ export class Client {
     return this.request({
       body: {privacy, terms},
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.ME_AGREEMENTS,
       },
     });
@@ -229,7 +228,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.INVITE,
         params: {code},
       },
@@ -244,7 +243,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.TEAMS_INVITE_ACCEPT,
       },
     });
@@ -269,7 +268,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.CHANNEL_MESSAGE_ACK,
         params,
       },
@@ -285,7 +284,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.CHANNEL_PINS_ACK,
         params,
       },
@@ -301,7 +300,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.GUILD_ACK,
         params,
       },
@@ -323,7 +322,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.OAUTH2_APPLICATION_ACTIVATE_LICENSE,
         params,
       },
@@ -346,7 +345,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PUT,
+        method: HTTPMethods.PUT,
         path: Api.ME_CONNECTION,
         params,
       },
@@ -372,7 +371,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PUT,
+        method: HTTPMethods.PUT,
         path: Api.GUILD_MEMBER,
         params,
       },
@@ -390,7 +389,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.PUT,
+        method: HTTPMethods.PUT,
         path: Api.GUILD_MEMBER_ROLE,
         params,
       },
@@ -407,7 +406,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.PUT,
+        method: HTTPMethods.PUT,
         path: Api.CHANNEL_PIN,
         params,
       },
@@ -424,7 +423,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.PUT,
+        method: HTTPMethods.PUT,
         path: Api.CHANNEL_RECIPIENT,
         params,
       },
@@ -447,7 +446,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.OAUTH2_APPLICATION_WHITELIST,
         params,
       },
@@ -469,7 +468,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.TEAM_MEMBERS,
         params,
       },
@@ -488,7 +487,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.AUTH_AUTHORIZE_IP,
       },
     });
@@ -509,7 +508,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.GUILD_PRUNE,
         params,
       },
@@ -533,7 +532,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.CHANNEL_MESSAGES_BULK_DELETE,
         params,
       },
@@ -556,7 +555,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.CONNECTION_CALLBACK,
         params,
       },
@@ -582,7 +581,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.APPLICATION_NEWS,
       },
     });
@@ -605,7 +604,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.CHANNEL_INVITES,
         params,
       },
@@ -621,7 +620,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.CHANNEL_STORE_LISTING_ENTITLEMENT_GRANT,
         params,
       },
@@ -641,7 +640,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.USER_CHANNELS,
         params: {userId: '@me'},
       },
@@ -668,7 +667,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.GUILDS,
       },
     });
@@ -690,7 +689,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.PUT,
+        method: HTTPMethods.PUT,
         path: Api.GUILD_BAN,
         params,
       },
@@ -720,7 +719,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.GUILD_CHANNELS,
         params,
       },
@@ -744,7 +743,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.GUILD_EMOJIS,
         params,
       },
@@ -766,7 +765,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.GUILD_INTEGRATIONS,
         params,
       },
@@ -791,7 +790,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.GUILD_ROLES,
         params,
       },
@@ -813,7 +812,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.LOBBIES,
       },
     });
@@ -841,7 +840,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.ME_BILLING_PAYMENT_SOURCES,
       },
     });
@@ -861,7 +860,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.ME_BILLING_SUBSCRIPTIONS,
       },
     });
@@ -965,7 +964,7 @@ export class Client {
       body,
       files,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.CHANNEL_MESSAGES,
         params,
       },
@@ -985,7 +984,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.OAUTH2_APPLICATION,
       },
     });
@@ -1007,7 +1006,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.OAUTH2_APPLICATION_ASSETS,
         params,
       },
@@ -1024,7 +1023,7 @@ export class Client {
     return this.request({
       body: {},
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.OAUTH2_APPLICATION_BOT,
         params,
       },
@@ -1052,7 +1051,7 @@ export class Client {
     return this.request({
       files,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.STORE_APPLICATION_ASSETS,
         params,
       },
@@ -1070,7 +1069,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.PUT,
+        method: HTTPMethods.PUT,
         path: Api.CHANNEL_MESSAGE_REACTION_USER,
         params,
       },
@@ -1090,7 +1089,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.TEAMS,
       },
     });
@@ -1111,7 +1110,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.CHANNEL_WEBHOOKS,
         params,
       },
@@ -1128,7 +1127,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.ME_DELETE_ACCOUNT,
       },
     });
@@ -1143,7 +1142,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.CHANNEL,
         params,
       },
@@ -1160,7 +1159,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.CHANNEL_PERMISSION,
         params,
       },
@@ -1177,7 +1176,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.ME_CONNECTION,
         params,
       },
@@ -1196,7 +1195,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.GUILD_DELETE,
         params,
       },
@@ -1213,7 +1212,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.GUILD_EMOJI,
         params,
       },
@@ -1230,7 +1229,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.GUILD_INTEGRATIONS,
         params,
       },
@@ -1247,7 +1246,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.GUILD_PREMIUM_SUBSCRIPTION,
         params,
       },
@@ -1264,7 +1263,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.GUILD_ROLE,
         params,
       },
@@ -1280,7 +1279,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.INVITE,
         params,
       },
@@ -1296,7 +1295,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.LOBBY,
         params,
       },
@@ -1312,7 +1311,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.ME_BILLING_PAYMENT_SOURCE,
         params,
       },
@@ -1328,7 +1327,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.ME_BILLING_SUBSCRIPTION,
         params,
       },
@@ -1345,7 +1344,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.CHANNEL_MESSAGE,
         params,
       },
@@ -1366,7 +1365,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.OAUTH2_APPLICATION_DELETE,
         params,
       },
@@ -1383,7 +1382,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.OAUTH2_APPLICATION_ASSET,
         params,
       },
@@ -1400,7 +1399,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.CHANNEL_PIN,
         params,
       },
@@ -1417,7 +1416,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.CHANNEL_MESSAGE_REACTIONS,
         params,
       },
@@ -1436,7 +1435,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.CHANNEL_MESSAGE_REACTION_USER,
         params,
       },
@@ -1452,7 +1451,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.ME_RELATIONSHIP,
         params,
       },
@@ -1469,7 +1468,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.STORE_APPLICATION_ASSET,
         params,
       },
@@ -1488,7 +1487,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.TEAM_DELETE,
         params,
       },
@@ -1504,7 +1503,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.WEBHOOK,
         params,
       },
@@ -1521,7 +1520,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.WEBHOOK_TOKEN,
         params,
       },
@@ -1539,7 +1538,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.ME_DISABLE_ACCOUNT,
       },
     });
@@ -1563,7 +1562,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.APPLICATION_NEWS_ID,
         params,
       },
@@ -1595,7 +1594,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.CHANNEL,
         params,
       },
@@ -1619,7 +1618,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PUT,
+        method: HTTPMethods.PUT,
         path: Api.CHANNEL_PERMISSION,
         params,
       },
@@ -1637,7 +1636,7 @@ export class Client {
         visibility: options.visibility,
       },
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.ME_CONNECTION,
         params: {platform, accountId},
       },
@@ -1675,7 +1674,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.GUILD,
         params,
       },
@@ -1708,7 +1707,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.GUILD_CHANNELS,
         params,
       },
@@ -1730,7 +1729,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.GUILD_EMBED,
         params,
       },
@@ -1753,7 +1752,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.GUILD_EMOJI,
         params,
       },
@@ -1777,7 +1776,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.GUILD_INTEGRATION,
         params,
       },
@@ -1803,7 +1802,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.GUILD_MEMBER,
         params,
       },
@@ -1825,7 +1824,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.GUILD_MFA,
         params,
       },
@@ -1845,7 +1844,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.GUILD_MEMBER_NICK,
         params,
       },
@@ -1871,7 +1870,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.GUILD_ROLE,
         params,
       },
@@ -1900,7 +1899,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.GUILD_ROLES,
         params,
       },
@@ -1919,7 +1918,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.GUILD_VANITY_URL,
         params,
       },
@@ -1944,7 +1943,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.LOBBY,
         params,
       },
@@ -1964,7 +1963,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.LOBBY_MEMBER,
         params,
       },
@@ -1990,7 +1989,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.ME,
       },
     });
@@ -2019,7 +2018,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.ME_BILLING_PAYMENT_SOURCE,
         params,
       },
@@ -2042,7 +2041,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.ME_BILLING_SUBSCRIPTION,
         params,
       },
@@ -2065,7 +2064,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.CHANNEL_MESSAGE,
         params,
       },
@@ -2084,7 +2083,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.ME_NOTE,
         params,
       },
@@ -2108,7 +2107,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.OAUTH2_APPLICATION,
         params,
       },
@@ -2127,7 +2126,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PUT,
+        method: HTTPMethods.PUT,
         path: Api.ME_RELATIONSHIP,
         params,
       },
@@ -2141,7 +2140,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.ME_SETTINGS,
       },
     });
@@ -2164,7 +2163,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.TEAM,
         params,
       },
@@ -2191,7 +2190,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.WEBHOOK,
         params,
       },
@@ -2215,7 +2214,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.PATCH,
+        method: HTTPMethods.PATCH,
         path: Api.WEBHOOK_TOKEN,
         params,
       },
@@ -2232,7 +2231,7 @@ export class Client {
     return this.request({
       body: {},
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.OAUTH2_APPLICATION_ASSETS_ENABLE,
         params,
       },
@@ -2249,7 +2248,7 @@ export class Client {
     return this.request({
       body: {},
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.OAUTH2_APPLICATION_RPC_ENABLE,
         params,
       },
@@ -2278,7 +2277,7 @@ export class Client {
     const params = {webhookId, token};
     const query: {wait?: boolean} = {};
     const route = {
-      method: RestConstants.HTTPMethods.POST,
+      method: HTTPMethods.POST,
       path: Api.WEBHOOK_TOKEN,
       params,
     };
@@ -2369,7 +2368,7 @@ export class Client {
   async fetchActivities(): Promise<any> {
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.ACTIVITIES,
       },
     });
@@ -2388,7 +2387,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.APPLICATION_NEWS,
       },
     });
@@ -2403,7 +2402,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.APPLICATION_NEWS_ID,
         params,
       },
@@ -2413,7 +2412,7 @@ export class Client {
   fetchApplications(): Promise<any> {
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.APPLICATIONS,
       },
     });
@@ -2428,7 +2427,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.APPLICATION,
         params,
       },
@@ -2445,7 +2444,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.APPLICATIONS_PUBLIC,
       },
     });
@@ -2454,7 +2453,7 @@ export class Client {
   async fetchApplicationsTrendingGlobal(): Promise<any> {
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.APPLICATIONS_TRENDING_GLOBAL,
       },
     });
@@ -2463,7 +2462,7 @@ export class Client {
   fetchAuthConsentRequired(): Promise<any> {
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.AUTH_CONSENT_REQUIRED,
       },
     });
@@ -2476,7 +2475,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.USER_CHANNELS,
         params,
       },
@@ -2492,7 +2491,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.CHANNEL,
         params,
       },
@@ -2509,7 +2508,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.CHANNEL_CALL,
         params,
       },
@@ -2525,7 +2524,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.CHANNEL_INVITES,
         params,
       },
@@ -2541,7 +2540,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.CHANNEL_STORE_LISTING,
         params,
       },
@@ -2557,7 +2556,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.CHANNEL_WEBHOOKS,
         params,
       },
@@ -2567,7 +2566,7 @@ export class Client {
   fetchConsentRequired(): Promise<any> {
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.AUTH_CONSENT_REQUIRED,
       },
     });
@@ -2582,7 +2581,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.CONNECTION_AUTHORIZE,
         params,
       },
@@ -2599,7 +2598,7 @@ export class Client {
     return this.request({
       headers,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.EXPERIMENTS,
       },
     });
@@ -2608,7 +2607,7 @@ export class Client {
   fetchGateway(): Promise<any> {
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GATEWAY,
       },
     });
@@ -2617,7 +2616,7 @@ export class Client {
   fetchGatewayBot(): Promise<any> {
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GATEWAY_BOT,
       },
     });
@@ -2639,7 +2638,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.ENTITLEMENTS_GIFT_CODE,
         params,
       },
@@ -2649,7 +2648,7 @@ export class Client {
   fetchGuilds(): Promise<any> {
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILDS,
       },
     });
@@ -2664,7 +2663,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD,
         params,
       },
@@ -2683,7 +2682,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_APPLICATIONS,
         params,
       },
@@ -2707,7 +2706,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_AUDIT_LOGS,
         params,
       },
@@ -2723,7 +2722,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_BANS,
         params,
       },
@@ -2739,7 +2738,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_CHANNELS,
         params,
       },
@@ -2755,7 +2754,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_EMBED,
         params,
       },
@@ -2771,7 +2770,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_EMOJIS,
         params,
       },
@@ -2788,7 +2787,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_EMOJI,
         params,
       },
@@ -2804,7 +2803,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_INTEGRATIONS,
         params,
       },
@@ -2820,7 +2819,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_INVITES,
         params,
       },
@@ -2842,7 +2841,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_EMOJIS,
         params,
       },
@@ -2859,7 +2858,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_MEMBER,
         params,
       },
@@ -2875,7 +2874,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_PREMIUM_SUBSCRIPTIONS,
         params,
       },
@@ -2891,7 +2890,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_PRUNE,
         params,
       },
@@ -2907,7 +2906,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_ROLES,
         params,
       },
@@ -2923,7 +2922,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_VANITY_URL,
         params,
       },
@@ -2939,7 +2938,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.GUILD_WEBHOOKS,
         params,
       },
@@ -2960,7 +2959,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.INVITE,
         params,
       },
@@ -2978,7 +2977,7 @@ export class Client {
   fetchMeBillingPaymentSources(): Promise<any> {
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.ME_BILLING_PAYMENT_SOURCES,
       }
     })
@@ -2997,7 +2996,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.ME_BILLING_PAYMENTS,
       },
     });
@@ -3006,7 +3005,7 @@ export class Client {
   fetchMeBillingSubscriptions(): Promise<any> {
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.ME_BILLING_SUBSCRIPTIONS,
       },
     });
@@ -3030,7 +3029,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.ME_CONNECTION_ACCESS_TOKEN,
         params,
       },
@@ -3046,7 +3045,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.ME_CONNECTION_REDDIT_SUBREDDITS,
         params,
       },
@@ -3065,7 +3064,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.ME_FEED_SETTINGS,
       },
     });
@@ -3099,7 +3098,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.ME_MENTIONS,
       },
     });
@@ -3115,7 +3114,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.CHANNEL_MESSAGE,
         params,
       },
@@ -3150,7 +3149,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.CHANNEL_MESSAGES,
         params,
       },
@@ -3169,7 +3168,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.OAUTH2_APPLICATIONS,
       },
     });
@@ -3184,7 +3183,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.OAUTH2_APPLICATION,
         params,
       },
@@ -3200,7 +3199,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.OAUTH2_APPLICATION_ASSETS,
         params,
       },
@@ -3216,7 +3215,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.OAUTH2_APPLICATION_WHITELIST,
         params,
       },
@@ -3227,7 +3226,7 @@ export class Client {
     // fetchAuthorizedApplications
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.OAUTH2_TOKENS,
       },
     });
@@ -3242,7 +3241,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.OAUTH2_TOKEN,
         params,
       },
@@ -3258,7 +3257,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.CHANNEL_PINS,
         params,
       },
@@ -3291,7 +3290,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.CHANNEL_MESSAGE_REACTIONS,
         params,
       },
@@ -3307,7 +3306,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.STORE_APPLICATION_ASSETS,
         params,
       },
@@ -3326,7 +3325,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.STORE_PUBLISHED_LISTINGS_SKUS,
       },
       useAuth: false,
@@ -3343,7 +3342,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.STORE_PUBLISHED_LISTINGS_SKU,
       },
     });
@@ -3359,7 +3358,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.STORE_PUBLISHED_LISTINGS_SKU_SUBSCRIPTION_PLANS,
       },
     });
@@ -3368,7 +3367,7 @@ export class Client {
   fetchTeams(): Promise<any> {
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.TEAMS,
       },
     });
@@ -3381,7 +3380,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.TEAM,
         params,
       },
@@ -3395,7 +3394,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.TEAM_APPLICATIONS,
         params,
       },
@@ -3409,7 +3408,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.TEAM_MEMBERS,
         params,
       },
@@ -3423,7 +3422,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.TEAM_MEMBER,
         params,
       },
@@ -3444,7 +3443,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.TEAM_PAYOUTS,
         params,
       },
@@ -3460,7 +3459,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.USER,
         params,
       },
@@ -3476,7 +3475,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.USER_CHANNELS,
         params,
       },
@@ -3492,7 +3491,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.USER_PROFILE,
         params,
       },
@@ -3508,7 +3507,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.WEBHOOK,
         params,
       },
@@ -3525,7 +3524,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.WEBHOOK_TOKEN,
         params,
       },
@@ -3535,7 +3534,7 @@ export class Client {
   fetchVoiceIce(): Promise<any> {
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.VOICE_ICE,
       },
     });
@@ -3549,7 +3548,7 @@ export class Client {
       path: string,
       params: {[key: string]: string},
     } = {
-      method: RestConstants.HTTPMethods.GET,
+      method: HTTPMethods.GET,
       path: Api.VOICE_REGIONS,
       params: {},
     };
@@ -3577,7 +3576,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.AUTH_PASSWORD_FORGOT,
       },
     });
@@ -3588,7 +3587,7 @@ export class Client {
   ): Promise<any> {
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.INTEGRATION_JOIN,
         params: {integrationId},
       },
@@ -3610,7 +3609,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.PUT,
+        method: HTTPMethods.PUT,
         path: Api.GUILD_JOIN,
         params,
       },
@@ -3626,7 +3625,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.ME_GUILD,
         params,
       },
@@ -3650,7 +3649,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.AUTH_LOGIN,
       },
     });
@@ -3671,7 +3670,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.AUTH_MFA_SMS,
       },
     });
@@ -3689,7 +3688,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.AUTH_MFA_SMS_SEND,
       },
     });
@@ -3710,7 +3709,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.AUTH_MFA_TOTP,
       },
     });
@@ -3731,7 +3730,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.AUTH_LOGOUT,
       },
     });
@@ -3752,7 +3751,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.CHANNEL_MESSAGE_SUPPRESS_EMBEDS,
         params,
       },
@@ -3773,7 +3772,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.ENTITLEMENTS_GIFT_CODE_REDEEM,
         params,
       },
@@ -3799,7 +3798,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.AUTH_REGISTER,
       },
     });
@@ -3815,7 +3814,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.GUILD_BAN,
         params,
       },
@@ -3837,7 +3836,7 @@ export class Client {
     return this.request({
       query,
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.GUILD_MEMBER,
         params,
       },
@@ -3855,7 +3854,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.GUILD_MEMBER_ROLE,
         params,
       },
@@ -3871,7 +3870,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.ME_MENTION,
         params,
       },
@@ -3888,7 +3887,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.OAUTH2_APPLICATION_WHITELIST_USER,
         params,
       },
@@ -3905,7 +3904,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.CHANNEL_RECIPIENT,
         params,
       },
@@ -3922,7 +3921,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.TEAM_MEMBER,
         params,
       },
@@ -3939,7 +3938,7 @@ export class Client {
     return this.request({
       body: {},
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.OAUTH2_APPLICATION_RESET,
         params,
       },
@@ -3956,7 +3955,7 @@ export class Client {
     return this.request({
       body: {},
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.OAUTH2_APPLICATION_BOT_RESET,
         params,
       },
@@ -3980,7 +3979,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.AUTH_PASSWORD_RESET,
       },
     });
@@ -4001,7 +4000,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.AUTH_PASSWORD_RESET,
       },
     });
@@ -4019,7 +4018,7 @@ export class Client {
       path: string,
       params: {[key: string]: string},
     } = {
-      method: RestConstants.HTTPMethods.GET,
+      method: HTTPMethods.GET,
       path: '',
       params: {},
     };
@@ -4114,7 +4113,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.LOBBY_SEARCH,
       },
     });
@@ -4132,7 +4131,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.DOWNLOAD_SMS,
       },
     });
@@ -4151,7 +4150,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.ME_RELATIONSHIPS,
       },
     });
@@ -4169,7 +4168,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.LOBBY_SEND,
         params,
       },
@@ -4188,7 +4187,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.CHANNEL_CALL_RING,
         params,
       },
@@ -4207,7 +4206,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.CHANNEL_CALL_STOP_RINGING,
         params,
       },
@@ -4225,7 +4224,7 @@ export class Client {
     // after this request, continue to callback?
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.GET,
+        method: HTTPMethods.GET,
         path: Api.CONNECTION_CALLBACK_CONTINUATION_PIN,
         params,
       },
@@ -4241,7 +4240,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.OAUTH2_APPLICATION_APPROVALS,
         params,
       },
@@ -4258,7 +4257,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.GUILD_INTEGRATION_SYNC,
         params,
       },
@@ -4280,7 +4279,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.OAUTH2_APPLICATION_TRANSFER,
         params,
       },
@@ -4296,7 +4295,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.CHANNEL_TYPING,
         params,
       },
@@ -4314,7 +4313,7 @@ export class Client {
     }
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.DELETE,
+        method: HTTPMethods.DELETE,
         path: Api.CHANNEL_MESSAGES_ACK,
         params,
       },
@@ -4334,7 +4333,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.AUTH_VERIFY,
       },
     });
@@ -4352,7 +4351,7 @@ export class Client {
     return this.request({
       body,
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.ME_CAPTCHA_VERIFY,
       },
     });
@@ -4361,7 +4360,7 @@ export class Client {
   verifyResend(): Promise<any> {
     return this.request({
       route: {
-        method: RestConstants.HTTPMethods.POST,
+        method: HTTPMethods.POST,
         path: Api.AUTH_VERIFY_RESEND,
       },
     });

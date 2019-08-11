@@ -11,7 +11,7 @@ import { Bucket } from './bucket';
 import { Client } from './client';
 import { RatelimitHeaders, RatelimitPrecisionTypes } from './constants';
 import { Api } from './endpoints';
-import { HTTPError } from './errors';
+import { DiscordHTTPError, HTTPError } from './errors';
 
 
 export const RatelimitOverrides = Object.freeze({
@@ -38,30 +38,32 @@ export class RestRequest {
     this.client = client;
     this.request = request;
 
-    if (client.restClient.baseUrl instanceof URL && request.route) {
-      if (request.url.host === client.restClient.baseUrl.host) {
-        request.options.headers[RatelimitHeaders.PRECISION] = RatelimitPrecisionTypes.MILLISECOND;
+    if (
+      (client.restClient.baseUrl instanceof URL) &&
+      (request.route) &&
+      (client.restClient.baseUrl.host === request.url.host)
+    ) {
+      request.options.headers[RatelimitHeaders.PRECISION] = RatelimitPrecisionTypes.MILLISECOND;
 
-        let bucketKey: string = (
-          (request.route.params.guildId || '') + '.' +
-          (request.route.params.channelId || '') + '.' +
-          (request.route.params.webhookId || '') + '.' +
-          (request.route.path || '')
-        );
+      let bucketKey: string = (
+        (request.route.params.guildId || '') + '.' +
+        (request.route.params.channelId || '') + '.' +
+        (request.route.params.webhookId || '') + '.' +
+        (request.route.path || '')
+      );
 
-        if (
-          (request.route.method === RestConstants.HTTPMethods.DELETE) &&
-          (request.route.path === Api.CHANNEL_MESSAGE)
-        ) {
-          bucketKey = request.route.method + '.' + bucketKey;
-        }
+      if (
+        (request.route.method === RestConstants.HTTPMethods.DELETE) &&
+        (request.route.path === Api.CHANNEL_MESSAGE)
+      ) {
+        bucketKey = request.route.method + '.' + bucketKey;
+      }
 
-        if (this.client.buckets.has(bucketKey)) {
-          this.bucket = <Bucket> this.client.buckets.get(bucketKey);
-        } else {
-          this.bucket = new Bucket(bucketKey);
-          this.client.buckets.add(this.bucket);
-        }
+      if (this.client.buckets.has(bucketKey)) {
+        this.bucket = <Bucket> this.client.buckets.get(bucketKey);
+      } else {
+        this.bucket = new Bucket(bucketKey);
+        this.client.buckets.add(this.bucket);
       }
     }
 
@@ -191,7 +193,14 @@ export class RestRequest {
     const data = await response.body();
     if (!response.ok) {
       if (typeof(data) === 'object') {
-        throw new HTTPError(response, data.message, data.code);
+        if (
+          (this.client.restClient.baseUrl instanceof URL) &&
+          (this.client.restClient.baseUrl.host === this.request.url.host)
+        ) {
+          throw new DiscordHTTPError(response, data);
+        } else {
+          throw new HTTPError(response, data.message, data.code);
+        }
       } else {
         throw new HTTPError(response);
       }
