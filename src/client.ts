@@ -17,7 +17,7 @@ import { AuthTypes, Package } from './constants';
 import { Api } from './endpoints';
 import { RestRequest } from './request';
 
-import * as Types from './types';
+import { RequestTypes } from './types';
 
 
 const defaultHeaders: {[key: string]: string} = {
@@ -145,10 +145,10 @@ export class Client {
   }
 
   async request(
-    options?: Types.RequestOptions | string,
+    options?: RequestTypes.RequestOptions | string,
   ): Promise<any> {
     if (typeof(options) === 'string') {
-      options = <Types.RequestOptions> {url: options, ...requestDefaults};
+      options = <RequestTypes.RequestOptions> {url: options, ...requestDefaults};
     } else {
       options = Object.assign({
         errorOnRatelimit: this.errorOnRatelimit,
@@ -308,10 +308,32 @@ export class Client {
     });
   }
 
+  async activateOauth2ApplicationLicense(
+    applicationId: string,
+    options: RequestTypes.ActivateOauth2ApplicationLicense,
+  ): Promise<any> {
+    const body = {
+      code: options.code,
+      guild_id: options.guildId,
+    };
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.OAUTH2_APPLICATION_ACTIVATE_LICENSE,
+        params,
+      },
+    });
+  }
+
   async addConnection(
     platform: string,
     accountId: string,
-    options: Types.AddConnection,
+    options: RequestTypes.AddConnection,
   ): Promise<any> {
     const body = {
       name: options.name,
@@ -334,7 +356,7 @@ export class Client {
   async addGuildMember(
     guildId: string,
     userId: string,
-    options: Types.AddGuildMember,
+    options: RequestTypes.AddGuildMember,
   ): Promise<any> {
     const body = {
       access_token: options.accessToken,
@@ -409,9 +431,32 @@ export class Client {
     });
   }
 
+  async addOauth2ApplicationWhitelistUser(
+    applicationId: string,
+    options: RequestTypes.AddOauth2ApplicationWhitelistUser,
+  ): Promise<any> {
+    const body = {
+      branch_ids: options.branchIds,
+      discriminator: options.discriminator,
+      username: options.username,
+    };
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.OAUTH2_APPLICATION_WHITELIST,
+        params,
+      },
+    });
+  }
+
   async addTeamMember(
     teamId: string,
-    options: Types.AddTeamMember,
+    options: RequestTypes.AddTeamMember,
   ): Promise<any> {
     const body = {
       discriminator: options.discriminator,
@@ -432,7 +477,7 @@ export class Client {
   }
 
   async authorizeIpAddress(
-    options: Types.AuthorizeIpAddress,
+    options: RequestTypes.AuthorizeIpAddress,
   ): Promise<any> {
     const body = {
       token: options.token,
@@ -451,7 +496,7 @@ export class Client {
 
   async beginGuildPrune(
     guildId: string,
-    options: Types.BeginGuildPrune = {},
+    options: RequestTypes.BeginGuildPrune = {},
   ): Promise<any> {
     const params = {guildId};
     const query = {
@@ -497,7 +542,7 @@ export class Client {
 
   async connectionCallback(
     platform: string,
-    options: Types.ConnectionCallback,
+    options: RequestTypes.ConnectionCallback,
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -518,8 +563,9 @@ export class Client {
     });
   }
 
+
   async createApplicationNews(
-    options: Types.CreateApplicationNews,
+    options: RequestTypes.CreateApplicationNews,
   ): Promise<any> {
     const body = {
       application_id: options.applicationId,
@@ -544,7 +590,7 @@ export class Client {
 
   async createChannelInvite(
     channelId: string,
-    options: Types.CreateChannelInvite = {},
+    options: RequestTypes.CreateChannelInvite = {},
   ): Promise<any> {
     const body = {
       max_age: options.maxAge,
@@ -583,7 +629,7 @@ export class Client {
   }
 
   async createDm(
-    options: Types.CreateDm = {},
+    options: RequestTypes.CreateDm = {},
   ): Promise<any> {
     const body = {
       recipient_id: options.recipientId,
@@ -603,7 +649,7 @@ export class Client {
   }
 
   async createGuild(
-    options: Types.CreateGuild,
+    options: RequestTypes.CreateGuild,
   ): Promise<any> {
     const body = {
       channels: options.channels,
@@ -631,7 +677,7 @@ export class Client {
   async createGuildBan(
     guildId: string,
     userId: string,
-    options: Types.CreateGuildBan = {},
+    options: RequestTypes.CreateGuildBan = {},
   ): Promise<any> {
     const params = {guildId, userId};
     const query = {
@@ -653,7 +699,7 @@ export class Client {
 
   async createGuildChannel(
     guildId: string,
-    options: Types.CreateGuildChannel,
+    options: RequestTypes.CreateGuildChannel,
   ): Promise<any> {
     const body = {
       branch_id: options.branchId,
@@ -683,7 +729,7 @@ export class Client {
 
   async createGuildEmoji(
     guildId: string,
-    options: Types.CreateGuildEmoji,
+    options: RequestTypes.CreateGuildEmoji,
   ): Promise<any> {
     const body = {
       name: options.name,
@@ -707,7 +753,7 @@ export class Client {
 
   async createGuildIntegration(
     guildId: string,
-    options: Types.CreateGuildIntegration,
+    options: RequestTypes.CreateGuildIntegration,
   ): Promise<any> {
     const body = {
       id: options.id,
@@ -729,7 +775,7 @@ export class Client {
 
   async createGuildRole(
     guildId: string,
-    options: Types.CreateGuildRole = {},
+    options: RequestTypes.CreateGuildRole = {},
   ): Promise<any> {
     const body = {
       color: options.color,
@@ -754,7 +800,7 @@ export class Client {
 
   async createLobby(
     applicationId: string,
-    options: Types.CreateLobby = {},
+    options: RequestTypes.CreateLobby = {},
   ): Promise<any> {
     const body = {
       application_id: applicationId,
@@ -774,7 +820,7 @@ export class Client {
   }
 
   async createMeBillingPaymentSource(
-    options: Types.CreateMeBillingPaymentSource,
+    options: RequestTypes.CreateMeBillingPaymentSource,
   ): Promise<any> {
     const body = {
       billing_address: {
@@ -802,7 +848,7 @@ export class Client {
   }
 
   async createMeBillingSubscription(
-    options: Types.CreateMeBillingSubscription,
+    options: RequestTypes.CreateMeBillingSubscription,
   ): Promise<any> {
     const body = {
       payment_gateway_plan_id: options.paymentGatewayPlanId,
@@ -823,7 +869,7 @@ export class Client {
 
   async createMessage(
     channelId: string,
-    options: Types.CreateMessage | string = {},
+    options: RequestTypes.CreateMessage | string = {},
   ): Promise<any> {
     if (typeof(options) === 'string') {
       options = {content: options};
@@ -873,7 +919,7 @@ export class Client {
       }
     }
 
-    const files: Array<Types.RequestFile> = [];
+    const files: Array<RequestTypes.RequestFile> = [];
     if (options.file) {
       files.push(options.file);
     }
@@ -926,6 +972,93 @@ export class Client {
     });
   }
 
+  async createOauth2Application(
+    options: RequestTypes.CreateOauth2Application,
+  ): Promise<any> {
+    const body = {
+      name: options.name,
+      team_id: options.teamId,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.OAUTH2_APPLICATION,
+      },
+    });
+  }
+
+  async createOauth2ApplicationAsset(
+    applicationId: string,
+    options: RequestTypes.CreateOauth2ApplicationAsset,
+  ): Promise<any> {
+    const body = {
+      image: bufferToBase64(options.image),
+      name: options.name,
+      type: options.type,
+    };
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.OAUTH2_APPLICATION_ASSETS,
+        params,
+      },
+    });
+  }
+
+  async createOauth2ApplicationBot(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body: {},
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.OAUTH2_APPLICATION_BOT,
+        params,
+      },
+    });
+  }
+
+  async createStoreApplicationAsset(
+    applicationId: string,
+    options: RequestTypes.CreateStoreApplicationAsset = {},
+  ): Promise<any> {
+    const files: Array<RequestTypes.RequestFile> = [];
+    const params = {applicationId};
+
+    if (options.file) {
+      files.push(options.file);
+    }
+    if (options.files && options.files.length) {
+      for (let file of options.files) {
+        files.push(file);
+      }
+    }
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      files,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.STORE_APPLICATION_ASSETS,
+        params,
+      },
+    });
+  }
+
   async createReaction(
     channelId: string,
     messageId: string,
@@ -945,7 +1078,7 @@ export class Client {
   }
 
   async createTeam(
-    options: Types.CreateTeam = {},
+    options: RequestTypes.CreateTeam = {},
   ): Promise<any> {
     const body = {
       icon: bufferToBase64(options.icon),
@@ -965,7 +1098,7 @@ export class Client {
 
   async createWebhook(
     channelId: string,
-    options: Types.CreateWebhook,
+    options: RequestTypes.CreateWebhook,
   ): Promise<any> {
     const body = {
       avatar: options.avatar,
@@ -986,7 +1119,7 @@ export class Client {
   }
 
   async deleteAccount(
-    options: Types.DeleteAccount,
+    options: RequestTypes.DeleteAccount,
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -1053,7 +1186,7 @@ export class Client {
 
   async deleteGuild(
     guildId: string,
-    options: Types.DeleteGuild = {},
+    options: RequestTypes.DeleteGuild = {},
   ): Promise<any> {
     const body = {code: options.code};
     const params = {guildId};
@@ -1219,6 +1352,44 @@ export class Client {
     });
   }
 
+  async deleteOauth2Application(
+    applicationId: string,
+    options: RequestTypes.DeleteOauth2Application = {},
+  ): Promise<any> {
+    const body = {
+      code: options.code,
+    };
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.OAUTH2_APPLICATION_DELETE,
+        params,
+      },
+    });
+  }
+
+  async deleteOauth2ApplicationAsset(
+    applicationId: string,
+    assetId: string,
+  ): Promise<any> {
+    const params = {applicationId, assetId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.OAUTH2_APPLICATION_ASSET,
+        params,
+      },
+    });
+  }
+
   async deletePinnedMessage(
     channelId: string,
     messageId: string,
@@ -1288,9 +1459,26 @@ export class Client {
     });
   }
 
+  async deleteStoreApplicationAsset(
+    applicationId: string,
+    assetId: string,
+  ): Promise<any> {
+    const params = {applicationId, assetId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.DELETE,
+        path: Api.STORE_APPLICATION_ASSET,
+        params,
+      },
+    });
+  }
+
   async deleteTeam(
     teamId: string,
-    options: Types.DeleteTeam = {},
+    options: RequestTypes.DeleteTeam = {},
   ): Promise<any> {
     const body = {code: options.code};
     const params = {teamId};
@@ -1342,7 +1530,7 @@ export class Client {
   }
 
   async disableAccount(
-    options: Types.DisableAccount,
+    options: RequestTypes.DisableAccount,
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -1359,7 +1547,7 @@ export class Client {
 
   async editApplicationNews(
     newsId: string,
-    options: Types.EditApplicationNews = {},
+    options: RequestTypes.EditApplicationNews = {},
   ): Promise<any> {
     const body = {
       channel_id: options.channelId,
@@ -1384,7 +1572,7 @@ export class Client {
 
   async editChannel(
     channelId: string,
-    options: Types.EditChannel = {},
+    options: RequestTypes.EditChannel = {},
   ): Promise<any> {
     const body = {
       bitrate: options.bitrate,
@@ -1417,7 +1605,7 @@ export class Client {
   async editChannelOverwrite(
     channelId: string,
     overwriteId: string,
-    options: Types.EditChannelOverwrite = {},
+    options: RequestTypes.EditChannelOverwrite = {},
   ): Promise<any> {
     const body = {
       allow: options.allow,
@@ -1441,7 +1629,7 @@ export class Client {
   async editConnection(
     platform: string,
     accountId: string,
-    options: Types.EditConnection = {},
+    options: RequestTypes.EditConnection = {},
   ): Promise<any> {
     return this.request({
       body: {
@@ -1458,7 +1646,7 @@ export class Client {
 
   async editGuild(
     guildId: string,
-    options: Types.EditGuild = {},
+    options: RequestTypes.EditGuild = {},
   ): Promise<any> {
     const body = {
       afk_channel_id: options.afkChannelId,
@@ -1496,7 +1684,7 @@ export class Client {
 
   async editGuildChannels(
     guildId: string,
-    channels: Types.EditGuildChannels,
+    channels: RequestTypes.EditGuildChannels,
   ): Promise<any> {
     const body: Array<{
       id: string,
@@ -1529,7 +1717,7 @@ export class Client {
 
   async editGuildEmbed(
     guildId: string,
-    options: Types.EditGuildEmbed,
+    options: RequestTypes.EditGuildEmbed,
   ): Promise<any> {
     const body = {
       channel_id: options.channelId,
@@ -1552,7 +1740,7 @@ export class Client {
   async editGuildEmoji(
     guildId: string,
     emojiId: string,
-    options: Types.EditGuildEmoji = {},
+    options: RequestTypes.EditGuildEmoji = {},
   ): Promise<any> {
     const body = {
       name: options.name,
@@ -1575,7 +1763,7 @@ export class Client {
   async editGuildIntegration(
     guildId: string,
     integrationId: string,
-    options: Types.EditGuildIntegration = {},
+    options: RequestTypes.EditGuildIntegration = {},
   ): Promise<any> {
     const body = {
       enable_emoticons: options.enableEmoticons,
@@ -1599,7 +1787,7 @@ export class Client {
   async editGuildMember(
     guildId: string,
     userId: string,
-    options: Types.EditGuildMember = {},
+    options: RequestTypes.EditGuildMember = {},
   ): Promise<any> {
     const body = {
       channel_id: options.channelId,
@@ -1624,7 +1812,7 @@ export class Client {
 
   async editGuildMfaLevel(
     guildId: string,
-    options: Types.EditGuildMfaLevel,
+    options: RequestTypes.EditGuildMfaLevel,
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -1667,7 +1855,7 @@ export class Client {
   async editGuildRole(
     guildId: string,
     roleId: string,
-    options: Types.EditGuildRole = {},
+    options: RequestTypes.EditGuildRole = {},
   ): Promise<any> {
     const body = {
       color: options.color,
@@ -1692,7 +1880,7 @@ export class Client {
 
   async editGuildRolePositions(
     guildId: string,
-    roles: Types.EditGuildRolePositions,
+    roles: RequestTypes.EditGuildRolePositions,
   ): Promise<any> {
     const body: Array<{
       id: string,
@@ -1740,7 +1928,7 @@ export class Client {
 
   async editLobby(
     lobbyId: string,
-    options: Types.EditLobby = {},
+    options: RequestTypes.EditLobby = {},
   ): Promise<any> {
     const body = {
       capacity: options.capacity,
@@ -1766,7 +1954,7 @@ export class Client {
   async editLobbyMember(
     lobbyId: string,
     userId: string,
-    options: Types.EditLobbyMember = {},
+    options: RequestTypes.EditLobbyMember = {},
   ): Promise<any> {
     const body = {metadata: options.metadata};
     const params = {lobbyId, userId};
@@ -1784,7 +1972,7 @@ export class Client {
   }
 
   async editMe(
-    options: Types.EditMe = {},
+    options: RequestTypes.EditMe = {},
   ): Promise<any> {
     const body = {
       avatar: bufferToBase64(options.avatar),
@@ -1810,7 +1998,7 @@ export class Client {
 
   async editMeBillingPaymentSource(
     paymentSourceId: string,
-    options: Types.EditMeBillingPaymentSource = {},
+    options: RequestTypes.EditMeBillingPaymentSource = {},
   ): Promise<any> {
     const body = {
       billing_address: (options.billingAddress) && {
@@ -1840,7 +2028,7 @@ export class Client {
 
   async editMeBillingSubscription(
     subscriptionId: string,
-    options: Types.EditMeBillingSubscription = {},
+    options: RequestTypes.EditMeBillingSubscription = {},
   ): Promise<any> {
     const body = {
       payment_gateway_plan_id: options.paymentGatewayPlanId,
@@ -1864,7 +2052,7 @@ export class Client {
   async editMessage(
     channelId: string,
     messageId: string,
-    options: Types.EditMessage = {},
+    options: RequestTypes.EditMessage = {},
   ): Promise<any> {
     const body = {
       content: options.content,
@@ -1903,6 +2091,30 @@ export class Client {
     });
   }
 
+  async editOauth2Application(
+    applicationId: string,
+    options: RequestTypes.EditOauth2Application = {},
+  ): Promise<any> {
+    const body = {
+      description: options.description,
+      icon: bufferToBase64(options.icon),
+      name: options.name,
+      redirect_uris: options.redirectUris,
+    };
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.PATCH,
+        path: Api.OAUTH2_APPLICATION,
+        params,
+      },
+    });
+  }
+
   async editRelationship(
     userId: string,
     type: number,
@@ -1923,7 +2135,7 @@ export class Client {
   }
 
   async editSettings(
-    options: Types.EditSettings = {},
+    options: RequestTypes.EditSettings = {},
   ): Promise<any> {
     const body = Object.assign({}, options);
     return this.request({
@@ -1937,7 +2149,7 @@ export class Client {
 
   async editTeam(
     teamId: string,
-    options: Types.EditTeam = {},
+    options: RequestTypes.EditTeam = {},
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -1959,13 +2171,13 @@ export class Client {
     });
   }
 
-  async editUser(options: Types.EditMe): Promise<any> {
+  async editUser(options: RequestTypes.EditMe): Promise<any> {
     return this.editMe(options);
   }
 
   async editWebhook(
     webhookId: string,
-    options: Types.EditWebhook = {},
+    options: RequestTypes.EditWebhook = {},
   ): Promise<any> {
     const body = {
       avatar: bufferToBase64(options.avatar),
@@ -1989,7 +2201,7 @@ export class Client {
   async editWebhookToken(
     webhookId: string,
     token: string,
-    options: Types.EditWebhook = {},
+    options: RequestTypes.EditWebhook = {},
   ): Promise<any> {
     const body = {
       avatar: bufferToBase64(options.avatar),
@@ -2010,10 +2222,44 @@ export class Client {
     });
   }
 
+  async enableOauth2ApplicationAssets(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body: {},
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.OAUTH2_APPLICATION_ASSETS_ENABLE,
+        params,
+      },
+    });
+  }
+
+  async enableOauth2ApplicationRpc(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body: {},
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.OAUTH2_APPLICATION_RPC_ENABLE,
+        params,
+      },
+    });
+  }
+
   async executeWebhook(
     webhookId: string,
     token: string,
-    options: Types.ExecuteWebhook = {},
+    options: RequestTypes.ExecuteWebhook = {},
     compatibleType?: string,
   ): Promise<any> {
     const body: {
@@ -2028,7 +2274,7 @@ export class Client {
       tts: options.tts,
       username: options.username,
     };
-    const files: Array<Types.RequestFile> = [];
+    const files: Array<RequestTypes.RequestFile> = [];
     const params = {webhookId, token};
     const query: {wait?: boolean} = {};
     const route = {
@@ -2379,7 +2625,7 @@ export class Client {
 
   async fetchGiftCode(
     code: string,
-    options: Types.FetchGiftCode = {},
+    options: RequestTypes.FetchGiftCode = {},
   ): Promise<any> {
     const params = {code};
     const query = {
@@ -2446,7 +2692,7 @@ export class Client {
 
   async fetchGuildAuditLogs(
     guildId: string,
-    options: Types.FetchGuildAuditLogs,
+    options: RequestTypes.FetchGuildAuditLogs,
   ): Promise<any> {
     const params = {guildId};
     const query = {
@@ -2583,7 +2829,7 @@ export class Client {
 
   async fetchGuildMembers(
     guildId: string,
-    options: Types.FetchGuildMembers = {},
+    options: RequestTypes.FetchGuildMembers = {},
   ): Promise<any> {
     const params = {guildId};
     const query = {
@@ -2702,7 +2948,7 @@ export class Client {
 
   async fetchInvite(
     code: string,
-    options: Types.FetchInvite = {},
+    options: RequestTypes.FetchInvite = {},
   ): Promise<any> {
     const params = {code};
     const query = {
@@ -2739,7 +2985,7 @@ export class Client {
   }
 
   async fetchMeBillingPayments(
-    options: Types.FetchMeBillingPayments = {},
+    options: RequestTypes.FetchMeBillingPayments = {},
   ): Promise<any> {
     const query = {
       limit: options.limit,
@@ -2808,7 +3054,7 @@ export class Client {
   }
 
   async fetchMeFeedSettings(
-    options: Types.FetchMeFeedSettings = {},
+    options: RequestTypes.FetchMeFeedSettings = {},
   ): Promise<any> {
     const query = {
       include_autosubscribed_game: options.includeAutosubscribedGames,
@@ -2826,7 +3072,7 @@ export class Client {
   }
 
   async fetchMentions(
-    options: Types.FetchMentions = {},
+    options: RequestTypes.FetchMentions = {},
   ): Promise<any> {
     const query = {
       after: options.after,
@@ -2878,7 +3124,7 @@ export class Client {
 
   async fetchMessages(
     channelId: string,
-    options: Types.FetchMessages = {},
+    options: RequestTypes.FetchMessages = {},
   ): Promise<any> {
     const params = {channelId};
     const query = {
@@ -2912,7 +3158,7 @@ export class Client {
   }
 
   async fetchOauth2Applications(
-    options: Types.FetchOauth2Applications = {},
+    options: RequestTypes.FetchOauth2Applications = {},
   ): Promise<any> {
     const query = {
       with_team_applications: options.withTeamApplications,
@@ -2945,7 +3191,40 @@ export class Client {
     });
   }
 
+  async fetchOauth2ApplicationAssets(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.OAUTH2_APPLICATION_ASSETS,
+        params,
+      },
+    });
+  }
+
+  async fetchOauth2ApplicationWhitelist(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.OAUTH2_APPLICATION_WHITELIST,
+        params,
+      },
+    });
+  }
+
   fetchOauth2Tokens(): Promise<any> {
+    // fetchAuthorizedApplications
     return this.request({
       route: {
         method: RestConstants.HTTPMethods.GET,
@@ -2990,7 +3269,7 @@ export class Client {
     channelId: string,
     messageId: string,
     emoji: string,
-    options: Types.FetchReactions = {},
+    options: RequestTypes.FetchReactions = {},
   ): Promise<any> {
     const params = {channelId, messageId, emoji};
     const query = {
@@ -3014,6 +3293,22 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.GET,
         path: Api.CHANNEL_MESSAGE_REACTIONS,
+        params,
+      },
+    });
+  }
+
+  async fetchStoreApplicationAssets(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.STORE_APPLICATION_ASSETS,
         params,
       },
     });
@@ -3137,7 +3432,7 @@ export class Client {
 
   async fetchTeamPayouts(
     teamId: string,
-    options: Types.FetchTeamPayouts = {},
+    options: RequestTypes.FetchTeamPayouts = {},
   ): Promise<any> {
     const params = {teamId};
     const query = {
@@ -3271,7 +3566,7 @@ export class Client {
   }
 
   async forgotPassword(
-    options: Types.ForgotPassword,
+    options: RequestTypes.ForgotPassword,
   ): Promise<any> {
     const body = {
       email: options.email,
@@ -3302,7 +3597,7 @@ export class Client {
 
   async joinGuild(
     guildId: string,
-    options: Types.JoinGuild = {},
+    options: RequestTypes.JoinGuild = {},
   ): Promise<any> {
     const params = {guildId};
     const query = {
@@ -3339,7 +3634,7 @@ export class Client {
   }
 
   async login(
-    options: Types.Login,
+    options: RequestTypes.Login,
   ): Promise<any> {
     const body = {
       captcha_key: options.captchaKey,
@@ -3362,7 +3657,7 @@ export class Client {
   }
 
   async loginMfaSms(
-    options: Types.LoginMfaSms,
+    options: RequestTypes.LoginMfaSms,
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -3383,7 +3678,7 @@ export class Client {
   }
 
   async loginMfaSmsSend(
-    options: Types.LoginMfaSmsSend,
+    options: RequestTypes.LoginMfaSmsSend,
   ): Promise<any> {
     const body = {
       ticket: options.ticket,
@@ -3401,7 +3696,7 @@ export class Client {
   }
 
   async loginMfaTotp(
-    options: Types.LoginMfaTotp,
+    options: RequestTypes.LoginMfaTotp,
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -3422,7 +3717,7 @@ export class Client {
   }
 
   async logout(
-    options: Types.Logout = {},
+    options: RequestTypes.Logout = {},
   ): Promise<any> {
     const body = {
       provider: options.provider,
@@ -3445,7 +3740,7 @@ export class Client {
   async messageSuppressEmbeds(
     channelId: string,
     messageId: string,
-    options: Types.MessageSuppressEmbeds = {},
+    options: RequestTypes.MessageSuppressEmbeds = {},
   ): Promise<any> {
     const body = {
       suppress: options.suppress,
@@ -3466,7 +3761,7 @@ export class Client {
 
   async redeemGiftCode(
     code: string,
-    options: Types.RedeemGiftCode = {},
+    options: RequestTypes.RedeemGiftCode = {},
   ): Promise<any> {
     const body = {
       channel_id: options.channelId,
@@ -3486,7 +3781,7 @@ export class Client {
   }
 
   async register(
-    options: Types.Register,
+    options: RequestTypes.Register,
   ): Promise<any> {
     const body = {
       captcha_key: options.captchaKey,
@@ -3530,7 +3825,7 @@ export class Client {
   async removeGuildMember(
     guildId: string,
     userId: string,
-    options: Types.RemoveGuildMember = {},
+    options: RequestTypes.RemoveGuildMember = {},
   ): Promise<any> {
     const params = {guildId, userId};
     const query = {
@@ -3583,6 +3878,23 @@ export class Client {
     });
   }
 
+  async removeOauth2ApplicationWhitelistUser(
+    applicationId: string,
+    userId: string,
+  ): Promise<any> {
+    const params = {applicationId, userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.DELETE,
+        path: Api.OAUTH2_APPLICATION_WHITELIST_USER,
+        params,
+      },
+    });
+  }
+
   async removeRecipient(
     channelId: string,
     userId: string,
@@ -3617,8 +3929,42 @@ export class Client {
     });
   }
 
+  async resetOauth2Application(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body: {},
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.OAUTH2_APPLICATION_RESET,
+        params,
+      },
+    });
+  }
+
+  async resetOauth2ApplicationBot(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body: {},
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.OAUTH2_APPLICATION_BOT_RESET,
+        params,
+      },
+    });
+  }
+
   async resetPassword(
-    options: Types.ResetPassword,
+    options: RequestTypes.ResetPassword,
   ): Promise<any> {
     const body = {
       password: options.password,
@@ -3641,7 +3987,7 @@ export class Client {
   }
 
   async resetPasswordMfa(
-    options: Types.ResetPasswordMfa,
+    options: RequestTypes.ResetPasswordMfa,
   ): Promise<any> {
     const body = {
       code: options.code,
@@ -3664,7 +4010,7 @@ export class Client {
   async search(
     searchType: 'channel' | 'guild',
     searchId: string,
-    options: Types.SearchOptions = {},
+    options: RequestTypes.SearchOptions = {},
     retry: boolean = true,
     retryNumber: number = 0,
   ): Promise<any> {
@@ -3730,7 +4076,7 @@ export class Client {
 
   async searchChannel(
     channelId: string,
-    options: Types.SearchOptions = {},
+    options: RequestTypes.SearchOptions = {},
     retry: boolean = true,
     retryNumber: number = 0,
   ): Promise<any> {
@@ -3739,7 +4085,7 @@ export class Client {
 
   async searchGuild(
     guildId: string,
-    options: Types.SearchOptions = {},
+    options: RequestTypes.SearchOptions = {},
     retry: boolean = true,
     retryNumber: number = 0,
   ): Promise<any> {
@@ -3793,7 +4139,7 @@ export class Client {
   }
 
   async sendFriendRequest(
-    options: Types.SendFriendRequest,
+    options: RequestTypes.SendFriendRequest,
   ): Promise<any> {
     const body = {
       discriminator: options.discriminator,
@@ -3832,7 +4178,7 @@ export class Client {
 
   async startChannelCallRinging(
     channelId: string,
-    options: Types.StartChannelCallRinging = {},
+    options: RequestTypes.StartChannelCallRinging = {},
   ): Promise<any> {
     const body = {recipients: options.recipients};
     const params = {channelId};
@@ -3851,7 +4197,7 @@ export class Client {
 
   async stopChannelCallRinging(
     channelId: string,
-    options: Types.StopChannelCallRinging = {},
+    options: RequestTypes.StopChannelCallRinging = {},
   ): Promise<any> {
     const body = {recipients: options.recipients};
     const params = {channelId};
@@ -3886,6 +4232,22 @@ export class Client {
     });
   }
 
+  async submitOauth2ApplicationApproval(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.OAUTH2_APPLICATION_APPROVALS,
+        params,
+      },
+    });
+  }
+
   async syncGuildIntegration(
     guildId: string,
     integrationId: string,
@@ -3898,6 +4260,28 @@ export class Client {
       route: {
         method: RestConstants.HTTPMethods.POST,
         path: Api.GUILD_INTEGRATION_SYNC,
+        params,
+      },
+    });
+  }
+
+  async transferOauth2Application(
+    applicationId: string,
+    options: RequestTypes.TransferOauth2Application,
+  ): Promise<any> {
+    const body = {
+      code: options.code,
+      team_id: options.teamId,
+    };
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: RestConstants.HTTPMethods.POST,
+        path: Api.OAUTH2_APPLICATION_TRANSFER,
         params,
       },
     });
@@ -3938,7 +4322,7 @@ export class Client {
   }
 
   async verify(
-    options: Types.Verify,
+    options: RequestTypes.Verify,
   ): Promise<any> {
     const body = {
       captcha_key: options.captchaKey,
@@ -3957,7 +4341,7 @@ export class Client {
   }
 
   async verifyCaptcha(
-    options: Types.VerifyCaptcha,
+    options: RequestTypes.VerifyCaptcha,
   ): Promise<any> {
     const body = {
       captcha_key: options.captchaKey,

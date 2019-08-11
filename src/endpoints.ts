@@ -785,7 +785,7 @@ export const Api = Object.freeze({
     '/oauth2/applications/:applicationId:/bot',
   OAUTH2_APPLICATION_BOT_RESET:
     '/oauth2/applications/:applicationId:/bot/reset',
-  OAUTH2_APPLICATION_DELETE_WITH_MFA_CODE:
+  OAUTH2_APPLICATION_DELETE:
     '/oauth2/applications/:applicationId:/delete',
   OAUTH2_APPLICATION_RESET:
     '/oauth2/applications/:applicationId:/reset',
