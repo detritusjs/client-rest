@@ -114,25 +114,24 @@ interface RatelimitDetails {
 }
 
 export class Bucket {
-  key: string;
-  locked: boolean;
-  lockTimeout?: ReturnType<typeof setTimeout>;
-  queue: Array<RatelimitQueue>;
-  ratelimitDetails: RatelimitDetails;
+  key: string = '';
+  locked: boolean = false;
+  lockTimeout?: any | null = null
+  queue: Array<RatelimitQueue> = [];
+  ratelimitDetails: RatelimitDetails = {
+    last: Infinity,
+    limit: Infinity,
+    remaining: Infinity,
+    reset: Infinity,
+  };
 
   constructor(key: string) {
     this.key = key;
 
-    this.locked = false;
-
-    this.queue = [];
-
-    this.ratelimitDetails = {
-      last: -1,
-      limit: -1,
-      remaining: -1,
-      reset: -1,
-    };
+    Object.defineProperties(this, {
+      lockTimeout: {enumerable: false},
+      queue: {enumerable: false},
+    });
   }
 
   get length(): number {
@@ -144,7 +143,7 @@ export class Bucket {
   }
 
   get hasTimeout() {
-    return this.lockTimeout !== undefined;
+    return this.lockTimeout !== null;
   }
 
   lock(unlockIn: number): void {
@@ -153,8 +152,8 @@ export class Bucket {
     }
 
     if (this.locked && this.hasTimeout) {
-      clearTimeout(<number> <unknown> this.lockTimeout);
-      this.lockTimeout = undefined;
+      clearTimeout(this.lockTimeout);
+      this.lockTimeout = null;
     }
     this.locked = true;
     this.lockTimeout = setTimeout(() => {

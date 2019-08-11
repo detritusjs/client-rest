@@ -96,7 +96,7 @@ export class RestRequest {
 
           let diff = Math.max(0, ratelimit.reset - ratelimit.last);
           if (diff === 1000 && route.path === Api.CHANNEL_MESSAGE_REACTION_USER) {
-            // Workaround due to discord's ratelimit system not using MS
+            // Workaround due to discord's ratelimit system not using milliseconds
             diff = 250;
             ratelimit.reset = ratelimit.last + diff;
           }
@@ -119,19 +119,22 @@ export class RestRequest {
 
       const bucket = <Bucket> this.bucket;
       const ratelimit = bucket.ratelimitDetails;
-      const remaining = parseInt(response.headers[RatelimitHeaders.REMAINING]) || -1;
-      if (ratelimit.remaining === -1) {
+      let remaining = parseInt(response.headers[RatelimitHeaders.REMAINING]);
+      if (isNaN(remaining)) {
+        remaining = Infinity;
+      }
+      if (ratelimit.remaining === Infinity) {
         ratelimit.remaining = remaining;
-      } else if (bucket.ratelimitDetails.remaining >= remaining) {
+      } else if (remaining <= ratelimit.remaining) {
         ratelimit.remaining = remaining;
       } else {
         ratelimit.remaining--;
       }
       ratelimit.last = Date.parse(response.headers.date);
-      ratelimit.limit = parseInt(response.headers[RatelimitHeaders.LIMIT]) || -1;
+      ratelimit.limit = parseInt(response.headers[RatelimitHeaders.LIMIT]) || Infinity;
       ratelimit.reset = (parseInt(response.headers[RatelimitHeaders.RESET]) || 0) * 1000;
 
-      if (ratelimit.remaining === 0 && response.statusCode !== 429) {
+      if (ratelimit.remaining <= 0 && response.statusCode !== 429) {
         const route = <Route> this.request.route;
 
         let diff = Math.max(0, ratelimit.reset - ratelimit.last);

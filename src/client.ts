@@ -61,10 +61,10 @@ export interface ClientOptions {
 }
 
 export class Client {
-  _authType: AuthTypes;
+  _authType: AuthTypes = AuthTypes.BOT;
   buckets: BucketCollection;
-  clientsideChecks: boolean;
-  errorOnRatelimit?: boolean;
+  clientsideChecks: boolean = true;
+  errorOnRatelimit: boolean = false;
   fingerprint?: string;
   globalBucket: Bucket;
   restClient: RestClient;
@@ -87,12 +87,11 @@ export class Client {
       settings: options.settings,
     });
 
-    this._authType = AuthTypes.USER;
     this.buckets = new BucketCollection({
       expireIn: options.bucketsExpireIn,
     });
     this.clientsideChecks = !!(options.clientsideChecks || options.clientsideChecks === undefined);
-    this.errorOnRatelimit = options.errorOnRatelimit;
+    this.errorOnRatelimit = !!options.errorOnRatelimit;
     this.fingerprint = options.fingerprint,
     this.globalBucket = options.globalBucket || new Bucket('global');
     this.token = token;
