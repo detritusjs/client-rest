@@ -46,7 +46,7 @@ export class RestRequest {
           (request.route.params.guildId || '') + '.' +
           (request.route.params.channelId || '') + '.' +
           (request.route.params.webhookId || '') + '.' +
-          (request.route.params.path || '')
+          (request.route.path || '')
         );
 
         if (
@@ -113,6 +113,10 @@ export class RestRequest {
     const response = await this.sendRequest();
 
     if (this.bucket) {
+      if (!response.ok && typeof(this.client.onNotOkResponse) === 'function') {
+        await Promise.resolve(this.client.onNotOkResponse(response));
+      }
+
       const bucket = <Bucket> this.bucket;
       const ratelimit = bucket.ratelimitDetails;
       const remaining = parseInt(response.headers[RatelimitHeaders.REMAINING]) || -1;

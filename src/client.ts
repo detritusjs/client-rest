@@ -46,6 +46,8 @@ const requestDefaults = {
   dataOnly: true,
 };
 
+export type OnNotOkResponseCallback = (response: Response) => Promise<any> | any;
+
 export interface ClientOptions {
   authType?: string | number,
   baseUrl?: string,
@@ -54,6 +56,7 @@ export interface ClientOptions {
   errorOnRatelimit?: boolean,
   fingerprint?: string,
   globalBucket?: Bucket,
+  onNotOkResponse?: OnNotOkResponseCallback,
   settings?: any,
 }
 
@@ -66,6 +69,8 @@ export class Client {
   globalBucket: Bucket;
   restClient: RestClient;
   token?: string;
+
+  onNotOkResponse?: OnNotOkResponseCallback;
 
   constructor(token?: string, options?: ClientOptions) {
     options = Object.assign({
@@ -92,8 +97,12 @@ export class Client {
     this.globalBucket = options.globalBucket || new Bucket('global');
     this.token = token;
 
+    this.onNotOkResponse = options.onNotOkResponse;
+
     Object.defineProperties(this, {
+      _authType: {enumerable: false},
       restClient: {enumerable: false, writable: false},
+      onNotOkResponse: {enumerable: false},
       token: {enumerable: false, writable: false},
     });
 
