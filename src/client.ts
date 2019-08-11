@@ -2173,6 +2173,22 @@ export class Client {
     });
   }
 
+  async fetchApplication(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: RestConstants.HTTPMethods.GET,
+        path: Api.APPLICATION,
+        params,
+      },
+    });
+  }
+
   async fetchApplicationsPublic(
     applicationIds: string | Array<string>,
   ): Promise<any> {
