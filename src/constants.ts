@@ -1,6 +1,6 @@
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.4.4',
+  VERSION: '0.4.5',
 });
 
 
@@ -18,4 +18,19 @@ export const ActivityActionTypes = Object.freeze({
   LISTEN: 3,
   WATCH: 4,
   JOIN_REQUEST: 5,
+});
+
+export const RatelimitHeaders = Object.freeze({
+  GLOBAL: 'x-ratelimit-global',
+  LIMIT: 'x-ratelimit-limit',
+  PRECISION: 'x-ratelimit-precision',
+  REMAINING: 'x-ratelimit-remaining',
+  RESET: 'x-ratelimit-reset',
+  RETRY_AFTER: 'retry-after',
+});
+
+
+export const RatelimitPrecisionTypes = Object.freeze({
+  MILLISECOND: 'millisecond',
+  SECOND: 'second',
 });

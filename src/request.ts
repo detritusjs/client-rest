@@ -9,17 +9,15 @@ import {
 
 import { Bucket } from './bucket';
 import { Client } from './client';
+import { RatelimitHeaders, RatelimitPrecisionTypes } from './constants';
 import { Api } from './endpoints';
 import { HTTPError } from './errors';
 
 
-const RatelimitHeaders = Object.freeze({
-  GLOBAL: 'x-ratelimit-global',
-  LIMIT: 'x-ratelimit-limit',
-  REMAINING: 'x-ratelimit-remaining',
-  RESET: 'x-ratelimit-reset',
-  RETRY_AFTER: 'retry-after',
+export const RatelimitOverrides = Object.freeze({
+  [Api.CHANNEL_MESSAGE_REACTION_USER]: 250,
 });
+
 
 export class RestRequest {
   bucket?: Bucket;
@@ -42,6 +40,8 @@ export class RestRequest {
 
     if (client.restClient.baseUrl instanceof URL && request.route) {
       if (request.url.host === client.restClient.baseUrl.host) {
+        request.options.headers[RatelimitHeaders.PRECISION] = RatelimitPrecisionTypes.MILLISECOND;
+
         let bucketKey: string = (
           (request.route.params.guildId || '') + '.' +
           (request.route.params.channelId || '') + '.' +
@@ -95,10 +95,16 @@ export class RestRequest {
           const route = <Route> this.request.route;
 
           let diff = Math.max(0, ratelimit.reset - ratelimit.last);
-          if (diff === 1000 && route.path === Api.CHANNEL_MESSAGE_REACTION_USER) {
+          if (diff === 1000) {
             // Workaround due to discord's ratelimit system not using milliseconds
-            diff = 250;
-            ratelimit.reset = ratelimit.last + diff;
+            // this is fixed once their patch goes live
+            for (let path in RatelimitOverrides) {
+              if (route.path === path) {
+                diff = RatelimitOverrides[path];
+                ratelimit.reset = ratelimit.last + diff;
+                break;
+              }
+            }
           }
           if (diff) {
             this.bucket.lock(diff);
@@ -132,15 +138,20 @@ export class RestRequest {
       }
       ratelimit.last = Date.parse(response.headers.date);
       ratelimit.limit = parseInt(response.headers[RatelimitHeaders.LIMIT]) || Infinity;
-      ratelimit.reset = (parseInt(response.headers[RatelimitHeaders.RESET]) || 0) * 1000;
+      ratelimit.reset = (parseFloat(response.headers[RatelimitHeaders.RESET]) || 0) * 1000;
 
       if (ratelimit.remaining <= 0 && response.statusCode !== 429) {
         const route = <Route> this.request.route;
 
         let diff = Math.max(0, ratelimit.reset - ratelimit.last);
-        if (diff === 1000 && route.path === Api.CHANNEL_MESSAGE_REACTION_USER) {
-          diff = 250;
-          ratelimit.reset = ratelimit.last + diff;
+        if (diff === 1000) {
+          for (let path in RatelimitOverrides) {
+            if (route.path === path) {
+              diff = RatelimitOverrides[path];
+              ratelimit.reset = ratelimit.last + diff;
+              break;
+            }
+          }
         }
         if (diff) {
           bucket.lock(diff);
@@ -149,7 +160,9 @@ export class RestRequest {
 
       if (response.statusCode === 429 && !this.errorOnRatelimit) {
         // ratelimited, retry
-        const retryAfter = parseInt(response.headers[RatelimitHeaders.RETRY_AFTER]);
+        const retryAfter = parseInt(response.headers[RatelimitHeaders.RETRY_AFTER]) || 0;
+        ratelimit.remaining = 0;
+        ratelimit.reset = ratelimit.last + retryAfter;
         return new Promise((resolve, reject) => {
           const delayed = {request: this, resolve, reject};
           if (response.headers[RatelimitHeaders.GLOBAL] === 'true') {
