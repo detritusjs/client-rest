@@ -6,7 +6,7 @@ export { HTTPMethods };
 
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.4.9',
+  VERSION: '0.4.10',
 });
 
 
@@ -143,6 +143,7 @@ export const RatelimitHeaders = Object.freeze({
   PRECISION: 'x-ratelimit-precision',
   REMAINING: 'x-ratelimit-remaining',
   RESET: 'x-ratelimit-reset',
+  RESET_AFTER: 'x-ratelimit-reset-after',
   RETRY_AFTER: 'retry-after',
 });
 
