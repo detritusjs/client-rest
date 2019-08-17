@@ -1,39 +1,9 @@
+import { Tools } from 'detritus-utils';
+
 import {
   ActivityActionTypes,
   ApiVersion,
 } from './constants';
-
-
-type URIEncodeWrapFunc = (...args: Array<any>) => string;
-type URIEncodeWrapped = {[key: string]: any};
-
-const safeCharacter = '@';
-function URIEncodeWrap(unsafe: URIEncodeWrapped): URIEncodeWrapped {
-  const safe: URIEncodeWrapped = {};
-  for (let key in unsafe) {
-    const path = unsafe[key];
-    if (typeof(path) !== 'function') {
-      safe[key] = path;
-      continue;
-    }
-    safe[key] = <URIEncodeWrapFunc> ((...args) => {
-      args = args.map((arg) => {
-        if (!arg) {
-          return arg;
-        }
-        const value = String(arg);
-        if (!value.includes(safeCharacter)) {
-          return encodeURIComponent(value);
-        }
-        return value.split('').map((char) => {
-          return (char === safeCharacter) ? char : encodeURIComponent(char);
-        }).join('');
-      });
-      return path(...args);
-    });
-  }
-  return Object.freeze(safe);
-}
 
 
 export const Urls = Object.freeze({
@@ -46,7 +16,7 @@ export const Urls = Object.freeze({
   STABLE: 'https://discordapp.com/',
 });
 
-export const Assets = URIEncodeWrap({
+export const Assets = Tools.URIEncodeWrap({
   URL: 'https://discordapp.com/assets',
 
   DM_GROUP:
@@ -56,7 +26,7 @@ export const Assets = URIEncodeWrap({
     `/${hash}.${format}`,
 });
 
-export const CDN = URIEncodeWrap({
+export const CDN = Tools.URIEncodeWrap({
   URL: 'https://cdn.discordapp.com',
 
   APP_ASSET: (applicationId: string, hash: string, format: string = 'png'): string =>
@@ -96,7 +66,7 @@ export const CDN = URIEncodeWrap({
     `https://img.youtube.com/vi/${videoId}/default.jpg`,
 });
 
-export const ConnectionUrls = URIEncodeWrap({
+export const ConnectionUrls = Tools.URIEncodeWrap({
   FACEBOOK: (id: string): string =>
     `https://www.facebook.com/${id}`,
   REDDIT: (name: string): string =>
@@ -115,26 +85,26 @@ export const ConnectionUrls = URIEncodeWrap({
     `https://www.youtube.com/channel/${id}`,
 });
 
-export const EmbedUrls = URIEncodeWrap({
+export const EmbedUrls = Tools.URIEncodeWrap({
   YOUTUBE: (videoId: string): string =>
     `https://www.youtube.com/embed/${videoId}?rel=0&showinfo=0&controls=1&origin=https://discordapp.com`,
 });
 
-export const Gift = URIEncodeWrap({
+export const Gift = Tools.URIEncodeWrap({
   LONG: (code: string): string =>
     `https://discordapp.com/gifts/${code}`,
   SHORT: (code: string): string =>
     `https://discord.gift/${code}`,
 });
 
-export const Invite = URIEncodeWrap({
+export const Invite = Tools.URIEncodeWrap({
   LONG: (code: string): string =>
     `https://discordapp.com/invite/${code}`,
   SHORT: (code: string): string =>
     `https://discord.gg/${code}`,
 });
 
-export const Routes = URIEncodeWrap({
+export const Routes = Tools.URIEncodeWrap({
   URL: 'https://discordapp.com',
   INDEX:
     '/',

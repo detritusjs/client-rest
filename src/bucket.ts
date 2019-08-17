@@ -26,7 +26,6 @@ export class Bucket {
     resetAt: Infinity,
     resetAtLocal: Infinity,
   };
-  readonly resetTimeout = new Timers.Timeout();
   readonly timeout = new Timers.Timeout();
 
   locked: boolean = false;
@@ -54,7 +53,6 @@ export class Bucket {
     remaining: number,
     reset: number,
     resetAfter: number,
-    cb?: Function,
   ): this {
     if (isNaN(limit)) {
       limit = Infinity;
@@ -79,22 +77,20 @@ export class Bucket {
       this.ratelimit.resetAtLocal,
     );
 
-    if (cb) {
-      this.resetTimeout.start(resetAfter, cb, false);
-    }
+    this.timeout.start(resetAfter, () => this.reset(), false);
+
     return this;
   }
 
   lock(unlockIn: number): void {
     if (!unlockIn) {
+      this.timeout.stop();
+      this.locked = false;
       return this.shift();
     }
 
     this.locked = true;
-    this.timeout.start(unlockIn, () => {
-      this.locked = false;
-      this.shift();
-    });
+    this.timeout.start(unlockIn, () => this.reset(), false);
   }
 
   add(delayed: RatelimitQueue, unshift: boolean = false) {
@@ -114,5 +110,15 @@ export class Bucket {
         .catch(delayed.reject)
         .then(() => this.shift());
     }
+  }
+
+  reset(): void {
+    this.ratelimit.limit = Infinity;
+    this.ratelimit.remaining = Infinity;
+    this.ratelimit.resetAfter = Infinity;
+    this.ratelimit.resetAt = Infinity;
+    this.ratelimit.resetAtLocal = Infinity;
+    this.locked = false;
+    this.shift();
   }
 }

@@ -106,7 +106,6 @@ export class RestRequest {
           parseInt(response.headers[RatelimitHeaders.REMAINING]),
           (parseFloat(response.headers[RatelimitHeaders.RESET]) || 0) * 1000,
           (parseFloat(response.headers[RatelimitHeaders.RESET_AFTER]) || 0) * 1000,
-          () => this.client.buckets.delete(bucket.key),
         );
       }
 
