@@ -58,7 +58,7 @@ export class RestRequest {
         this.bucket = <Bucket> this.client.buckets.get(bucketKey);
       } else {
         this.bucket = new Bucket(bucketKey);
-        this.client.buckets.add(this.bucket);
+        this.client.buckets.insert(this.bucket);
       }
     }
 
@@ -68,31 +68,21 @@ export class RestRequest {
     this.retryDelay = 2000;
   }
 
-  maybeExpireBucket() {
-    if (this.bucket) {
-      if (this.bucket.size) {
-        this.client.buckets.stopExpire(this.bucket);
-      } else {
-        this.client.buckets.startExpire(this.bucket);
-      }
-    }
-  }
-
   sendRequest(): Promise<Response> {
     return new Promise((resolve, reject) => {
-      if (this.bucket && !this.errorOnRatelimit) {
+      const bucket = this.bucket;
+      if (bucket && !this.errorOnRatelimit) {
         if (this.client.globalBucket.locked) {
           return this.client.globalBucket.add({request: this, resolve, reject});
         }
-        if (this.bucket.locked) {
-          return this.bucket.add({request: this, resolve, reject});
+        if (bucket.locked) {
+          return bucket.add({request: this, resolve, reject});
         }
-        if (this.bucket.ratelimitDetails.remaining === 1) {
-          const ratelimit = this.bucket.ratelimitDetails;
-
-          const diff = ratelimit.reset;
+        if (bucket.ratelimit.remaining === 1) {
+          const ratelimit = bucket.ratelimit;
+          const diff = Math.min(0, ratelimit.resetAtLocal - Date.now());
           if (diff) {
-            this.bucket.lock(diff);
+            bucket.lock(diff);
           }
         }
       }
@@ -103,29 +93,25 @@ export class RestRequest {
   async send(): Promise<Response> {
     const response = await this.sendRequest();
 
-    if (this.bucket) {
+    const bucket = this.bucket;
+    if (bucket) {
       if (!response.ok && typeof(this.client.onNotOkResponse) === 'function') {
         await Promise.resolve(this.client.onNotOkResponse(response));
       }
 
-      const bucket = <Bucket> this.bucket;
-      const ratelimit = bucket.ratelimitDetails;
-      let remaining = parseInt(response.headers[RatelimitHeaders.REMAINING]);
-      if (isNaN(remaining)) {
-        remaining = Infinity;
+      const ratelimit = bucket.ratelimit;
+      if (RatelimitHeaders.LIMIT in response.headers) {
+        bucket.setRatelimit(
+          parseInt(response.headers[RatelimitHeaders.LIMIT]),
+          parseInt(response.headers[RatelimitHeaders.REMAINING]),
+          (parseFloat(response.headers[RatelimitHeaders.RESET]) || 0) * 1000,
+          (parseFloat(response.headers[RatelimitHeaders.RESET_AFTER]) || 0) * 1000,
+          () => this.client.buckets.delete(bucket.key),
+        );
       }
-      if (ratelimit.remaining === Infinity) {
-        ratelimit.remaining = remaining;
-      } else if (remaining <= ratelimit.remaining) {
-        ratelimit.remaining = remaining;
-      } else {
-        ratelimit.remaining--;
-      }
-      ratelimit.limit = parseInt(response.headers[RatelimitHeaders.LIMIT]) || Infinity;
-      ratelimit.reset = (parseFloat(response.headers[RatelimitHeaders.RESET_AFTER]) || 0) * 1000;
 
       if (ratelimit.remaining <= 0 && response.statusCode !== 429) {
-        const diff = ratelimit.reset;
+        const diff = ratelimit.resetAfter;
         if (diff) {
           bucket.lock(diff);
         }
@@ -135,7 +121,7 @@ export class RestRequest {
         // ratelimited, retry
         const retryAfter = parseInt(response.headers[RatelimitHeaders.RETRY_AFTER]) || 0;
         ratelimit.remaining = 0;
-        ratelimit.reset = retryAfter;
+        ratelimit.resetAfter = retryAfter;
         return new Promise((resolve, reject) => {
           const delayed = {request: this, resolve, reject};
           if (response.headers[RatelimitHeaders.GLOBAL] === 'true') {
@@ -148,6 +134,10 @@ export class RestRequest {
           return response.close();
         });
       }
+
+      if (bucket.size) {
+        this.client.buckets.resetExpire(bucket);
+      }
     }
 
     if (response.statusCode === 502 && this.maxRetries <= this.retries++) {
@@ -158,8 +148,6 @@ export class RestRequest {
         return response.close();
       });
     }
-
-    this.maybeExpireBucket();
 
     const data = await response.body();
     if (!response.ok) {

@@ -1,136 +1,43 @@
+import { Timers } from 'detritus-utils';
+
 import { RestRequest } from './request';
 
-class StoredBucket {
-  bucket: Bucket;
-  expire?: ReturnType<typeof setTimeout>;
 
-  constructor(bucket: Bucket, expire?: ReturnType<typeof setTimeout>) {
-    this.bucket = bucket;
-    this.expire = expire;
-  }
-
-  get hasExpire(): boolean {
-    return this.expire !== undefined;
-  }
-
-  clearExpire(): void {
-    if (this.hasExpire) {
-      clearTimeout(<number> <unknown> this.expire);
-      this.expire = undefined;
-    }
-  }
-}
-
-export class BucketCollection {
-  collection: Map<string, StoredBucket>;
-  expireIn: number;
-
-  constructor(options: {
-    expireIn?: number,
-  } = {}) {
-    this.collection = new Map();
-    this.expireIn = options.expireIn || 0;
-  }
-
-  get length(): number {
-    return this.collection.size;
-  }
-
-  get size(): number {
-    return this.collection.size;
-  }
-
-  add(bucket: Bucket): void {
-    let expire;
-    if (this.expireIn) {
-      expire = setTimeout(() => {
-        this.delete(bucket.key);
-      }, this.expireIn);
-    }
-    this.set(bucket.key, new StoredBucket(bucket, expire));
-  }
-
-  delete(bucketKey: string): boolean {
-    if (this.collection.has(bucketKey)) {
-      const storedBucket = <StoredBucket> this.collection.get(bucketKey);
-      storedBucket.clearExpire();
-    }
-    return this.collection.delete(bucketKey);
-  }
-
-  get(bucketKey: string): Bucket | null {
-    if (this.collection.has(bucketKey)) {
-      const storedBucket = <StoredBucket> this.collection.get(bucketKey);
-      return storedBucket.bucket;
-    }
-    return null;
-  }
-
-  has(bucketKey: string): boolean {
-    return this.collection.has(bucketKey);
-  }
-
-  set(bucketKey: string, storedBucket: StoredBucket): BucketCollection {
-    if (this.has(bucketKey)) {
-      this.delete(bucketKey);
-    }
-    this.collection.set(bucketKey, storedBucket);
-    return this;
-  }
-
-  startExpire(bucket: Bucket): void {
-    if (this.expireIn) {
-      const storedBucket = this.collection.get(bucket.key);
-      if (storedBucket && storedBucket.hasExpire) {
-        storedBucket.expire = setTimeout(() => {
-          this.delete(bucket.key);
-        }, this.expireIn);
-      }
-    }
-  }
-
-  stopExpire(bucket: Bucket): void {
-    if (!this.expireIn) {return;}
-    if (this.has(bucket.key)) {
-      const storedBucket = <StoredBucket> this.collection.get(bucket.key);
-      storedBucket.clearExpire();
-    } else {
-      this.add(bucket);
-    }
-  }
-}
-
-interface RatelimitQueue {
+export interface RatelimitQueue {
   request: RestRequest,
   reject: any,
   resolve: any,
 }
 
-interface RatelimitDetails {
-  last: number,
+export interface RatelimitDetails {
   limit: number,
   remaining: number,
-  reset: number,
+  resetAfter: number,
+  resetAt: number,
+  resetAtLocal: number,
 }
 
 export class Bucket {
-  key: string = '';
-  locked: boolean = false;
-  lockTimeout?: any | null = null
-  queue: Array<RatelimitQueue> = [];
-  ratelimitDetails: RatelimitDetails = {
-    last: Infinity,
+  readonly key: string = '';
+  readonly ratelimit: RatelimitDetails = {
     limit: Infinity,
     remaining: Infinity,
-    reset: Infinity,
+    resetAfter: Infinity,
+    resetAt: Infinity,
+    resetAtLocal: Infinity,
   };
+  readonly resetTimeout = new Timers.Timeout();
+  readonly timeout = new Timers.Timeout();
+
+  locked: boolean = false;
+  queue: Array<RatelimitQueue> = [];
 
   constructor(key: string) {
     this.key = key;
 
     Object.defineProperties(this, {
-      lockTimeout: {enumerable: false},
       queue: {enumerable: false},
+      timeout: {enumerable: false},
     });
   }
 
@@ -142,8 +49,40 @@ export class Bucket {
     return this.queue.length;
   }
 
-  get hasTimeout() {
-    return this.lockTimeout !== null;
+  setRatelimit(
+    limit: number,
+    remaining: number,
+    reset: number,
+    resetAfter: number,
+    cb?: Function,
+  ): this {
+    if (isNaN(limit)) {
+      limit = Infinity;
+    }
+    if (isNaN(remaining)) {
+      remaining = Infinity;
+    }
+
+    this.ratelimit.limit = limit;
+    if (this.ratelimit.remaining === Infinity) {
+      this.ratelimit.remaining = remaining;
+    } else if (remaining <= this.ratelimit.remaining) {
+      this.ratelimit.remaining = remaining;
+    }
+
+    if (resetAfter < this.ratelimit.resetAfter) {
+      this.ratelimit.resetAfter = resetAfter;
+      this.ratelimit.resetAt = reset;
+    }
+    this.ratelimit.resetAtLocal = Math.min(
+      Date.now() + resetAfter,
+      this.ratelimit.resetAtLocal,
+    );
+
+    if (cb) {
+      this.resetTimeout.start(resetAfter, cb, false);
+    }
+    return this;
   }
 
   lock(unlockIn: number): void {
@@ -151,15 +90,11 @@ export class Bucket {
       return this.shift();
     }
 
-    if (this.locked && this.hasTimeout) {
-      clearTimeout(this.lockTimeout);
-      this.lockTimeout = null;
-    }
     this.locked = true;
-    this.lockTimeout = setTimeout(() => {
+    this.timeout.start(unlockIn, () => {
       this.locked = false;
       this.shift();
-    }, unlockIn);
+    });
   }
 
   add(delayed: RatelimitQueue, unshift: boolean = false) {

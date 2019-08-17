@@ -6,7 +6,8 @@ import {
   Response,
 } from 'detritus-rest';
 
-import { BucketCollection, Bucket } from './bucket';
+import { Bucket } from './bucket';
+import { BucketCollection } from './bucketcollection';
 import {
   bufferToBase64,
   Types as VerifyTypes,
@@ -74,7 +75,7 @@ export class Client {
   constructor(token?: string, options?: ClientOptions) {
     options = Object.assign({
       baseUrl: Api.URL_STABLE + Api.PATH,
-      bucketsExpireIn: 30,
+      bucketsExpireIn: 30 * 1000,
       errorOnRatelimit: false,
     }, options);
 
@@ -86,9 +87,7 @@ export class Client {
       settings: options.settings,
     });
 
-    this.buckets = new BucketCollection({
-      expireIn: options.bucketsExpireIn,
-    });
+    this.buckets = new BucketCollection({expire: options.bucketsExpireIn});
     this.clientsideChecks = !!(options.clientsideChecks || options.clientsideChecks === undefined);
     this.errorOnRatelimit = !!options.errorOnRatelimit;
     this.fingerprint = options.fingerprint,
@@ -99,8 +98,8 @@ export class Client {
 
     Object.defineProperties(this, {
       _authType: {enumerable: false},
-      restClient: {enumerable: false, writable: false},
       onNotOkResponse: {enumerable: false},
+      restClient: {enumerable: false, writable: false},
       token: {enumerable: false, writable: false},
     });
 
@@ -133,9 +132,6 @@ export class Client {
       type = type.toUpperCase();
     }
     for (let key in AuthTypes) {
-      if (typeof(type) === 'string') {
-
-      }
       if (AuthTypes[key] === type || key === type) {
         this._authType = (<any> AuthTypes)[key];
         break;
@@ -190,7 +186,7 @@ export class Client {
           this.globalBucket.add(delayed);
         } else {
           bucket.add(delayed);
-          this.buckets.stopExpire(bucket);
+          this.buckets.resetExpire(bucket);
         }
       });
     } else {
