@@ -904,13 +904,13 @@ export const Api = Object.freeze({
   USER:
     '/users/:userId:',
   USER_ACTIVITY_METADATA:
-    '/users/:userId:/sessions/:sessionId:/activities/:applicationId:/metadata',
+    '/users/:userId:/sessions/:sessionId:/activities/:activityId:/metadata',
   USER_ACTIVITY_JOIN:
-    `/users/:userId:/sessions/:sessionId:/activities/:applicationId:/${ActivityActionTypes.JOIN}`,
+    `/users/:userId:/sessions/:sessionId:/activities/:activityId:/${ActivityActionTypes.JOIN}`,
   USER_ACTIVITY_JOIN_REQUEST:
-    `/users/:userId:/sessions/:sessionId:/activities/:applicationId:/${ActivityActionTypes.JOIN_REQUEST}`,
+    `/users/:userId:/sessions/:sessionId:/activities/:activityId:/${ActivityActionTypes.JOIN_REQUEST}`,
   USER_ACTIVITY_SPECTATE:
-    `/users/:userId:/sessions/:sessionId:/activities/:applicationId:/${ActivityActionTypes.SPECTATE}`,
+    `/users/:userId:/sessions/:sessionId:/activities/:activityId:/${ActivityActionTypes.SPECTATE}`,
   USER_APPLICATION_ACHIEVEMENT:
     '/users/:userId:/applications/:applicationId:/achievements/:achievementId:',
   USER_AVATAR:

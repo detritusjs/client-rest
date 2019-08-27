@@ -3462,6 +3462,24 @@ export class Client {
     });
   }
 
+  async fetchUserActivityMetadata(
+    userId: string,
+    sessionId: string,
+    activityId: string,
+  ): Promise<any> {
+    const params = {userId, sessionId, activityId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.USER_ACTIVITY_METADATA,
+        params,
+      },
+    });
+  }
+
   async fetchUserChannels(
     userId: string = '@me',
   ): Promise<any> {
