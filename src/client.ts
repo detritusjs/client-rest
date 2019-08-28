@@ -56,6 +56,7 @@ export interface ClientOptions {
   errorOnRatelimit?: boolean,
   fingerprint?: string,
   globalBucket?: Bucket,
+  headers?: {[key: string]: string},
   onNotOkResponse?: OnNotOkResponseCallback,
   settings?: any,
 }
@@ -83,6 +84,7 @@ export class Client {
       baseUrl: options.baseUrl,
       headers: {
         'user-agent': defaultHeaders['user-agent'],
+        ...options.headers,
       },
       settings: options.settings,
     });
@@ -2254,9 +2256,12 @@ export class Client {
   async executeWebhook(
     webhookId: string,
     token: string,
-    options: RequestTypes.ExecuteWebhook = {},
+    options: RequestTypes.ExecuteWebhook | string = {},
     compatibleType?: string,
   ): Promise<any> {
+    if (typeof(options) === 'string') {
+      options = {content: options};
+    }
     const body: {
       avatar_url?: string,
       content?: string,
