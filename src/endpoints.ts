@@ -543,6 +543,10 @@ export const Api = Object.freeze({
     '/guilds/:guildId:/delete',
   GUILD_EMBED:
     '/guilds/:guildId:/embed',
+  GUILD_EMBED_JSON:
+    '/guilds/:guildId:/embed.json',
+  GUILD_EMBED_PNG:
+    '/guilds/:guildId:/embed.png',
   GUILD_EMOJIS:
     '/guilds/:guildId:/emojis',
   GUILD_EMOJI:
@@ -589,8 +593,12 @@ export const Api = Object.freeze({
     '/guilds/:guildId:/vanity-url',
   GUILD_WEBHOOKS:
     '/guilds/:guildId:/webhooks',
+  GUILD_WIDGET:
+    '/guilds/:guildId:/widget',
   GUILD_WIDGET_JSON:
     '/guilds/:guildId:/widget.json',
+  GUILD_WIDGET_PNG:
+    '/guilds/:guildId:/widget.png',
 
   HYPESQUAD_APPLY:
     '/hypesquad/apply',

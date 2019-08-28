@@ -505,6 +505,10 @@ export namespace RequestTypes {
     limit?: number,
   }
 
+  export interface FetchGuildWidgetPng {
+    style?: string,
+  }
+
   export interface FetchInvite {
     withCounts?: boolean,
   }

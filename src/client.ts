@@ -2949,6 +2949,59 @@ export class Client {
     });
   }
 
+  async fetchGuildWidget(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+      
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_WIDGET,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildWidgetJson(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+      
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_WIDGET_JSON,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildWidgetPng(
+    guildId: string,
+    options: RequestTypes.FetchGuildWidgetPng = {},
+  ): Promise<any> {
+    const params = {guildId};
+    const query = {
+      style: options.style,
+    };
+    if (this.clientsideChecks) {
+      
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_WIDGET_PNG,
+        params,
+      },
+    });
+  }
+
   async fetchInvite(
     code: string,
     options: RequestTypes.FetchInvite = {},
