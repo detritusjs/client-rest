@@ -281,17 +281,20 @@ export const Routes = Tools.URIEncodeWrap({
 
 export const RoutesQuery = Object.freeze({
   INVITE: (code: string, options: RequestTypes.RouteInvite = {}) => {
-    const query = new URLSearchParams({
-      username: options.username,
-    });
+    const query = new URLSearchParams();
+    if (options.username) {
+      query.set('username', options.username);
+    }
     return `${Routes.INVITE(code)}?${query}`;
   },
   WIDGET: (guildId: string, options: RequestTypes.RouteWidget = {}) => {
-    const query = new URLSearchParams({
-      id: guildId,
-      theme: options.theme,
-      username: options.username,
-    });
+    const query = new URLSearchParams({id: guildId});
+    if (options.theme) {
+      query.append('theme', options.theme);
+    }
+    if (options.username) {
+      query.append('username', options.username);
+    }
     return `${Routes.WIDGET}?${query}`;
   },
 });
@@ -314,7 +317,7 @@ export const Api = Object.freeze({
 
   APPLICATIONS:
     '/applications',
-  APPLICAITONS_DETECTABLE:
+  APPLICATIONS_DETECTABLE:
     '/applications/detectable',
   APPLICATIONS_PUBLIC:
     '/applications/public',
