@@ -2049,8 +2049,11 @@ export class Client {
   async editMessage(
     channelId: string,
     messageId: string,
-    options: RequestTypes.EditMessage = {},
+    options: RequestTypes.EditMessage | string = {},
   ): Promise<any> {
+    if (typeof(options) === 'string') {
+      options = {content: options};
+    }
     const body = {
       content: options.content,
       embed: options.embed,
