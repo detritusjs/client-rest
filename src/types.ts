@@ -673,4 +673,16 @@ export namespace RequestTypes {
   export interface VerifyCaptcha {
     captchaKey: string,
   }
+
+  /* Route Types */
+
+  export interface RouteInvite {
+    username?: string,
+  }
+
+  export interface RouteWidget {
+    id?: string,
+    theme?: string,
+    username?: string,
+  }
 }

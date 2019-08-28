@@ -1,10 +1,15 @@
+import { URLSearchParams } from 'url';
+
 import { Tools } from 'detritus-utils';
 
 import {
   ActivityActionTypes,
   ApiVersion,
 } from './constants';
+import { RequestTypes } from './types';
 
+
+export { replacePathParameters as formatRoute } from 'detritus-rest';
 
 export const Urls = Object.freeze({
   CANARY: 'https://canary.discordapp.com/',
@@ -152,6 +157,10 @@ export const Routes = Tools.URIEncodeWrap({
     '/company',
   CONNECTIONS: (platform: string): string =>
     `/connections/${platform}`,
+  CONNECTIONS_XBOX_EDU:
+    '/connections/xbox/intro',
+  CONNECTIONS_XBOX_PIN:
+    '/connections/xbox/pin',
   DEV_NEWSLETTER:
     '/dev-newsletter',
   DISABLE_EMAIL_NOTIFICATIONS:
@@ -245,7 +254,7 @@ export const Routes = Tools.URIEncodeWrap({
   STORE_BROWSE:
     '/store/browse',
   STORE_BROWSE_NITRO:
-    '/store/browser?type=nitro',
+    '/store/browse?type=nitro',
   STORE_SKU: (skuId: string) =>
     `/store/skus/${skuId}`,
   STORE_SKU_STORE_LISTING_ID: (skuId: string, storeListingId: string) =>
@@ -266,10 +275,25 @@ export const Routes = Tools.URIEncodeWrap({
     '/warframe',
   WELCOME: (guildId: string, channelId: string, type: number | string): string =>
     `/welcome/${guildId}/${channelId}/${type}`,
-  XBOX_EDU:
-    '/connections/xbox/intro',
-  XBOX_PIN:
-    '/connections/xbox/pin',
+  WIDGET:
+    '/widget',
+});
+
+export const RoutesQuery = Object.freeze({
+  INVITE: (code: string, options: RequestTypes.RouteInvite = {}) => {
+    const query = new URLSearchParams({
+      username: options.username,
+    });
+    return `${Routes.INVITE(code)}?${query}`;
+  },
+  WIDGET: (guildId: string, options: RequestTypes.RouteWidget = {}) => {
+    const query = new URLSearchParams({
+      id: guildId,
+      theme: options.theme,
+      username: options.username,
+    });
+    return `${Routes.WIDGET}?${query}`;
+  },
 });
 
 export const Api = Object.freeze({
