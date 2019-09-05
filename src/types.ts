@@ -542,6 +542,12 @@ export namespace RequestTypes {
     withTeamApplications?: boolean,
   }
 
+  export interface FetchOauth2Authorize {
+    clientId?: string,
+    responseType?: string,
+    scope?: string,
+  }
+
   export interface FetchReactions {
     after?: string,
     before?: string,
@@ -597,6 +603,20 @@ export namespace RequestTypes {
 
   export interface MessageSuppressEmbeds {
     suppress?: boolean,
+  }
+
+  export interface Oauth2Authorize {
+    authorize?: boolean,
+    botGuildId?: string,
+    captchaKey?: string,
+    clientId?: string,
+    permissions?: number,
+    prompt?: string,
+    redirectUri?: string,
+    responseType?: string,
+    scope?: string,
+    webhookChannelId?: string,
+    webhookGuildId?: string,
   }
 
   export interface RedeemGiftCode {

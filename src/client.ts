@@ -3279,6 +3279,44 @@ export class Client {
     });
   }
 
+  async fetchOauth2Authorize(
+    options: RequestTypes.FetchOauth2Authorize = {},
+  ): Promise<any> {
+    const query = {
+      client_id: options.clientId,
+      response_type: options.responseType,
+      scope: options.scope,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.OAUTH2_AUTHORIZE,
+      },
+    });
+  }
+
+  async fetchOauth2AuthorizeWebhookChannels(
+    guildId: string,
+  ): Promise<any> {
+    const query = {
+      guild_id: guildId,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.OAUTH2_AUTHORIZE_WEBHOOK_CHANNELS,
+      },
+    });
+  }
+
   fetchOauth2Tokens(): Promise<any> {
     // fetchAuthorizedApplications
     return this.request({
@@ -3829,6 +3867,37 @@ export class Client {
         method: HTTPMethods.POST,
         path: Api.CHANNEL_MESSAGE_SUPPRESS_EMBEDS,
         params,
+      },
+    });
+  }
+
+  async oauth2Authorize(
+    options: RequestTypes.Oauth2Authorize = {},
+  ): Promise<any> {
+    const body = {
+      authorize: options.authorize,
+      bot_guild_id: options.botGuildId,
+      captcha_key: options.captchaKey,
+      permissions: options.permissions,
+      webhook_channel_id: options.webhookChannelId,
+      webhook_guild_id: options.webhookGuildId,
+    };
+    const query = {
+      client_id: options.clientId,
+      prompt: options.prompt,
+      redirect_uri: options.redirectUri,
+      response_type: options.responseType,
+      scope: options.scope,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      query,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.OAUTH2_AUTHORIZE,
       },
     });
   }
