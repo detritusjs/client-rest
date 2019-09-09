@@ -6,7 +6,7 @@ export { HTTPMethods };
 
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.4.20',
+  VERSION: '0.4.21',
 });
 
 
@@ -135,6 +135,14 @@ export const DiscordAbortCodes = Object.freeze({
   LISTING_JOIN_BLOCKED: 120002,
 
   RESOURCE_OVERLOADED: 130000,
+});
+
+export const DiscordHeaders = Object.freeze({
+  AUDIT_LOG_REASON: 'x-audit-log-reason',
+  DEBUG_OPTIONS: 'x-debug-options',
+  FINGERPRINT: 'x-fingerprint',
+  SUPER_PROPERTIES: 'x-super-properties',
+  TRACK: 'x-track',
 });
 
 export const RatelimitHeaders = Object.freeze({

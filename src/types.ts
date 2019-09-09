@@ -15,7 +15,7 @@ export namespace RequestTypes {
     errorOnRatelimit?: boolean,
     files?: Array<RequestFile>,
     fingerprint?: string,
-    headers?: {[key: string]: string},
+    headers?: {[key: string]: string | undefined},
     jsonify?: boolean,
     method?: string,
     multipart?: boolean,
@@ -75,8 +75,9 @@ export namespace RequestTypes {
   }
 
   export interface BeginGuildPrune {
-    days?: number,
     computePruneCount?: boolean,
+    days?: number,
+    reason?: string,
   }
 
   export interface ConnectionCallback {
@@ -176,6 +177,7 @@ export namespace RequestTypes {
     nsfw?: boolean,
     parentId?: string,
     permissionOverwrites?: Array<CreateChannelOverwrite>,
+    reason?: string,
     skuId?: string,
     topic?: string,
     type: number,
@@ -185,11 +187,13 @@ export namespace RequestTypes {
   export interface CreateGuildEmoji {
     name: string,
     image: Buffer | string,
+    reason?: string,
     roles?: Array<string>,
   }
 
   export interface CreateGuildIntegration {
     id: string,
+    reason?: string,
     type: string,
   }
 
@@ -199,6 +203,7 @@ export namespace RequestTypes {
     mentionable?: boolean,
     name?: string,
     permissions?: number,
+    reason?: string,
   }
 
   export interface CreateLobby {
@@ -276,8 +281,36 @@ export namespace RequestTypes {
     password: string,
   }
 
+  export interface DeleteChannel {
+    reason?: string,
+  }
+
+  export interface DeleteChannelOverwrite {
+    reason?: string,
+  }
+
   export interface DeleteGuild {
     code?: string,
+  }
+
+  export interface DeleteGuildEmoji {
+    reason?: string,
+  }
+
+  export interface DeleteGuildIntegration {
+    reason?: string,
+  }
+
+  export interface DeleteGuildRole {
+    reason?: string,
+  }
+
+  export interface DeleteInvite {
+    reason?: string,
+  }
+
+  export interface DeleteMessage {
+    reason?: string,
   }
 
   export interface DeleteOauth2Application {
@@ -286,6 +319,14 @@ export namespace RequestTypes {
 
   export interface DeleteTeam {
     code?: string,
+  }
+
+  export interface DeleteWebhook {
+    reason?: string,
+  }
+
+  export interface DeleteWebhookToken {
+    reason?: string,
   }
 
   export interface DisableAccount {
@@ -310,6 +351,7 @@ export namespace RequestTypes {
     permissionOverwrites?: Array<CreateChannelOverwrite>,
     position?: string,
     rateLimitPerUser?: number,
+    reason?: string,
     topic?: string,
     type?: number,
     userLimit?: number,
@@ -318,6 +360,7 @@ export namespace RequestTypes {
   export interface EditChannelOverwrite {
     allow?: number,
     deny?: number,
+    reason?: string,
     type?: string,
   }
 
@@ -339,6 +382,7 @@ export namespace RequestTypes {
     name?: string,
     ownerId?: string,
     preferredLocale?: string,
+    reason?: string,
     region?: string,
     splash?: Buffer | string | null,
     systemChannelFlags?: number,
@@ -357,13 +401,19 @@ export namespace RequestTypes {
     
   }
 
+  export interface EditGuildChannelsExtra {
+    reason?: string,
+  }
+
   export interface EditGuildEmbed {
     channelId?: string,
     enabled: boolean,
+    reason?: string,
   }
 
   export interface EditGuildEmoji {
     name?: string,
+    reason?: string,
     roles?: Array<string>,
   }
 
@@ -371,6 +421,7 @@ export namespace RequestTypes {
     enableEmoticons?: boolean,
     expireBehavior?: number,
     expireGracePeriod?: number,
+    reason?: string,
   }
 
   export interface EditGuildMember {
@@ -378,12 +429,18 @@ export namespace RequestTypes {
     deaf?: boolean,
     mute?: boolean,
     nick?: string,
+    reason?: string,
     roles?: Array<string>,
   }
 
   export interface EditGuildMfaLevel {
     code: string,
     level: number,
+    reason?: string,
+  }
+
+  export interface EditGuildNick {
+    reason?: string,
   }
 
   export interface EditGuildRole {
@@ -392,6 +449,7 @@ export namespace RequestTypes {
     mentionable?: boolean,
     name?: string,
     permissions?: number,
+    reason?: string,
   }
 
   export interface EditGuildRolePosition {
@@ -401,6 +459,14 @@ export namespace RequestTypes {
 
   export interface EditGuildRolePositions extends Array<EditGuildRolePosition> {
 
+  }
+
+  export interface EditGuildRolePositionsExtra {
+    reason?: string,
+  }
+
+  export interface EditGuildVanity {
+    reason?: string,
   }
 
   export interface EditLobby {
@@ -473,6 +539,7 @@ export namespace RequestTypes {
     avatar?: Buffer | string | null,
     channelId?: string,
     name?: string,
+    reason?: string,
   }
 
   export interface ExecuteWebhook {
@@ -634,7 +701,15 @@ export namespace RequestTypes {
     username: string,
   }
 
+  export interface RemoveGuildBan {
+    reason?: string,
+  }
+
   export interface RemoveGuildMember {
+    reason?: string,
+  }
+
+  export interface RemoveGuildMemberRole {
     reason?: string,
   }
 

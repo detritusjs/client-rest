@@ -13,7 +13,7 @@ import {
   Types as VerifyTypes,
   verifyData,
 } from './clientsidechecks';
-import { AuthTypes, HTTPMethods, Package } from './constants';
+import { AuthTypes, DiscordHeaders, HTTPMethods, Package } from './constants';
 import { Api } from './endpoints';
 import { RestRequest } from './request';
 
@@ -29,7 +29,7 @@ const defaultHeaders: {[key: string]: string} = {
   ].join(' '),
 };
 
-defaultHeaders['x-super-properties'] = Buffer.from(
+defaultHeaders[DiscordHeaders.SUPER_PROPERTIES] = Buffer.from(
   JSON.stringify({
     browser: process.release.name || 'node',
     browser_user_agent: defaultHeaders['user-agent'],
@@ -157,21 +157,21 @@ export class Client {
       (this.restClient.baseUrl instanceof URL) &&
       (request.url.host === this.restClient.baseUrl.host)
     ) {
-      if (!('x-super-properties' in request.options.headers)) {
-        request.options.headers['x-super-properties'] = defaultHeaders['x-super-properties'];
+      if (!(DiscordHeaders.SUPER_PROPERTIES in request.options.headers)) {
+        request.options.headers[DiscordHeaders.SUPER_PROPERTIES] = defaultHeaders[DiscordHeaders.SUPER_PROPERTIES];
       }
 
       if (options.useAuth || options.useAuth === undefined) {
         if (this.token) {
           request.options.headers['authorization'] = this.tokenFormatted;
         } else if (this.fingerprint) {
-          request.options.headers['x-fingerprint'] = this.fingerprint;
+          request.options.headers[DiscordHeaders.FINGERPRINT] = this.fingerprint;
         }
       }
     }
   
     if (options.fingerprint) {
-      request.options.headers['x-fingerprint'] = options.fingerprint;
+      request.options.headers[DiscordHeaders.FINGERPRINT] = options.fingerprint;
     }
 
     if (options.token) {
@@ -504,6 +504,9 @@ export class Client {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       query,
       route: {
         method: HTTPMethods.POST,
@@ -716,6 +719,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.POST,
         path: Api.GUILD_CHANNELS,
@@ -740,6 +746,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.POST,
         path: Api.GUILD_EMOJIS,
@@ -762,6 +771,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.POST,
         path: Api.GUILD_INTEGRATIONS,
@@ -787,6 +799,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.POST,
         path: Api.GUILD_ROLES,
@@ -1133,12 +1148,16 @@ export class Client {
 
   async deleteChannel(
     channelId: string,
+    options: RequestTypes.DeleteChannel = {},
   ): Promise<any> {
     const params = {channelId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.DELETE,
         path: Api.CHANNEL,
@@ -1150,12 +1169,16 @@ export class Client {
   async deleteChannelOverwrite(
     channelId: string,
     overwriteId: string,
+    options: RequestTypes.DeleteChannelOverwrite = {},
   ): Promise<any> {
     const params = {channelId, overwriteId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.DELETE,
         path: Api.CHANNEL_PERMISSION,
@@ -1203,12 +1226,16 @@ export class Client {
   async deleteGuildEmoji(
     guildId: string,
     emojiId: string,
+    options: RequestTypes.DeleteGuildEmoji = {},
   ): Promise<any> {
     const params = {guildId, emojiId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.DELETE,
         path: Api.GUILD_EMOJI,
@@ -1220,12 +1247,16 @@ export class Client {
   async deleteGuildIntegration(
     guildId: string,
     integrationId: string,
+    options: RequestTypes.DeleteGuildIntegration = {},
   ): Promise<any> {
     const params = {guildId, integrationId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.DELETE,
         path: Api.GUILD_INTEGRATIONS,
@@ -1254,12 +1285,16 @@ export class Client {
   async deleteGuildRole(
     guildId: string,
     roleId: string,
+    options: RequestTypes.DeleteGuildRole = {},
   ): Promise<any> {
     const params = {guildId, roleId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.DELETE,
         path: Api.GUILD_ROLE,
@@ -1270,12 +1305,16 @@ export class Client {
 
   async deleteInvite(
     code: string,
+    options: RequestTypes.DeleteInvite = {},
   ): Promise<any> {
     const params = {code};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.DELETE,
         path: Api.INVITE,
@@ -1335,12 +1374,16 @@ export class Client {
   async deleteMessage(
     channelId: string,
     messageId: string,
+    options: RequestTypes.DeleteMessage = {},
   ): Promise<any> {
     const params = {channelId, messageId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.DELETE,
         path: Api.CHANNEL_MESSAGE,
@@ -1494,12 +1537,16 @@ export class Client {
 
   async deleteWebhook(
     webhookId: string,
+    options: RequestTypes.DeleteWebhook = {},
   ): Promise<any> {
     const params = {webhookId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.DELETE,
         path: Api.WEBHOOK,
@@ -1511,12 +1558,16 @@ export class Client {
   async deleteWebhookToken(
     webhookId: string,
     token: string,
+    options: RequestTypes.DeleteWebhookToken = {},
   ): Promise<any> {
     const params = {webhookId, token};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.DELETE,
         path: Api.WEBHOOK_TOKEN,
@@ -1591,6 +1642,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.CHANNEL,
@@ -1615,6 +1669,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.PUT,
         path: Api.CHANNEL_PERMISSION,
@@ -1671,6 +1728,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.GUILD,
@@ -1682,6 +1742,7 @@ export class Client {
   async editGuildChannels(
     guildId: string,
     channels: RequestTypes.EditGuildChannels,
+    options: RequestTypes.EditGuildChannelsExtra = {},
   ): Promise<any> {
     const body: Array<{
       id: string,
@@ -1704,6 +1765,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.GUILD_CHANNELS,
@@ -1726,6 +1790,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.GUILD_EMBED,
@@ -1749,6 +1816,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.GUILD_EMOJI,
@@ -1773,6 +1843,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.GUILD_INTEGRATION,
@@ -1799,6 +1872,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.GUILD_MEMBER,
@@ -1821,6 +1897,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.POST,
         path: Api.GUILD_MFA,
@@ -1833,6 +1912,7 @@ export class Client {
     guildId: string,
     nick: string,
     userId: string = '@me',
+    options: RequestTypes.EditGuildNick = {},
   ): Promise<any> {
     const body = {nick};
     const params = {guildId, userId};
@@ -1841,6 +1921,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.GUILD_MEMBER_NICK,
@@ -1867,6 +1950,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.GUILD_ROLE,
@@ -1878,6 +1964,7 @@ export class Client {
   async editGuildRolePositions(
     guildId: string,
     roles: RequestTypes.EditGuildRolePositions,
+    options: RequestTypes.EditGuildRolePositionsExtra = {},
   ): Promise<any> {
     const body: Array<{
       id: string,
@@ -1896,6 +1983,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.GUILD_ROLES,
@@ -1907,6 +1997,7 @@ export class Client {
   async editGuildVanity(
     guildId: string,
     code: string,
+    options: RequestTypes.EditGuildVanity = {},
   ): Promise<any> {
     const body = {code};
     const params = {guildId};
@@ -1915,6 +2006,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.GUILD_VANITY_URL,
@@ -2190,6 +2284,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.WEBHOOK,
@@ -2214,6 +2311,9 @@ export class Client {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.WEBHOOK_TOKEN,
@@ -3951,12 +4051,16 @@ export class Client {
   async removeGuildBan(
     guildId: string,
     userId: string,
+    options: RequestTypes.RemoveGuildBan = {},
   ): Promise<any> {
     const params = {guildId, userId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.DELETE,
         path: Api.GUILD_BAN,
@@ -3971,14 +4075,13 @@ export class Client {
     options: RequestTypes.RemoveGuildMember = {},
   ): Promise<any> {
     const params = {guildId, userId};
-    const query = {
-      reason: options.reason,
-    };
     if (this.clientsideChecks) {
 
     }
     return this.request({
-      query,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.DELETE,
         path: Api.GUILD_MEMBER,
@@ -3991,12 +4094,16 @@ export class Client {
     guildId: string,
     userId: string,
     roleId: string,
+    options: RequestTypes.RemoveGuildMemberRole = {},
   ): Promise<any> {
     const params = {guildId, userId, roleId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.DELETE,
         path: Api.GUILD_MEMBER_ROLE,
