@@ -380,12 +380,16 @@ export class Client {
     guildId: string,
     userId: string,
     roleId: string,
+    options: RequestTypes.AddGuildMemberRole = {},
   ): Promise<any> {
     const params = {guildId, userId, roleId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+      },
       route: {
         method: HTTPMethods.PUT,
         path: Api.GUILD_MEMBER_ROLE,

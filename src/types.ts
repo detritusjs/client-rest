@@ -59,6 +59,10 @@ export namespace RequestTypes {
     roles?: Array<string>,
   }
 
+  export interface AddGuildMemberRole {
+    reason?: string,
+  }
+
   export interface AddTeamMember {
     discriminator: string,
     username: string,
