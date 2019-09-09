@@ -1558,7 +1558,7 @@ export class Client {
   async deleteWebhookToken(
     webhookId: string,
     token: string,
-    options: RequestTypes.DeleteWebhookToken = {},
+    options: RequestTypes.DeleteWebhook = {},
   ): Promise<any> {
     const params = {webhookId, token};
     if (this.clientsideChecks) {

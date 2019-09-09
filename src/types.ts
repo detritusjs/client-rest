@@ -325,10 +325,6 @@ export namespace RequestTypes {
     reason?: string,
   }
 
-  export interface DeleteWebhookToken {
-    reason?: string,
-  }
-
   export interface DisableAccount {
     code?: string,
     password: string,
