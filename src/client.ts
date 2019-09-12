@@ -76,7 +76,7 @@ export class Client {
   constructor(token?: string, options?: ClientOptions) {
     options = Object.assign({
       baseUrl: Api.URL_STABLE + Api.PATH,
-      bucketsExpireIn: 30 * 1000,
+      bucketsExpireIn: (60 * 60) * 1000, // 1 hour
       errorOnRatelimit: false,
     }, options);
 

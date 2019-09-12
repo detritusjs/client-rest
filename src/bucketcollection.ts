@@ -1,9 +1,14 @@
-import { BaseCollection } from 'detritus-utils';
+import { BaseCollection, BaseCollectionOptions } from 'detritus-utils';
 
 import { Bucket } from './bucket';
 
 
 export class BucketCollection extends BaseCollection<string, Bucket> {
+  constructor(options: BaseCollectionOptions = {}) {
+    super(options);
+    this.interval.unref();
+  }
+
   insert(bucket: Bucket) {
     this.set(bucket.key, bucket);
   }
