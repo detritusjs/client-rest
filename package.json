@@ -1,6 +1,6 @@
 {
   "name": "detritus-client-rest",
-  "version": "0.4.27",
+  "version": "0.4.28",
   "description": "A minimalistic TypeScript library to interact with all, or most, of Discord's rest endpoints",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -9,7 +9,7 @@
   ],
   "dependencies": {
     "detritus-rest": "^0.3.0",
-    "detritus-utils": "^0.1.7"
+    "detritus-utils": "^0.1.8"
   },
   "devDependencies": {
     "@types/node": "^12.7.5"
