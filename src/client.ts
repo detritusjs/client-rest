@@ -898,14 +898,13 @@ export class Client {
       },
       application_id?: string,
       content?: string,
-      embed?: any,
+      embed?: RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction,
       hasSpoiler?: boolean,
       nonce?: string,
       tts?: boolean,
     } = {
       application_id: options.applicationId,
       content: options.content,
-      embed: options.embed,
       hasSpoiler: options.hasSpoiler,
       nonce: options.nonce,
       tts: options.tts,
@@ -919,19 +918,23 @@ export class Client {
       };
     }
     if (typeof(options.embed) === 'object') {
-      body.embed = Object.assign({}, options.embed);
-      if (typeof(body.embed.author) === 'object') {
-        body.embed.author = {
-          name: body.embed.author.name,
-          url: body.embed.author.url,
-          icon_url: body.embed.author.iconUrl,
-        };
-      }
-      if (typeof(body.embed.footer) === 'object') {
-        body.embed.footer = {
-          text: body.embed.footer.text,
-          icon_url: body.embed.footer.iconUrl,
-        };
+      if ('toJSON' in options.embed) {
+        body.embed = options.embed;
+      } else {
+        body.embed = Object.assign({}, options.embed);
+        if (typeof(options.embed.author) === 'object') {
+          body.embed.author = {
+            name: options.embed.author.name,
+            url: options.embed.author.url,
+            icon_url: options.embed.author.iconUrl,
+          };
+        }
+        if (typeof(options.embed.footer) === 'object') {
+          body.embed.footer = {
+            text: options.embed.footer.text,
+            icon_url: options.embed.footer.iconUrl,
+          };
+        }
       }
     }
 
@@ -2152,11 +2155,35 @@ export class Client {
     if (typeof(options) === 'string') {
       options = {content: options};
     }
-    const body = {
+    const body: {
+      content?: string,
+      embed?: RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction,
+    } = {
       content: options.content,
       embed: options.embed,
     };
     const params = {channelId, messageId};
+
+    if (typeof(options.embed) === 'object') {
+      if ('toJSON' in options.embed) {
+        body.embed = options.embed;
+      } else {
+        body.embed = Object.assign({}, options.embed);
+        if (typeof(options.embed.author) === 'object') {
+          body.embed.author = {
+            name: options.embed.author.name,
+            url: options.embed.author.url,
+            icon_url: options.embed.author.iconUrl,
+          };
+        }
+        if (typeof(options.embed.footer) === 'object') {
+          body.embed.footer = {
+            text: options.embed.footer.text,
+            icon_url: options.embed.footer.iconUrl,
+          };
+        }
+      }
+    }
     if (this.clientsideChecks) {
 
     }
@@ -2372,7 +2399,7 @@ export class Client {
     const body: {
       avatar_url?: string,
       content?: string,
-      embeds?: Array<any>,
+      embeds?: Array<RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction>,
       tts?: boolean,
       username?: string,
     } = {
@@ -2414,34 +2441,37 @@ export class Client {
     }
 
     if (options.embed) {
-      body.embeds = [options.embed];
+      if (options.embeds) {
+        options.embeds = [options.embed, ...options.embeds];
+      } else {
+        options.embeds = [options.embed];
+      }
     }
     if (options.embeds && options.embeds.length) {
       if (!body.embeds) {
         body.embeds = [];
       }
       for (let embed of options.embeds) {
-        body.embeds.push(embed);
-      }
-    }
-    if (body.embeds) {
-      body.embeds = body.embeds.map((embed) => {
-        embed = Object.assign({}, embed);
+        if ('toJSON' in embed) {
+          body.embeds.push(embed);
+          continue;
+        }
+        const raw = <RequestTypes.RawChannelMessageEmbed> Object.assign({}, embed);
         if (typeof(embed.author) === 'object') {
-          embed.author = {
+          raw.author = {
             name: embed.author.name,
             url: embed.author.url,
             icon_url: embed.author.iconUrl,
           };
         }
         if (typeof(embed.footer) === 'object') {
-          embed.footer = {
+          raw.footer = {
             text: embed.footer.text,
             icon_url: embed.footer.iconUrl,
           };
         }
-        return embed;
-      });
+        body.embeds.push(raw);
+      }
     }
 
     if (options.wait) {

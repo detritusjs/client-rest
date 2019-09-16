@@ -146,6 +146,10 @@ export namespace RequestTypes {
     },
   }
 
+  export interface CreateChannelMessageEmbedFunction {
+    toJSON: () => RawChannelMessageEmbed,
+  }
+
   export interface CreateChannelOverwrite {
     id: string,
     type: 'role' | 'member',
@@ -246,7 +250,7 @@ export namespace RequestTypes {
     },
     applicationId?: string,
     content?: string,
-    embed?: CreateChannelMessageEmbed,
+    embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
     file?: RequestFile,
     files?: Array<RequestFile>,
     hasSpoiler?: boolean,
@@ -513,7 +517,7 @@ export namespace RequestTypes {
 
   export interface EditMessage {
     content?: string,
-    embed?: CreateChannelMessageEmbed,
+    embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
     mentions?: Array<any>, // idk, the sourcecode has this
   }
 
@@ -545,8 +549,8 @@ export namespace RequestTypes {
   export interface ExecuteWebhook {
     avatarUrl?: string,
     content?: string,
-    embed?: CreateChannelMessageEmbed,
-    embeds?: Array<CreateChannelMessageEmbed>,
+    embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
+    embeds?: Array<CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction>,
     file?: RequestFile,
     files?: Array<RequestFile>,
     tts?: boolean,
@@ -767,6 +771,43 @@ export namespace RequestTypes {
 
   export interface VerifyCaptcha {
     captchaKey: string,
+  }
+
+  /* Raw Types */
+  export interface RawChannelMessageEmbed {
+    author?: {
+      icon_url?: string,
+      name?: string,
+      url?: string,
+    },
+    color?: number,
+    description?: string,
+    fields?: Array<{
+      inline?: boolean,
+      name: string,
+      value: string,
+    }>,
+    footer?: {
+      icon_url?: string,
+      text: string,
+    },
+    image?: {
+      url?: string,
+    },
+    provider?: {
+      name?: string,
+      url?: string,
+    },
+    thumbnail?: {
+      url?: string,
+    },
+    timestamp?: string,
+    title?: string,
+    type?: string,
+    url?: string,
+    video?: {
+      url?: string,
+    },
   }
 
   /* Route Types */
