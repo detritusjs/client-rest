@@ -9,7 +9,7 @@ import {
 
 import { Bucket } from './bucket';
 import { Client } from './client';
-import { RatelimitHeaders, RatelimitPrecisionTypes } from './constants';
+import { RatelimitHeaders, RatelimitPrecisionTypes, RestEvents } from './constants';
 import { Api } from './endpoints';
 import { DiscordHTTPError, HTTPError } from './errors';
 
@@ -92,13 +92,10 @@ export class RestRequest {
 
   async send(): Promise<Response> {
     const response = await this.sendRequest();
+    this.client.emit(RestEvents.RESPONSE, {response});
 
     const bucket = this.bucket;
     if (bucket) {
-      if (!response.ok && typeof(this.client.onNotOkResponse) === 'function') {
-        await Promise.resolve(this.client.onNotOkResponse(response));
-      }
-
       const ratelimit = bucket.ratelimit;
       if (RatelimitHeaders.LIMIT in response.headers) {
         bucket.setRatelimit(

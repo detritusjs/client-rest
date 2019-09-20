@@ -5,6 +5,7 @@ import {
   Client as RestClient,
   Response,
 } from 'detritus-rest';
+import { EventEmitter } from 'detritus-utils';
 
 import { Bucket } from './bucket';
 import { BucketCollection } from './bucketcollection';
@@ -13,11 +14,11 @@ import {
   Types as VerifyTypes,
   verifyData,
 } from './clientsidechecks';
-import { AuthTypes, DiscordHeaders, HTTPMethods, Package } from './constants';
+import { AuthTypes, DiscordHeaders, HTTPMethods, Package, RestEvents } from './constants';
 import { Api } from './endpoints';
 import { RestRequest } from './request';
 
-import { RequestTypes } from './types';
+import { RequestTypes, RestClientEvents } from './types';
 
 
 const defaultHeaders: {[key: string]: string} = {
@@ -46,8 +47,6 @@ const requestDefaults = {
   dataOnly: true,
 };
 
-export type OnNotOkResponseCallback = (response: Response) => Promise<any> | any;
-
 export interface ClientOptions {
   authType?: string | number,
   baseUrl?: string,
@@ -57,11 +56,10 @@ export interface ClientOptions {
   fingerprint?: string,
   globalBucket?: Bucket,
   headers?: {[key: string]: string},
-  onNotOkResponse?: OnNotOkResponseCallback,
   settings?: any,
 }
 
-export class Client {
+export class Client extends EventEmitter {
   _authType: AuthTypes = AuthTypes.BOT;
   buckets: BucketCollection;
   clientsideChecks: boolean = true;
@@ -71,9 +69,9 @@ export class Client {
   restClient: RestClient;
   token?: string;
 
-  onNotOkResponse?: OnNotOkResponseCallback;
-
   constructor(token?: string, options?: ClientOptions) {
+    super();
+
     options = Object.assign({
       baseUrl: Api.URL_STABLE + Api.PATH,
       bucketsExpireIn: (60 * 60) * 1000, // 1 hour
@@ -96,11 +94,8 @@ export class Client {
     this.globalBucket = options.globalBucket || new Bucket('global');
     this.token = token;
 
-    this.onNotOkResponse = options.onNotOkResponse;
-
     Object.defineProperties(this, {
       _authType: {enumerable: false},
-      onNotOkResponse: {enumerable: false},
       restClient: {enumerable: false, writable: false},
       token: {enumerable: false, writable: false},
     });
@@ -180,6 +175,8 @@ export class Client {
 
     let response: Response;
     const restRequest = new RestRequest(this, request, options);
+    this.emit(RestEvents.REQUEST, {request: restRequest});
+
     if (restRequest.bucket && !options.errorOnRatelimit) {
       const bucket = <Bucket> restRequest.bucket;
       response = await new Promise((resolve, reject) => {
@@ -200,6 +197,14 @@ export class Client {
     } else {
       return response;
     }
+  }
+
+  on(event: string, listener: Function): this;
+  on(event: 'request', listener: (payload: RestClientEvents.RequestPayload) => any): this;
+  on(event: 'response', listener: (payload: RestClientEvents.ResponsePayload) => any): this;
+  on(event: string, listener: Function): this {
+    super.on(event, listener);
+    return this;
   }
 
   /* -- Rest Requests Start -- */
