@@ -2985,7 +2985,7 @@ export class Client extends EventEmitter {
       query,
       route: {
         method: HTTPMethods.GET,
-        path: Api.GUILD_EMOJIS,
+        path: Api.GUILD_MEMBERS,
         params,
       },
     });
