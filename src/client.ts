@@ -3540,7 +3540,7 @@ export class Client extends EventEmitter {
       query,
       route: {
         method: HTTPMethods.GET,
-        path: Api.CHANNEL_MESSAGE_REACTIONS,
+        path: Api.CHANNEL_MESSAGE_REACTION,
         params,
       },
     });
