@@ -49,14 +49,7 @@ export class RestRequest {
       }
 
       if (request.route) {
-        let path = request.route.path;
-        if (
-          (request.route.method === RestConstants.HTTPMethods.DELETE) &&
-          (request.route.path === Api.CHANNEL_MESSAGE)
-        ) {
-          path = `${request.route.method}.${path}`;
-        }
-        this.bucketPath = path;
+        this.bucketPath = `${request.route.method}-${request.route.path}`;
       }
     }
 
@@ -102,9 +95,9 @@ export class RestRequest {
           if (param in this.request.route.params) {
             major += this.request.route.params[param].trim();
           }
-          major += '.';
+          major += '-';
         }
-        return this._bucketKey = `${bucketHash}:${major}`;
+        return this._bucketKey = `${bucketHash}.${major.slice(0, -1)}`;
       }
     }
     return null;
@@ -144,7 +137,7 @@ export class RestRequest {
 
   async send(): Promise<Response> {
     const response = await this.sendRequest();
-    this.client.emit(RestEvents.RESPONSE, {response});
+    this.client.emit(RestEvents.RESPONSE, {response, restRequest: this});
 
     if (this.shouldRatelimitCheck) {
       let bucket: Bucket | null = null;

@@ -1,15 +1,17 @@
-import { Response, Route } from 'detritus-rest';
+import { Request, Response, Route } from 'detritus-rest';
 
 import { RestRequest } from './request';
 
 
 export namespace RestClientEvents {
   export interface RequestPayload {
-    request: RestRequest,
+    request: Request,
+    restRequest: RestRequest,
   }
 
   export interface ResponsePayload {
     response: Response,
+    restRequest: RestRequest,
   }
 }
 

@@ -186,7 +186,7 @@ export class Client extends EventEmitter {
 
     let response: Response;
     const restRequest = new RestRequest(this, request, options);
-    this.emit(RestEvents.REQUEST, {request: restRequest});
+    this.emit(RestEvents.REQUEST, {request, restRequest: restRequest});
 
     if (restRequest.shouldRatelimitCheck && !options.errorOnRatelimit) {
       response = await new Promise((resolve, reject) => {
