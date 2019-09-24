@@ -21,10 +21,11 @@ import { DiscordHTTPError, HTTPError } from './errors';
 
 
 export class RestRequest {
+  readonly bucketPath?: string;
+
   _bucketHash?: string;
   _bucketKey?: string;
 
-  bucketMajor?: string;
   client: Client;
   errorOnRatelimit?: boolean;
   maxRetries: number;
@@ -43,7 +44,20 @@ export class RestRequest {
     this.request = request;
 
     if (this.shouldRatelimitCheck) {
-      request.options.headers[RatelimitHeaders.PRECISION] = RatelimitPrecisionTypes.MILLISECOND;
+      if (client.isBot) {
+        request.options.headers[RatelimitHeaders.PRECISION] = RatelimitPrecisionTypes.MILLISECOND;
+      }
+
+      if (request.route) {
+        let path = request.route.path;
+        if (
+          (request.route.method === RestConstants.HTTPMethods.DELETE) &&
+          (request.route.path === Api.CHANNEL_MESSAGE)
+        ) {
+          path = `${request.route.method}.${path}`;
+        }
+        this.bucketPath = path;
+      }
     }
 
     this.errorOnRatelimit = options.errorOnRatelimit;
@@ -64,12 +78,13 @@ export class RestRequest {
       return this._bucketHash;
     }
     if (this.request.route && this.shouldRatelimitCheck) {
+      const path = <string> this.bucketPath;
       if (this.client.isBot) {
-        if (this.client.routes.has(this.request.route.path)) {
-          return this._bucketHash = <string> this.client.routes.get(this.request.route.path);
+        if (this.client.routes.has(path)) {
+          return this._bucketHash = <string> this.client.routes.get(path);
         }
       } else {
-        return this._bucketHash = this.request.route.path;
+        return this._bucketHash = path;
       }
     }
     return null;
@@ -140,7 +155,7 @@ export class RestRequest {
         let shouldHaveBucket: boolean = false;
         if (this.client.isBot) {
           if (RatelimitHeaders.BUCKET in response.headers) {
-            this.client.routes.set(this.request.route.path, response.headers[RatelimitHeaders.BUCKET]);
+            this.client.routes.set(<string> this.bucketPath, response.headers[RatelimitHeaders.BUCKET]);
             shouldHaveBucket = true;
           } else {
             // no ratelimit on this path
