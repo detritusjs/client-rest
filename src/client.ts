@@ -5,7 +5,7 @@ import {
   Client as RestClient,
   Response,
 } from 'detritus-rest';
-import { EventEmitter } from 'detritus-utils';
+import { BaseCollection, EventEmitter } from 'detritus-utils';
 
 import { Bucket } from './bucket';
 import { BucketCollection } from './bucketcollection';
@@ -56,12 +56,15 @@ export interface ClientOptions {
   fingerprint?: string,
   globalBucket?: Bucket,
   headers?: {[key: string]: string},
+  routesCollection?: BaseCollection<string, string>,
   settings?: any,
 }
 
 export class Client extends EventEmitter {
+  readonly buckets: BucketCollection;
+  readonly routes: BaseCollection<string, string>;
+
   _authType: AuthTypes = AuthTypes.BOT;
-  buckets: BucketCollection;
   clientsideChecks: boolean = true;
   errorOnRatelimit: boolean = false;
   fingerprint?: string;
@@ -92,6 +95,7 @@ export class Client extends EventEmitter {
     this.errorOnRatelimit = !!options.errorOnRatelimit;
     this.fingerprint = options.fingerprint,
     this.globalBucket = options.globalBucket || new Bucket('global');
+    this.routes = options.routesCollection || new BaseCollection<string, string>();
     this.token = token;
 
     Object.defineProperties(this, {
@@ -108,9 +112,16 @@ export class Client extends EventEmitter {
   get authType(): string {
     switch (this._authType) {
       case AuthTypes.BOT: return 'Bot';
-      case AuthTypes.OAUTH: return 'Bearer';
     }
     return '';
+  }
+
+  get isBot(): boolean {
+    return this._authType === AuthTypes.BOT;
+  }
+
+  get isUser(): boolean {
+    return this._authType === AuthTypes.USER;
   }
 
   get tokenFormatted(): string {
@@ -177,15 +188,19 @@ export class Client extends EventEmitter {
     const restRequest = new RestRequest(this, request, options);
     this.emit(RestEvents.REQUEST, {request: restRequest});
 
-    if (restRequest.bucket && !options.errorOnRatelimit) {
-      const bucket = <Bucket> restRequest.bucket;
+    if (restRequest.shouldRatelimitCheck && !options.errorOnRatelimit) {
       response = await new Promise((resolve, reject) => {
         const delayed = {request: restRequest, resolve, reject};
         if (this.globalBucket.locked) {
           this.globalBucket.add(delayed);
         } else {
-          bucket.add(delayed);
-          this.buckets.resetExpire(bucket);
+          const bucket = restRequest.bucket;
+          if (bucket) {
+            bucket.add(delayed);
+            this.buckets.resetExpire(bucket);
+          } else {
+            resolve(restRequest.send());
+          }
         }
       });
     } else {

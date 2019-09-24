@@ -6,16 +6,15 @@ export { HTTPMethods };
 
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.5.1',
+  VERSION: '0.5.2',
 });
 
 
 export const ApiVersion = 7;
 
 export enum AuthTypes {
-  USER = 'user',
   BOT = 'bot',
-  OAUTH = 'oauth',
+  USER = 'user',
 };
 
 export const ActivityActionTypes = Object.freeze({
@@ -146,6 +145,7 @@ export const DiscordHeaders = Object.freeze({
 });
 
 export const RatelimitHeaders = Object.freeze({
+  BUCKET: 'x-ratelimit-bucket',
   GLOBAL: 'x-ratelimit-global',
   LIMIT: 'x-ratelimit-limit',
   PRECISION: 'x-ratelimit-precision',
@@ -164,3 +164,5 @@ export const RestEvents = Object.freeze({
   REQUEST: 'request',
   RESPONSE: 'response',
 });
+
+export const RATELIMIT_BUCKET_MAJOR_PARAMS = Object.freeze(['channelId', 'guildId', 'webhookId']);
