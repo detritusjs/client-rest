@@ -47,6 +47,7 @@ export namespace RequestTypes {
       multipartJsonKey?: string,
       timeout?: number,
     },
+    skipRatelimitCheck?: boolean,
     token?: string,
     url?: string | URL,
     useAuth?: boolean,

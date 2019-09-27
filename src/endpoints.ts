@@ -649,12 +649,12 @@ export const Api = Object.freeze({
 
   LOBBIES:
     '/lobbies',
+  LOBBIES_SEARCH:
+    '/lobbies/search',
   LOBBY:
     '/lobbies/:lobbyId:',
   LOBBY_MEMBER:
     '/lobbies/:lobbyId:/members/:userId:',
-  LOBBY_SEARCH:
-    '/lobbies/:lobbyId:/search',
   LOBBY_SEND:
     '/lobbies/:lobbyId:/send',
 

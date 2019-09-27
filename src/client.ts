@@ -5,7 +5,7 @@ import {
   Client as RestClient,
   Response,
 } from 'detritus-rest';
-import { BaseCollection, EventEmitter } from 'detritus-utils';
+import { BaseCollection, EventEmitter, Snowflake } from 'detritus-utils';
 
 import { Bucket } from './bucket';
 import { BucketCollection } from './bucketcollection';
@@ -14,7 +14,14 @@ import {
   Types as VerifyTypes,
   verifyData,
 } from './clientsidechecks';
-import { AuthTypes, DiscordHeaders, HTTPMethods, Package, RestEvents } from './constants';
+import {
+  AuthTypes,
+  DiscordHeaders,
+  HTTPMethods,
+  Package,
+  RestEvents,
+  MESSAGE_DELETE_RATELIMIT_CHECK,
+} from './constants';
 import { Api } from './endpoints';
 import { RestRequest } from './request';
 
@@ -45,6 +52,7 @@ defaultHeaders[DiscordHeaders.SUPER_PROPERTIES] = Buffer.from(
 
 const requestDefaults = {
   dataOnly: true,
+  skipRatelimitCheck: false,
 };
 
 export interface ClientOptions {
@@ -1403,9 +1411,20 @@ export class Client extends EventEmitter {
     messageId: string,
     options: RequestTypes.DeleteMessage = {},
   ): Promise<any> {
+    let skipRatelimitCheck = false;
+
     const params = {channelId, messageId};
     if (this.clientsideChecks) {
+      verifyData(params, {
+        channelId: {required: true, type: VerifyTypes.SNOWFLAKE},
+        messageId: {required: true, type: VerifyTypes.SNOWFLAKE},
+      });
 
+      const difference = Date.now() - Snowflake.timestamp(params.messageId);
+      // 500 ms incase our clock is off and to account for networking
+      if (difference < (MESSAGE_DELETE_RATELIMIT_CHECK - 500)) {
+        skipRatelimitCheck = true;
+      }
     }
     return this.request({
       headers: {
@@ -1416,6 +1435,7 @@ export class Client extends EventEmitter {
         path: Api.CHANNEL_MESSAGE,
         params,
       },
+      skipRatelimitCheck,
     });
   }
 
@@ -2229,7 +2249,7 @@ export class Client extends EventEmitter {
     return this.request({
       body,
       route: {
-        method: HTTPMethods.PATCH,
+        method: HTTPMethods.PUT,
         path: Api.ME_NOTE,
         params,
       },
@@ -2799,15 +2819,6 @@ export class Client extends EventEmitter {
         method: HTTPMethods.GET,
         path: Api.ENTITLEMENTS_GIFT_CODE,
         params,
-      },
-    });
-  }
-
-  fetchGuilds(): Promise<any> {
-    return this.request({
-      route: {
-        method: HTTPMethods.GET,
-        path: Api.GUILDS,
       },
     });
   }
@@ -4419,7 +4430,7 @@ export class Client extends EventEmitter {
       body,
       route: {
         method: HTTPMethods.POST,
-        path: Api.LOBBY_SEARCH,
+        path: Api.LOBBIES_SEARCH,
       },
     });
   }

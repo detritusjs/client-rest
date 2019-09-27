@@ -1,22 +1,18 @@
 import { URL } from 'url';
 
 import {
-  Constants as RestConstants,
   Request,
   Response,
-  Route,
 } from 'detritus-rest';
 
 import { Bucket } from './bucket';
 import { Client } from './client';
 import {
-  AuthTypes,
   RatelimitHeaders,
   RatelimitPrecisionTypes,
   RestEvents,
   RATELIMIT_BUCKET_MAJOR_PARAMS,
 } from './constants';
-import { Api } from './endpoints';
 import { DiscordHTTPError, HTTPError } from './errors';
 
 
@@ -32,12 +28,14 @@ export class RestRequest {
   request: Request;
   retries: number;
   retryDelay: number;
+  skipRatelimitCheck?: boolean;
 
   constructor(
     client: Client,
     request: Request,
     options: {
       errorOnRatelimit?: boolean,
+      skipRatelimitCheck?: boolean,
     } = {},
   ) {
     this.client = client;
@@ -57,6 +55,7 @@ export class RestRequest {
     this.maxRetries = 5;
     this.retries = 0;
     this.retryDelay = 2000;
+    this.skipRatelimitCheck = options.skipRatelimitCheck;
   }
 
   get bucket(): Bucket | null {
@@ -70,7 +69,7 @@ export class RestRequest {
     if (this._bucketHash) {
       return this._bucketHash;
     }
-    if (this.request.route && this.shouldRatelimitCheck) {
+    if (!this.skipRatelimitCheck && this.request.route && this.shouldRatelimitCheck) {
       const path = <string> this.bucketPath;
       if (this.client.isBot) {
         if (this.client.routes.has(path)) {
@@ -158,7 +157,7 @@ export class RestRequest {
           shouldHaveBucket = true;
         }
 
-        if (shouldHaveBucket) {
+        if (shouldHaveBucket && !this.skipRatelimitCheck) {
           bucket = this.bucket;
           if (!bucket) {
             bucket = new Bucket(<string> this.bucketKey);

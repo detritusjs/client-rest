@@ -6,7 +6,7 @@ export { HTTPMethods };
 
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.5.5',
+  VERSION: '0.5.6',
 });
 
 
@@ -166,3 +166,6 @@ export const RestEvents = Object.freeze({
 });
 
 export const RATELIMIT_BUCKET_MAJOR_PARAMS = Object.freeze(['channelId', 'guildId', 'webhookId']);
+
+// https://github.com/discordapp/discord-api-docs/issues/1092
+export const MESSAGE_DELETE_RATELIMIT_CHECK = 10000;
