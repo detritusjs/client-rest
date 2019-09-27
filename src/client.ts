@@ -72,7 +72,7 @@ export class Client extends EventEmitter {
   readonly buckets: BucketCollection;
   readonly routes: BaseCollection<string, string>;
 
-  _authType: AuthTypes = AuthTypes.BOT;
+  authType: AuthTypes = AuthTypes.BOT;
   clientsideChecks: boolean = true;
   errorOnRatelimit: boolean = false;
   fingerprint?: string;
@@ -107,7 +107,6 @@ export class Client extends EventEmitter {
     this.token = token;
 
     Object.defineProperties(this, {
-      _authType: {enumerable: false},
       restClient: {enumerable: false, writable: false},
       token: {enumerable: false, writable: false},
     });
@@ -117,26 +116,26 @@ export class Client extends EventEmitter {
     }
   }
 
-  get authType(): string {
-    switch (this._authType) {
+  get authTypeText(): string {
+    switch (this.authType) {
       case AuthTypes.BOT: return 'Bot';
     }
     return '';
   }
 
   get isBot(): boolean {
-    return this._authType === AuthTypes.BOT;
+    return this.authType === AuthTypes.BOT;
   }
 
   get isUser(): boolean {
-    return this._authType === AuthTypes.USER;
+    return this.authType === AuthTypes.USER;
   }
 
   get tokenFormatted(): string {
     if (this.token) {
-      const authType = this.authType;
-      if (authType) {
-        return `${authType} ${this.token}`;
+      const prepend = this.authTypeText;
+      if (prepend) {
+        return `${prepend} ${this.token}`;
       }
       return this.token;
     }
@@ -149,7 +148,7 @@ export class Client extends EventEmitter {
     }
     for (let key in AuthTypes) {
       if (AuthTypes[key] === type || key === type) {
-        this._authType = (<any> AuthTypes)[key];
+        this.authType = (<any> AuthTypes)[key];
         break;
       }
     }
