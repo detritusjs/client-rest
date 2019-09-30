@@ -265,7 +265,7 @@ export namespace RequestTypes {
     },
     applicationId?: string,
     content?: string,
-    embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
+    embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction | null,
     file?: RequestFile,
     files?: Array<RequestFile>,
     hasSpoiler?: boolean,
