@@ -2196,14 +2196,14 @@ export class Client extends EventEmitter {
     }
     const body: {
       content?: string,
-      embed?: RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction,
+      embed?: null | RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction,
     } = {
       content: options.content,
       embed: options.embed,
     };
     const params = {channelId, messageId};
 
-    if (typeof(options.embed) === 'object') {
+    if (options.embed && typeof(options.embed) === 'object') {
       if ('toJSON' in options.embed) {
         body.embed = options.embed;
       } else {

@@ -532,7 +532,7 @@ export namespace RequestTypes {
 
   export interface EditMessage {
     content?: string,
-    embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
+    embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction | null,
     mentions?: Array<any>, // idk, the sourcecode has this
   }
 
