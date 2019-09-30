@@ -944,7 +944,7 @@ export class Client extends EventEmitter {
         type: options.activity.type,
       };
     }
-    if (typeof(options.embed) === 'object') {
+    if (options.embed && typeof(options.embed) === 'object') {
       if ('toJSON' in options.embed) {
         body.embed = options.embed;
       } else {
