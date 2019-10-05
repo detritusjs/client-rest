@@ -308,12 +308,12 @@ export const Api = Object.freeze({
   ACTIVITIES:
     '/activities',
   ACTIVITIES_STATISTICS_APPLICATION:
-    '/activities/statistics/applications/:applicationId:',
+    '/activities/statistics/applications/:applicationId',
 
   APPLICATION_NEWS:
     '/application-news',
   APPLICATION_NEWS_ID:
-    '/application-news/:newsId:',
+    '/application-news/:newsId',
 
   APPLICATIONS:
     '/applications',
@@ -324,63 +324,63 @@ export const Api = Object.freeze({
   APPLICATIONS_TRENDING_GLOBAL:
     '/applications/trending/global',
   APPLICATION:
-    '/applications/:applicationId:',
+    '/applications/:applicationId',
   APPLICATION_BRANCHES:
-    '/applications/:applicationId:/branches',
+    '/applications/:applicationId/branches',
   APPLICATION_BRANCH_BUILDS:
-    '/applications/:applicationId:/branches/:branchId:/builds',
+    '/applications/:applicationId/branches/:branchId/builds',
   APPLICATION_BRANCH_BUILDS_LIVE:
-    '/applications/:applicationId:/branches/:branchId:/builds/live',
+    '/applications/:applicationId/branches/:branchId/builds/live',
   APPLICATION_BRANCH_BUILD_PUBLISH:
-    '/applications/:applicationId:/branches/:branchId:/builds/:buildId:/publish',
+    '/applications/:applicationId/branches/:branchId/builds/:buildId/publish',
   APPLICATION_BRANCH_BUILD_SIZE:
-    '/applications/:applicationId:/branches/:branchId:/builds/:buildId:/size',
+    '/applications/:applicationId/branches/:branchId/builds/:buildId/size',
   APPLICATION_BRANCH_STORAGE:
-    '/applications/:applicationId:/branches/:branchId:/storage',
+    '/applications/:applicationId/branches/:branchId/storage',
   APPLICATION_GIFT_CODE_BATCHES:
-    '/applications/:applicationId:/gift-code-batches',
+    '/applications/:applicationId/gift-code-batches',
   APPLICATION_GIFT_CODE_BATCHES_CSV_DOWNLOAD:
-    '/applications/:applicationId:/gift-code-batches/:batchId:',
+    '/applications/:applicationId/gift-code-batches/:batchId',
   APPLICATION_ICON:
-    '/applications/:applicationId:/app-icons/:hash:.png',
+    '/applications/:applicationId/app-icons/:hash.png',
   APPLICATION_MANIFEST_LABELS:
-    '/applications/:applicationId:/manifest-labels',
+    '/applications/:applicationId/manifest-labels',
   APPLICATION_PURCHASE:
-    '/applications/:applicationId:/purchase',
+    '/applications/:applicationId/purchase',
   APPLICATION_SKUS:
-    '/applications/:applicationId:/skus',
+    '/applications/:applicationId/skus',
 
   // these ones are weird lmao
   APPLICATION_ANALYTICS_ACQUISITIONS_ACQUIRERS:
-    '/application/:applicationId:/analytics/acquisitions/acquirers',
+    '/application/:applicationId/analytics/acquisitions/acquirers',
   APPLICATION_ANALYTICS_ACQUISITIONS_EXTERNAL:
-    '/application/:applicationId:/analytics/acquisitions/external',
+    '/application/:applicationId/analytics/acquisitions/external',
   APPLICATION_ANALYTICS_ACQUISITIONS_FUNNEL:
-    '/application/:applicationId:/analytics/acquisitions/funnel',
+    '/application/:applicationId/analytics/acquisitions/funnel',
   APPLICATION_ANALYTICS_ACQUISITIONS_IMPRESSIONS:
-    '/application/:applicationId:/analytics/acquisitions/impressions',
+    '/application/:applicationId/analytics/acquisitions/impressions',
   APPLICATION_ANALYTICS_ACQUISITIONS_STORE_LISTING_VIEWS:
-    '/application/:applicationId:/analytics/acquisitions/store-listing-views',
+    '/application/:applicationId/analytics/acquisitions/store-listing-views',
   APPLICATION_ANALYTICS_ACQUISITIONS_UTM:
-    '/application/:applicationId:/analytics/acquisitions/utm',
+    '/application/:applicationId/analytics/acquisitions/utm',
   APPLICATION_ANALYTICS_ACTIVATIONS_FUNNEL:
-    '/application/:applicationId:/analytics/activations/funnel',
+    '/application/:applicationId/analytics/activations/funnel',
   APPLICATION_ANALYTICS_ACTIVATIONS_INSTALLATIONS:
-    '/application/:applicationId:/analytics/activations/installations',
+    '/application/:applicationId/analytics/activations/installations',
   APPLICATION_ANALYTICS_ACTIVATIONS_NEW_PLAYERS:
-    '/application/:applicationId:/analytics/activations/new-players',
+    '/application/:applicationId/analytics/activations/new-players',
   APPLICATION_ANALYTICS_ACTIVATIONS_REACTIVATED_PLAYERS:
-    '/application/:applicationId:/analytics/activations/reactivated-players',
+    '/application/:applicationId/analytics/activations/reactivated-players',
   APPLICATION_ANALYTICS_ENGAGEMENT_ACTIVE_PLAYERS:
-    '/application/:applicationId:/analytics/engagement/active-players',
+    '/application/:applicationId/analytics/engagement/active-players',
   APPLICATION_ANALYTICS_ENGAGEMENT_PLAYER_RETENTION:
-    '/application/:applicationId:/analytics/engagement/player-retention',
+    '/application/:applicationId/analytics/engagement/player-retention',
   APPLICATION_ANALYTICS_REVENUE:
-    '/application/:applicationId:/analytics/revenue',
+    '/application/:applicationId/analytics/revenue',
   APPLICATION_ANALYTICS_STATUS:
-    '/application/:applicationId:/analytics/status',
+    '/application/:applicationId/analytics/status',
   APPLICATION_ANALYTICS_UNITS:
-    '/application/:applicationId:/analytics/units',
+    '/application/:applicationId/analytics/units',
 
   AUTH_AUTHORIZE_IP:
     '/auth/authorize-ip',
@@ -418,7 +418,7 @@ export const Api = Object.freeze({
   BILLING_BRAINTREE_POPUP_BRIDGE_CALLBACK:
     '/billing/braintree/popup-bridge/callback',
   BILLING_BRAINTREE_POPUP_BRIDGE_CALLBACK_STATE:
-    '/billing/braintree/popup-bridge/callback/:state:/',
+    '/billing/braintree/popup-bridge/callback/:state/',
 
   BRANCHES:
     '/branches',
@@ -426,81 +426,81 @@ export const Api = Object.freeze({
   CHANNELS:
     '/channels',
   CHANNEL:
-    '/channels/:channelId:',
+    '/channels/:channelId',
   CHANNEL_CALL:
-    '/channels/:channelId:/call',
+    '/channels/:channelId/call',
   CHANNEL_CALL_RING:
-    '/channels/:channelId:/call/ring',
+    '/channels/:channelId/call/ring',
   CHANNEL_CALL_STOP_RINGING:
-    '/channels/:channelId:/call/stop-ringing',
+    '/channels/:channelId/call/stop-ringing',
   CHANNEL_FOLLOWERS:
-    '/channels/:channelId:/followers',
+    '/channels/:channelId/followers',
   CHANNEL_ICON:
-    '/channels/:channelId:/icons/:hash:.jgp',
+    '/channels/:channelId/icons/:hash.jgp',
   CHANNEL_INVITES:
-    '/channels/:channelId:/invites',
+    '/channels/:channelId/invites',
   CHANNEL_MESSAGES:
-    '/channels/:channelId:/messages',
+    '/channels/:channelId/messages',
   CHANNEL_MESSAGES_ACK:
-    '/channels/:channelId:/messages/ack',
+    '/channels/:channelId/messages/ack',
   CHANNEL_MESSAGES_BULK_DELETE:
-    '/channels/:channelId:/messages/bulk-delete',
+    '/channels/:channelId/messages/bulk-delete',
   CHANNEL_MESSAGES_SEARCH:
-    '/channels/:channelId:/messages/search',
+    '/channels/:channelId/messages/search',
   CHANNEL_MESSAGE:
-    '/channels/:channelId:/messages/:messageId:',
+    '/channels/:channelId/messages/:messageId',
   CHANNEL_MESSAGE_ACK:
-    '/channels/:channelId:/messages/:messageId:/ack',
+    '/channels/:channelId/messages/:messageId/ack',
   CHANNEL_MESSAGE_CROSSPOST:
-    '/channels/:channelId:/messages/:messageId:/crosspost',
+    '/channels/:channelId/messages/:messageId/crosspost',
   CHANNEL_MESSAGE_REACTIONS:
-    '/channels/:channelId:/messages/:messageId:/reactions',
+    '/channels/:channelId/messages/:messageId/reactions',
   CHANNEL_MESSAGE_REACTION:
-    '/channels/:channelId:/messages/:messageId:/reactions/:emoji:',
+    '/channels/:channelId/messages/:messageId/reactions/:emoji',
   CHANNEL_MESSAGE_REACTION_USER:
-    '/channels/:channelId:/messages/:messageId:/reactions/:emoji:/:userId:',
+    '/channels/:channelId/messages/:messageId/reactions/:emoji/:userId',
   CHANNEL_MESSAGE_SUPPRESS_EMBEDS:
-    '/channels/:channelId:/messages/:messageId:/suppress-embeds',
+    '/channels/:channelId/messages/:messageId/suppress-embeds',
   CHANNEL_PERMISSIONS:
-    '/channels/:channelId:/permissions',
+    '/channels/:channelId/permissions',
   CHANNEL_PERMISSION:
-    '/channels/:channelId:/permissions/:overwriteId:',
+    '/channels/:channelId/permissions/:overwriteId',
   CHANNEL_PINS:
-    '/channels/:channelId:/pins',
+    '/channels/:channelId/pins',
   CHANNEL_PINS_ACK:
-    '/channels/:channelId:/pins/ack',
+    '/channels/:channelId/pins/ack',
   CHANNEL_PIN:
-    '/channels/:channelId:/pins/:messageId:',
+    '/channels/:channelId/pins/:messageId',
   CHANNEL_RECIPIENTS:
-    '/channels/:channelId:/recipients',
+    '/channels/:channelId/recipients',
   CHANNEL_RECIPIENT:
-    '/channels/:channelId:/recipients/:userId',
+    '/channels/:channelId/recipients/:userId',
   CHANNEL_STORE_LISTING:
-    '/channels/:channelId:/store-listing',
+    '/channels/:channelId/store-listing',
   CHANNEL_STORE_LISTING_ENTITLEMENT_GRANT:
-    '/channels/:channelId:/store-listing/entitlement-grant',
+    '/channels/:channelId/store-listing/entitlement-grant',
   CHANNEL_STORE_LISTING_SKU:
-    '/channels/:channelId:/store-listing/:skuId:',
+    '/channels/:channelId/store-listing/:skuId',
   CHANNEL_TYPING:
-    '/channels/:channelId:/typing',
+    '/channels/:channelId/typing',
   CHANNEL_WEBHOOKS:
-    '/channels/:channelId:/webhooks',
+    '/channels/:channelId/webhooks',
 
   COMPANIES:
     '/companies',
   COMPANY:
-    '/companies/:companyId:',
+    '/companies/:companyId',
 
   CONNECTION_AUTHORIZE:
-    '/connections/:platform:/authorize',
+    '/connections/:platform/authorize',
   CONNECTION_AUTHORIZE_CONTINUATION:
-    '/connections/:platform:/authorize?continuation=true',
+    '/connections/:platform/authorize?continuation=true',
   CONNECTION_CALLBACK:
-    '/connections/:platform:/callback',
+    '/connections/:platform/callback',
   CONNECTION_CALLBACK_CONTINUATION:
-    '/connections/:platform:/callback-continuation',
+    '/connections/:platform/callback-continuation',
   CONNECTION_CALLBACK_CONTINUATION_PIN:
-    '/connections/:platform:/callback-continuation/:pin:',
+    '/connections/:platform/callback-continuation/:pin',
 
   DOWNLOAD_EMAIL:
     '/download/email', // disabled
@@ -508,12 +508,12 @@ export const Api = Object.freeze({
     '/download/sms',
 
   EMOJI:
-    '/emojis/:emojiId:.:format:',
+    '/emojis/:emojiId.:format',
 
   ENTITLEMENTS_GIFT_CODE:
-    '/entitlements/gift-codes/:code:',
+    '/entitlements/gift-codes/:code',
   ENTITLEMENTS_GIFT_CODE_REDEEM:
-    '/entitlements/gift-codes/:code:/redeem',
+    '/entitlements/gift-codes/:code/redeem',
 
   EXPERIMENTS:
     '/experiments',
@@ -523,12 +523,12 @@ export const Api = Object.freeze({
   FRIEND_SUGGESTIONS_SYNC:
     '/friend-suggestions/sync',
   FRIEND_SUGGESTION:
-    '/friend-suggestions/:userId:',
+    '/friend-suggestions/:userId',
 
   GAME_NEWS:
     '/game-news',
   GAME_NEWS_ID:
-    '/game-news?game_ids=:gameIds:',
+    '/game-news?game_ids=:gameIds',
 
   GATEWAY:
     '/gateway',
@@ -551,81 +551,81 @@ export const Api = Object.freeze({
   GUILDS_DISCOVERY:
     '/guilds/discoverable',
   GUILD:
-    '/guilds/:guildId:',
+    '/guilds/:guildId',
   GUILD_ACK:
-    '/guilds/:guildId:/ack',
+    '/guilds/:guildId/ack',
   GUILD_APPLICATIONS:
-    '/guilds/:guildId:/applications',
+    '/guilds/:guildId/applications',
   GUILD_AUDIT_LOGS:
-    '/guilds/:guildId:/audit-logs',
+    '/guilds/:guildId/audit-logs',
   GUILD_BANS:
-    '/guilds/:guildId:/bans',
+    '/guilds/:guildId/bans',
   GUILD_BAN:
-    '/guilds/:guildId:/bans/:userId:',
+    '/guilds/:guildId/bans/:userId',
   GUILD_BANNER:
-    '/guilds/:guildId:/banners/:hash:.jpg',
+    '/guilds/:guildId/banners/:hash.jpg',
   GUILD_CHANNELS:
-    '/guilds/:guildId:/channels',
+    '/guilds/:guildId/channels',
   GUILD_DELETE:
-    '/guilds/:guildId:/delete',
+    '/guilds/:guildId/delete',
   GUILD_EMBED:
-    '/guilds/:guildId:/embed',
+    '/guilds/:guildId/embed',
   GUILD_EMBED_JSON:
-    '/guilds/:guildId:/embed.json',
+    '/guilds/:guildId/embed.json',
   GUILD_EMBED_PNG:
-    '/guilds/:guildId:/embed.png',
+    '/guilds/:guildId/embed.png',
   GUILD_EMOJIS:
-    '/guilds/:guildId:/emojis',
+    '/guilds/:guildId/emojis',
   GUILD_EMOJI:
-    '/guilds/:guildId:/emojis/:emojiId:',
+    '/guilds/:guildId/emojis/:emojiId',
   GUILD_ICON:
-    '/guilds/:guildId:/icons/:hash:.:format:',
+    '/guilds/:guildId/icons/:hash.:format',
   GUILD_INTEGRATIONS:
-    '/guilds/:guildId:/integrations',
+    '/guilds/:guildId/integrations',
   GUILD_INTEGRATION:
-    '/guilds/:guildId:/integrations/:integrationId:',
+    '/guilds/:guildId/integrations/:integrationId',
   GUILD_INTEGRATION_SYNC:
-    '/guilds/:guildId:/integrations/:integrationId:/sync',
+    '/guilds/:guildId/integrations/:integrationId/sync',
   GUILD_INVITES:
-    '/guilds/:guildId:/invites',
+    '/guilds/:guildId/invites',
   GUILD_JOIN:
-    '/guilds/:guildId:/members/@me',
+    '/guilds/:guildId/members/@me',
   GUILD_MEMBERS:
-    '/guilds/:guildId:/members',
+    '/guilds/:guildId/members',
   GUILD_MEMBER:
-    '/guilds/:guildId:/members/:userId:',
+    '/guilds/:guildId/members/:userId',
   GUILD_MEMBER_NICK:
-    '/guilds/:guildId:/members/:userId:/nick',
+    '/guilds/:guildId/members/:userId/nick',
   GUILD_MEMBER_ROLE:
-    '/guilds/:guildId:/members/:userId:/roles/:roleId:',
+    '/guilds/:guildId/members/:userId/roles/:roleId',
   GUILD_MFA:
-    '/guilds/:guildId:/mfa',
+    '/guilds/:guildId/mfa',
   GUILD_PREMIUM_SUBSCRIPTIONS:
-    '/guilds/:guildId:/premium/subscriptions',
+    '/guilds/:guildId/premium/subscriptions',
   GUILD_PREMIUM_SUBSCRIPTION:
-    '/guilds/:guildId:/premium/subscriptions/:subscriptionId:',
+    '/guilds/:guildId/premium/subscriptions/:subscriptionId',
   GUILD_PRUNE:
-    '/guilds/:guildId:/prune',
+    '/guilds/:guildId/prune',
   GUILD_REGIONS:
-    '/guilds/:guildId:/regions',
+    '/guilds/:guildId/regions',
   GUILD_ROLES:
-    '/guilds/:guildId:/roles',
+    '/guilds/:guildId/roles',
   GUILD_ROLE:
-    '/guilds/:guildId:/roles/:roleId:',
+    '/guilds/:guildId/roles/:roleId',
   GUILD_SEARCH:
-    '/guilds/:guildId:/messages/search',
+    '/guilds/:guildId/messages/search',
   GUILD_SPLASH:
-    '/guilds/:guildId:/splashes/:hash:.jpg',
+    '/guilds/:guildId/splashes/:hash.jpg',
   GUILD_VANITY_URL:
-    '/guilds/:guildId:/vanity-url',
+    '/guilds/:guildId/vanity-url',
   GUILD_WEBHOOKS:
-    '/guilds/:guildId:/webhooks',
+    '/guilds/:guildId/webhooks',
   GUILD_WIDGET:
-    '/guilds/:guildId:/widget',
+    '/guilds/:guildId/widget',
   GUILD_WIDGET_JSON:
-    '/guilds/:guildId:/widget.json',
+    '/guilds/:guildId/widget.json',
   GUILD_WIDGET_PNG:
-    '/guilds/:guildId:/widget.png',
+    '/guilds/:guildId/widget.png',
 
   HYPESQUAD_APPLY:
     '/hypesquad/apply',
@@ -635,67 +635,67 @@ export const Api = Object.freeze({
   INTEGRATIONS:
     '/integrations',
   INTEGRATION:
-    '/integrations/:integrationId:',
+    '/integrations/:integrationId',
   INTEGRATION_JOIN:
-    '/integrations/:integrationId:/join',
+    '/integrations/:integrationId/join',
   INTEGRATION_SEARCH:
-    '/integrations/:integrationId:/search',
+    '/integrations/:integrationId/search',
 
   INVITE:
-    '/invites/:code:',
+    '/invites/:code',
 
   JOBS:
-    '/jobs/:jobId:',
+    '/jobs/:jobId',
 
   LOBBIES:
     '/lobbies',
   LOBBIES_SEARCH:
     '/lobbies/search',
   LOBBY:
-    '/lobbies/:lobbyId:',
+    '/lobbies/:lobbyId',
   LOBBY_MEMBER:
-    '/lobbies/:lobbyId:/members/:userId:',
+    '/lobbies/:lobbyId/members/:userId',
   LOBBY_SEND:
-    '/lobbies/:lobbyId:/send',
+    '/lobbies/:lobbyId/send',
 
   ME:
     '/users/@me',
   ME_ACTIVITIES_STATISTICS:
     '/users/@me/activities/statistics/applications',
   ME_ACTIVITY_JOIN_INVITE:
-    `/users/@me/sessions/:currentSessionId:/activities/:applicationId:/${ActivityActionTypes.JOIN_REQUEST}/:userId:`,
+    `/users/@me/sessions/:currentSessionId/activities/:applicationId/${ActivityActionTypes.JOIN_REQUEST}/:userId`,
   ME_AGREEMENTS:
     '/users/@me/agreements',
   ME_APPLICATION_achievementS:
-    '/users/@me/applications/:applicationId:/achievements',
+    '/users/@me/applications/:applicationId/achievements',
   ME_APPLICATION_ENTITLEMENTS:
-    '/users/@me/applications/:applicationId:/entitlements',
+    '/users/@me/applications/:applicationId/entitlements',
   ME_APPLICATION_ENTITLEMENT_TICKET:
-    '/users/@me/applications/:applicationId:/entitlement-ticket',
+    '/users/@me/applications/:applicationId/entitlement-ticket',
   ME_APPLICATION_TICKET:
-    '/users/@me/applications/:applicationId:/ticket',
+    '/users/@me/applications/:applicationId/ticket',
   ME_BILLING_PAYMENT_SOURCES:
     '/users/@me/billing/payment-sources',
   ME_BILLING_PAYMENT_SOURCE:
-    '/users/@me/billing/payment-sources/:paymentSourceId:',
+    '/users/@me/billing/payment-sources/:paymentSourceId',
   ME_BILLING_PAYMENTS:
     '/users/@me/billing/payments',
   ME_BILLING_SUBSCRIPTIONS:
     '/users/@me/billing/subscriptions',
   ME_BILLING_SUBSCRIPTION:
-    '/users/@me/billing/subscriptions/:subscriptionId:',
+    '/users/@me/billing/subscriptions/:subscriptionId',
   ME_BILLING_TRIAL_ELIGIBILITY:
-    '/users/@me/billings/trials/:trialId:/eligibility',
+    '/users/@me/billings/trials/:trialId/eligibility',
   ME_CAPTCHA_VERIFY:
     '/users/@me/captcha/verify',
   ME_CONNECTIONS:
     '/users/@me/connections',
   ME_CONNECTION:
-    '/users/@me/connections/:platform:/:accountId:',
+    '/users/@me/connections/:platform/:accountId',
   ME_CONNECTION_ACCESS_TOKEN:
-    '/users/@me/connections/:platform:/:accountId:/access-token',
+    '/users/@me/connections/:platform/:accountId/access-token',
   ME_CONNECTION_REDDIT_SUBREDDITS:
-    '/users/@me/connections/reddit/:accountId:/subreddits',
+    '/users/@me/connections/reddit/:accountId/subreddits',
   ME_CONSENT:
     '/users/@me/consent',
   ME_DELETE_ACCOUNT:
@@ -709,7 +709,7 @@ export const Api = Object.freeze({
   ME_ENTITLEMENTS_GIFT_CODES:
     '/users/@me/entitlements/gift-codes',
   ME_ENTITLEMENTS_GIFT_CODE:
-    '/users/@me/entitlements/gift-codes/:code:',
+    '/users/@me/entitlements/gift-codes/:code',
   ME_FEED_SETTINGS:
     '/users/@me/feed/settings',
   ME_FEED_UNSUBSCRIBED_USERS:
@@ -719,23 +719,23 @@ export const Api = Object.freeze({
   ME_GUILDS_PREMIUM_SUBSCRIPTIONS_COOLDOWN:
     '/users/@me/guilds/premium/subscriptions/cooldown',
   ME_GUILD:
-    '/users/@me/guilds/:guildId:',
+    '/users/@me/guilds/:guildId',
   ME_GUILD_SETTINGS:
-    '/users/@me/guilds/:guildId:/settings',
+    '/users/@me/guilds/:guildId/settings',
   ME_HARVEST:
     '/users/@me/harvest',
   ME_LIBRARY:
     '/users/@me/library',
   ME_LIBRARY_APPLICATION:
-    '/users/@me/library/:applicationId:',
+    '/users/@me/library/:applicationId',
   ME_LIBRARY_APPLICATION_BRANCH:
-    '/users/@me/library/:applicationId:/:branchId:',
+    '/users/@me/library/:applicationId/:branchId',
   ME_LIBRARY_APPLICATION_BRANCH_INSTALLED:
-    '/users/@me/library/:applicationId:/:branchId:/installed',
+    '/users/@me/library/:applicationId/:branchId/installed',
   ME_MENTIONS:
     '/users/@me/mentions',
   ME_MENTION:
-    '/users/@me/mentions/:messageId:',
+    '/users/@me/mentions/:messageId',
   ME_MFA_CODES:
     '/users/@me/mfa/codes',
   ME_MFA_SMS_DISABLE:
@@ -757,7 +757,7 @@ export const Api = Object.freeze({
   ME_RELATIONSHIPS:
     '/users/@me/relationships',
   ME_RELATIONSHIP:
-    '/users/@me/relationships/:userId:',
+    '/users/@me/relationships/:userId',
   ME_SETTINGS:
     '/users/@me/settings',
   ME_SETTINGS_GAME_NOTIFICATIONS:
@@ -771,51 +771,51 @@ export const Api = Object.freeze({
   OAUTH2_APPLICATIONS:
     '/oauth2/applications',
   OAUTH2_APPLICATION:
-    '/oauth2/applications/:applicationId:',
+    '/oauth2/applications/:applicationId',
   OAUTH2_APPLICATION_ACHIEVEMENTS:
-    '/oauth2/applications/:applicationId:/achievements',
+    '/oauth2/applications/:applicationId/achievements',
   OAUTH2_APPLICATION_ACHIEVEMENT:
-    '/oauth2/applications/:applicationId:/achievements/:achievementId:',
+    '/oauth2/applications/:applicationId/achievements/:achievementId',
   OAUTH2_APPLICATION_ACTIVATE_LICENSE:
-    '/oauth2/applications/:applicationId:/activate-license',
+    '/oauth2/applications/:applicationId/activate-license',
   OAUTH2_APPLICATION_APPROVALS:
-    '/oauth2/applications/:applicationId:/approvals',
+    '/oauth2/applications/:applicationId/approvals',
   OAUTH2_APPLICATION_ASSETS:
-    '/oauth2/applications/:applicationId:/assets',
+    '/oauth2/applications/:applicationId/assets',
   OAUTH2_APPLICATION_ASSETS_ENABLE:
-    '/oauth2/applications/:applicationId:/assets/enable',
+    '/oauth2/applications/:applicationId/assets/enable',
   OAUTH2_APPLICATION_ASSET:
-    '/oauth2/applications/:applicationId:/assets/:assetId:',
+    '/oauth2/applications/:applicationId/assets/:assetId',
   OAUTH2_APPLICATION_BOT:
-    '/oauth2/applications/:applicationId:/bot',
+    '/oauth2/applications/:applicationId/bot',
   OAUTH2_APPLICATION_BOT_RESET:
-    '/oauth2/applications/:applicationId:/bot/reset',
+    '/oauth2/applications/:applicationId/bot/reset',
   OAUTH2_APPLICATION_DELETE:
-    '/oauth2/applications/:applicationId:/delete',
+    '/oauth2/applications/:applicationId/delete',
   OAUTH2_APPLICATION_RESET:
-    '/oauth2/applications/:applicationId:/reset',
+    '/oauth2/applications/:applicationId/reset',
   OAUTH2_APPLICATION_RICH_PRESENCE_APPROVAL_FORM:
-    '/oauth2/applications/:applicationId:/rich-presence/approval-form',
+    '/oauth2/applications/:applicationId/rich-presence/approval-form',
   OAUTH2_APPLICATION_RICH_PRESENCE_APPROVAL_FORM_SCREENSHOTS:
-    '/oauth2/applications/:applicationId:/rich-presence/approval-form/screenshots',
+    '/oauth2/applications/:applicationId/rich-presence/approval-form/screenshots',
   OAUTH2_APPLICATION_RICH_PRESENCE_APPROVAL_FORM_SCREENSHOT:
-    '/oauth2/applications/:applicationId:/rich-presence/approval-form/screenshots/:screenshotId:',
+    '/oauth2/applications/:applicationId/rich-presence/approval-form/screenshots/:screenshotId',
   OAUTH2_APPLICATION_RICH_PRESENCE_APPROVAL_FORM_SCREENSHOT_IMAGE:
-    '/oauth2/applications/:applicationId:/rich-presence/approval-form/screenshots/:screenshotId:.jpg',
+    '/oauth2/applications/:applicationId/rich-presence/approval-form/screenshots/:screenshotId.jpg',
   OAUTH2_APPLICATION_RPC:
-    '/oauth2/applications/:applicationId:/rpc',
+    '/oauth2/applications/:applicationId/rpc',
   OAUTH2_APPLICATION_RPC_APPLY:
-    '/oauth2/applications/:applicationId:/rpc/apply',
+    '/oauth2/applications/:applicationId/rpc/apply',
   OAUTH2_APPLICATION_RPC_ENABLE:
-    '/oauth2/applications/:applicationId:/rpc/enable',
+    '/oauth2/applications/:applicationId/rpc/enable',
   OAUTH2_APPLICATION_SKUS:
-    '/oauth2/applications/:applicationId:/skus',
+    '/oauth2/applications/:applicationId/skus',
   OAUTH2_APPLICATION_TRANSFER:
-    '/oauth2/applications/:applicationId:/transfer',
+    '/oauth2/applications/:applicationId/transfer',
   OAUTH2_APPLICATION_WHITELIST:
-    '/oauth2/applications/:applicationId:/whitelist',
+    '/oauth2/applications/:applicationId/whitelist',
   OAUTH2_APPLICATION_WHITELIST_USER:
-    '/oauth2/applications/:applicationId:/whitelist/:userId:',
+    '/oauth2/applications/:applicationId/whitelist/:userId',
   OAUTH2_AUTHORIZE:
     '/oauth2/authorize',
   OAUTH2_AUTHORIZE_WEBHOOK_CHANNELS:
@@ -825,7 +825,7 @@ export const Api = Object.freeze({
   OAUTH2_TOKENS:
     '/oauth2/tokens',
   OAUTH2_TOKEN:
-    '/oauth2/tokens/:tokenId:',
+    '/oauth2/tokens/:tokenId',
   OAUTH2_TOKEN_RPC:
     '/oauth2/token/rpc',
   OAUTH2_WHITELIST_ACCEPT:
@@ -851,69 +851,69 @@ export const Api = Object.freeze({
     '/sso',
 
   STORE_APPLICATION_ASSETS:
-    '/store/applications/:applicationId:/assets',
+    '/store/applications/:applicationId/assets',
   STORE_APPLICATION_ASSET:
-    '/store/applications/:applicationId:/assets/:assetId:',
+    '/store/applications/:applicationId/assets/:assetId',
   STORE_APPLICATION_ASSET_IMAGE:
-    '/store/applications/:applicationId:/assets/:assetId:.:format:',
+    '/store/applications/:applicationId/assets/:assetId.:format',
   STORE_DIRECTORY_LAYOUT:
-    '/store/directory-layouts/:layoutId:',
+    '/store/directory-layouts/:layoutId',
   STORE_DIRECTORY:
-    '/store/directory/:layoutId:',
+    '/store/directory/:layoutId',
   STORE_EULA:
-    '/store/eulas/:eulaId:',
+    '/store/eulas/:eulaId',
   STORE_LISTINGS:
     '/store/listings',
   STORE_LISTING:
-    '/store/listings/:listingId:',
+    '/store/listings/:listingId',
   STORE_PRICE_TIERS:
     '/store/price-tiers',
   STORE_PRICE_TIER:
-    '/store/price-tiers/:priceTier:',
+    '/store/price-tiers/:priceTier',
   STORE_PUBLISHED_LISTINGS_APPLICATIONS:
     '/store/published-listings/applications',
   STORE_PUBLISHED_LISTINGS_APPLICATION:
-    '/store/published-listings/applications/:applicationId:',
+    '/store/published-listings/applications/:applicationId',
   STORE_PUBLISHED_LISTINGS_SKUS:
     '/store/published-listings/skus',
   STORE_PUBLISHED_LISTINGS_SKU:
-    '/store/published-listings/skus/:skuId:',
+    '/store/published-listings/skus/:skuId',
   STORE_PUBLISHED_LISTINGS_SKU_JOIN_GUILD:
-    '/store/published-listings/skus/:skuId:/guild/join',
+    '/store/published-listings/skus/:skuId/guild/join',
   STORE_PUBLISHED_LISTINGS_SKU_SUBSCRIPTION_PLANS:
-    '/store/published-listings/skus/:skuId:/subscription-plans',
+    '/store/published-listings/skus/:skuId/subscription-plans',
   STORE_SKUS:
     '/store/skus',
   STORE_SKU:
-    '/store/skus/:skuId:',
+    '/store/skus/:skuId',
   STORE_SKU_LISTINGS:
-    '/store/skus/:skuId:/listings',
+    '/store/skus/:skuId/listings',
   STORE_SKU_PURCHASE:
-    '/store/skus/:skuId:/purchase',
+    '/store/skus/:skuId/purchase',
 
   STREAM_PREVIEW:
-    '/streams/:steamKey:/preview',
+    '/streams/:steamKey/preview',
 
   TEAMS:
     '/teams',
   TEAMS_INVITE_ACCEPT:
     '/teams/invite/accept',
   TEAM:
-    '/teams/:teamId:',
+    '/teams/:teamId',
   TEAM_APPLICATIONS:
-    '/teams/:teamId:/applications',
+    '/teams/:teamId/applications',
   TEAM_COMPANIES:
-    '/teams/:teamId:/companies',
+    '/teams/:teamId/companies',
   TEAM_DELETE:
-    '/teams/:teamId:/delete',
+    '/teams/:teamId/delete',
   TEAM_MEMBERS:
-    '/teams/:teamId:/members',
+    '/teams/:teamId/members',
   TEAM_MEMBER:
-    '/teams/:teamId:/members/:userId:',
+    '/teams/:teamId/members/:userId',
   TEAM_PAYOUTS:
-    '/teams/:teamId:/payouts',
+    '/teams/:teamId/payouts',
   TEAM_PAYOUTS_IFRAME:
-    '/teams/:teamId:/payouts/onboarding',
+    '/teams/:teamId/payouts/onboarding',
 
   TRACK:
     '/science',
@@ -925,7 +925,7 @@ export const Api = Object.freeze({
   TUTORIAL_INDICATORS_SUPPRESS:
     '/tutorial/indicators/suppress',
   TUTORIAL_INDICATOR:
-    '/tutorial/indicators/:indicatorId:',
+    '/tutorial/indicators/:indicatorId',
 
   UNVERIFIED_APPLICATIONS:
     '/unverified-applications',
@@ -937,25 +937,25 @@ export const Api = Object.freeze({
   USERS_DISABLE_EMAIL_NOTIFICATIONS:
     '/users/disable-email-notifications',
   USER:
-    '/users/:userId:',
+    '/users/:userId',
   USER_ACTIVITY_METADATA:
-    '/users/:userId:/sessions/:sessionId:/activities/:activityId:/metadata',
+    '/users/:userId/sessions/:sessionId/activities/:activityId/metadata',
   USER_ACTIVITY_JOIN:
-    `/users/:userId:/sessions/:sessionId:/activities/:activityId:/${ActivityActionTypes.JOIN}`,
+    `/users/:userId/sessions/:sessionId/activities/:activityId/${ActivityActionTypes.JOIN}`,
   USER_ACTIVITY_JOIN_REQUEST:
-    `/users/:userId:/sessions/:sessionId:/activities/:activityId:/${ActivityActionTypes.JOIN_REQUEST}`,
+    `/users/:userId/sessions/:sessionId/activities/:activityId/${ActivityActionTypes.JOIN_REQUEST}`,
   USER_ACTIVITY_SPECTATE:
-    `/users/:userId:/sessions/:sessionId:/activities/:activityId:/${ActivityActionTypes.SPECTATE}`,
+    `/users/:userId/sessions/:sessionId/activities/:activityId/${ActivityActionTypes.SPECTATE}`,
   USER_APPLICATION_ACHIEVEMENT:
-    '/users/:userId:/applications/:applicationId:/achievements/:achievementId:',
+    '/users/:userId/applications/:applicationId/achievements/:achievementId',
   USER_AVATAR:
-    '/users/:userId:/avatars/:hash:.jpg',
+    '/users/:userId/avatars/:hash.jpg',
   USER_CHANNELS:
-    '/users/:userId:/channels',
+    '/users/:userId/channels',
   USER_PROFILE:
-    '/users/:userId:/profile',
+    '/users/:userId/profile',
   USER_RELATIONSHIPS:
-    '/users/:userId:/relationships',
+    '/users/:userId/relationships',
 
   VERIFIED_SERVERS_APPLY:
     '/verified-servers/apply',
@@ -968,11 +968,11 @@ export const Api = Object.freeze({
     '/voice/regions',
 
   WEBHOOK:
-    '/webhooks/:webhookId:',
+    '/webhooks/:webhookId',
   WEBHOOK_TOKEN:
-    '/webhooks/:webhookId:/:token:',
+    '/webhooks/:webhookId/:token',
   WEBHOOK_TOKEN_GITHUB:
-    '/webhooks/:webhookId:/github',
+    '/webhooks/:webhookId/github',
   WEBHOOK_TOKEN_SLACK:
-    '/webhooks/:webhookId:/slack',
+    '/webhooks/:webhookId/slack',
 });
