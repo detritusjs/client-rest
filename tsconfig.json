@@ -1,12 +1,17 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "declaration": true,
     "module": "commonjs",
     "moduleResolution": "node",
-    "declaration": true,
     "outDir": "./lib",
-    "strict": true
+    "strict": true,
+    "target": "esnext"
   },
   "include": ["src"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "typedocOptions": {
+    "mode": "file",
+    "name": "Detritus Rest Client",
+    "out": "./docs"
+  }
 }

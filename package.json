@@ -12,13 +12,15 @@
     "detritus-utils": "^0.1.10"
   },
   "devDependencies": {
-    "@types/node": "^12.7.11"
+    "@types/node": "^12.7.11",
+    "typedoc": "^0.15.0"
   },
   "peerDependencies": {},
   "scripts": {
     "build": "tsc",
+    "prepare": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "npm run build"
+    "typedoc": "typedoc ./src"
   },
   "repository": {
     "type": "git",
