@@ -5,7 +5,7 @@ import {
   Client as RestClient,
   Response,
 } from 'detritus-rest';
-import { BaseCollection, EventEmitter, Snowflake } from 'detritus-utils';
+import { BaseCollection, EventSpewer, Snowflake } from 'detritus-utils';
 
 import { Bucket } from './bucket';
 import { BucketCollection } from './bucketcollection';
@@ -68,7 +68,7 @@ export interface ClientOptions {
   settings?: any,
 }
 
-export class Client extends EventEmitter {
+export class Client extends EventSpewer {
   readonly buckets: BucketCollection;
   readonly routes: BaseCollection<string, string>;
 
@@ -284,10 +284,10 @@ export class Client extends EventEmitter {
     return this.request(options);
   }
 
-  on(event: string, listener: Function): this;
+  on(event: string | symbol, listener: (...args: any[]) => void): this;
   on(event: 'request', listener: (payload: RestClientEvents.RequestPayload) => any): this;
   on(event: 'response', listener: (payload: RestClientEvents.ResponsePayload) => any): this;
-  on(event: string, listener: Function): this {
+  on(event: string | symbol, listener: (...args: any[]) => void): this {
     super.on(event, listener);
     return this;
   }
