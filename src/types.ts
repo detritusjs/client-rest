@@ -503,6 +503,12 @@ export namespace RequestTypes {
   export interface EditMe {
     avatar?: Buffer | null | string,
     code?: string,
+    customStatus?: {
+      emojiId?: string,
+      emojiName?: string,
+      expiresAt?: Date | string,
+      text?: string,
+    },
     discriminator?: number | string,
     email?: string,
     flags?: number,

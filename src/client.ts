@@ -2174,9 +2174,10 @@ export class Client extends EventSpewer {
   async editMe(
     options: RequestTypes.EditMe = {},
   ): Promise<any> {
-    const body = {
+    const body: any = {
       avatar: bufferToBase64(options.avatar),
       code: options.code,
+      custom_status: undefined,
       discriminator: options.discriminator,
       email: options.email,
       flags: options.flags,
@@ -2184,6 +2185,14 @@ export class Client extends EventSpewer {
       password: options.password,
       username: options.username,
     };
+    if (options.customStatus) {
+      body.custom_status = {
+        emoji_id: options.customStatus.emojiId,
+        emoji_name: options.customStatus.emojiName,
+        expires_at: options.customStatus.expiresAt,
+        text: options.customStatus.text,
+      };
+    }
     if (this.clientsideChecks) {
 
     }

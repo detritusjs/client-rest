@@ -6,7 +6,9 @@ import { Bucket } from './bucket';
 export class BucketCollection extends BaseCollection<string, Bucket> {
   constructor(options: BaseCollectionOptions = {}) {
     super(options);
-    this.interval.unref();
+    if (this.interval) {
+      this.interval.unref();
+    }
   }
 
   insert(bucket: Bucket) {

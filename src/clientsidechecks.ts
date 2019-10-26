@@ -15,7 +15,9 @@ export function bufferToBase64(
   buffer?: Buffer | string | null,
 ): string | null | undefined {
   if (buffer instanceof Buffer) {
-    return buffer.toString('base64');
+    const mimetype = 'image/png';
+    // just put image/png for now, discord checks it afterwards anyways
+    return `data:${mimetype},base64,${buffer.toString('base64')}`;
   }
   return buffer;
 }
