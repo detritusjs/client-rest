@@ -187,7 +187,14 @@ export class RestRequest {
 
       if (response.statusCode === 429 && !this.errorOnRatelimit) {
         // ratelimited, retry
-        const retryAfter = parseInt(response.headers[RatelimitHeaders.RETRY_AFTER]) || 0;
+        let retryAfter = parseInt(response.headers[RatelimitHeaders.RETRY_AFTER]) || 0;
+
+        // since discord's retry-after is in milliseconds (should be seconds, like cloudflare)
+        // described here https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
+        const isDiscordRatelimit = ('via' in response.headers);
+        if (!isDiscordRatelimit) {
+          retryAfter *= 1000;
+        }
         return new Promise(async (resolve, reject) => {
           const delayed = {request: this, resolve, reject};
 
@@ -198,12 +205,14 @@ export class RestRequest {
               return response.close();
             }
           } else {
-            // check json body since users dont get the above header
-            const data = await response.body();
-            if (data.global) {
-              this.client.globalBucket.lock(retryAfter);
-              this.client.globalBucket.add(delayed);
-              return response.close();
+            if (isDiscordRatelimit) {
+              // check json body since users dont get the above header
+              const data = await response.body();
+              if (data.global) {
+                this.client.globalBucket.lock(retryAfter);
+                this.client.globalBucket.add(delayed);
+                return response.close();
+              }
             }
           }
 
