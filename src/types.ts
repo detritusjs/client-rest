@@ -605,6 +605,10 @@ export namespace RequestTypes {
     withCounts?: boolean,
   }
 
+  export interface FetchMe {
+    withAnalyticsToken?: boolean,
+  }
+
   export interface FetchMeBillingPayments {
     beforeId?: string,
     limit?: number,

@@ -2717,6 +2717,15 @@ export class Client extends EventSpewer {
     });
   }
 
+  fetchDiscoverableGuilds(): Promise<any> {
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.DISCOVERABLE_GUILDS,
+      },
+    });
+  }
+
   async fetchDms(userId: string = '@me'): Promise<any> {
     const params = {userId};
     if (this.clientsideChecks) {
@@ -3121,6 +3130,22 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchGuildPreview(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_PREVIEW,
+        params,
+      },
+    });
+  }
+
   async fetchGuildPruneCount(
     guildId: string,
   ): Promise<any> {
@@ -3259,9 +3284,17 @@ export class Client extends EventSpewer {
     });
   }
 
-  fetchMe(): Promise<any> {
+  async fetchMe(options: RequestTypes.FetchMe = {}): Promise<any> {
+    const query = {
+      with_analytics_token: options.withAnalyticsToken,
+    };
+    if (this.clientsideChecks) {
+
+    }
     return this.request({
+      query,
       route: {
+        method: HTTPMethods.GET,
         path: Api.ME,
       },
     });

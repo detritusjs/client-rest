@@ -433,6 +433,8 @@ export const Api = Object.freeze({
     '/channels/:channelId/call/ring',
   CHANNEL_CALL_STOP_RINGING:
     '/channels/:channelId/call/stop-ringing',
+  CHANNEL_FOLLOWER_STATS:
+    '/channels/:channelId/follower-stats',
   CHANNEL_FOLLOWERS:
     '/channels/:channelId/followers',
   CHANNEL_ICON:
@@ -479,8 +481,8 @@ export const Api = Object.freeze({
     '/channels/:channelId/store-listing',
   CHANNEL_STORE_LISTING_ENTITLEMENT_GRANT:
     '/channels/:channelId/store-listing/entitlement-grant',
-  CHANNEL_STORE_LISTING_SKU:
-    '/channels/:channelId/store-listing/:skuId',
+  CHANNEL_STORE_LISTINGS_SKU:
+    '/channels/:channelId/store-listings/:skuId',
   CHANNEL_TYPING:
     '/channels/:channelId/typing',
   CHANNEL_WEBHOOKS:
@@ -501,6 +503,9 @@ export const Api = Object.freeze({
     '/connections/:platform/callback-continuation',
   CONNECTION_CALLBACK_CONTINUATION_PIN:
     '/connections/:platform/callback-continuation/:pin',
+
+  DISCOVERABLE_GUILDS:
+    '/discoverable-guilds',
 
   DOWNLOAD_EMAIL:
     '/download/email', // disabled
@@ -554,6 +559,8 @@ export const Api = Object.freeze({
     '/guilds/:guildId',
   GUILD_ACK:
     '/guilds/:guildId/ack',
+  GUILD_ANALYTICS_OVERVIEW:
+    '/guilds/:guildId/analytics/overview',
   GUILD_APPLICATIONS:
     '/guilds/:guildId/applications',
   GUILD_AUDIT_LOGS:
@@ -604,6 +611,8 @@ export const Api = Object.freeze({
     '/guilds/:guildId/premium/subscriptions',
   GUILD_PREMIUM_SUBSCRIPTION:
     '/guilds/:guildId/premium/subscriptions/:subscriptionId',
+  GUILD_PREVIEW:
+    '/guilds/:guildId/preview',
   GUILD_PRUNE:
     '/guilds/:guildId/prune',
   GUILD_REGIONS:
@@ -674,12 +683,20 @@ export const Api = Object.freeze({
     '/users/@me/applications/:applicationId/entitlement-ticket',
   ME_APPLICATION_TICKET:
     '/users/@me/applications/:applicationId/ticket',
+  ME_BILLING_INVOICES_PREVIEW:
+    '/users/@me/billing/invoices/preview',
   ME_BILLING_PAYMENT_SOURCES:
     '/users/@me/billing/payment-sources',
   ME_BILLING_PAYMENT_SOURCE:
     '/users/@me/billing/payment-sources/:paymentSourceId',
   ME_BILLING_PAYMENTS:
     '/users/@me/billing/payments',
+  ME_BILLING_PAYMENT_VOID:
+    '/users/@me/billing/payments/:paymentId/void',
+  ME_BILLING_STRIPE_SETUP_INTENT:
+    '/users/@me/billing/stripe/setup-intents',
+  ME_BILLING_STRIPE_PAYMENT_INTENTS_PAYMENT:
+    '/users/@me/billing/stripe/payment-intents/payments/:paymentId',
   ME_BILLING_SUBSCRIPTIONS:
     '/users/@me/billing/subscriptions',
   ME_BILLING_SUBSCRIPTION:
@@ -718,6 +735,12 @@ export const Api = Object.freeze({
     '/users/@me/guilds/premium/subscriptions',
   ME_GUILDS_PREMIUM_SUBSCRIPTIONS_COOLDOWN:
     '/users/@me/guilds/premium/subscriptions/cooldown',
+  ME_GUILDS_PREMIUM_SUBSCRIPTION_SLOTS:
+    '/users/@me/guilds/premium/subscription-slots',
+  ME_GUILDS_PREMIUM_SUBSCRIPTION_SLOT_CANCEL:
+    '/users/@me/guilds/premium/subscription-slots/:subscriptionId/cancel',
+  ME_GUILDS_PREMIUM_SUBSCRIPTION_SLOT_UNCANCEL:
+    '/users/@me/guilds/premium/subscription-slots/:subscriptionId/uncancel',
   ME_GUILD:
     '/users/@me/guilds/:guildId',
   ME_GUILD_SETTINGS:
@@ -891,8 +914,10 @@ export const Api = Object.freeze({
   STORE_SKU_PURCHASE:
     '/store/skus/:skuId/purchase',
 
+  STREAM_NOTIFY:
+    '/streams/:streamKey/notify',
   STREAM_PREVIEW:
-    '/streams/:steamKey/preview',
+    '/streams/:streamKey/preview',
 
   TEAMS:
     '/teams',
@@ -962,6 +987,8 @@ export const Api = Object.freeze({
   VERIFIED_SERVERS_NEWSLETTER:
     '/verified-servers/newsletter',
 
+  VOICE_DEBUG_FILE:
+    '/voice/debug/file',
   VOICE_ICE:
     '/voice/ice',
   VOICE_REGIONS:
