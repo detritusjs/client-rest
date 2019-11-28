@@ -977,7 +977,7 @@ export class Client extends EventSpewer {
   async createMessage(
     channelId: string,
     options: RequestTypes.CreateMessage | string = {},
-  ): Promise<ResponseTypes.CreateMessage> {
+  ): Promise<any> {
     if (typeof(options) === 'string') {
       options = {content: options};
     }
@@ -2271,7 +2271,7 @@ export class Client extends EventSpewer {
     channelId: string,
     messageId: string,
     options: RequestTypes.EditMessage | string = {},
-  ): Promise<ResponseTypes.EditMessage> {
+  ): Promise<any> {
     if (typeof(options) === 'string') {
       options = {content: options};
     }
