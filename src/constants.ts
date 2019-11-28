@@ -6,7 +6,7 @@ export { HTTPMethods };
 
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.6.4',
+  VERSION: '0.6.6',
 });
 
 
@@ -63,13 +63,16 @@ export const DiscordAbortCodes = Object.freeze({
   TOO_MANY_EMOJI: 30008,
   TOO_MANY_REACTIONS: 30010,
   TOO_MANY_GUILD_CHANNELS: 30013,
+  TOO_MANY_ATTACHMENTS: 30015,
   TOO_MANY_ANIMATED_EMOJI: 30018,
+  NOT_ENOUGH_GUILD_MEMBERS: 30029,
 
   UNAUTHORIZED: 40001,
   EMAIL_VERIFICATION_REQUIRED: 40002,
   RATE_LIMIT_DM_OPEN: 40003,
   SEND_MESSAGE_TEMPORARILY_DISABLED: 40004,
   USER_BANNED: 40007,
+  CONNECTION_REVOKED: 40012,
   DELETE_ACCOUNT_TRANSFER_TEAM_OWNERSHIP: 40028,
 
   INVALID_ACCESS: 50001,
@@ -165,7 +168,10 @@ export const RestEvents = Object.freeze({
   RESPONSE: 'response',
 });
 
+
 export const RATELIMIT_BUCKET_MAJOR_PARAMS = Object.freeze(['channelId', 'guildId', 'webhookId']);
+
+export const SPOILER_ATTACHMENT_PREFIX = 'SPOILER_';
 
 // https://github.com/discordapp/discord-api-docs/issues/1092
 export const MESSAGE_DELETE_RATELIMIT_CHECK = 10000;

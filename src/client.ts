@@ -21,11 +21,12 @@ import {
   Package,
   RestEvents,
   MESSAGE_DELETE_RATELIMIT_CHECK,
+  SPOILER_ATTACHMENT_PREFIX,
 } from './constants';
 import { Api } from './endpoints';
 import { RestRequest } from './request';
 
-import { RequestTypes, RestClientEvents } from './types';
+import { RequestTypes, ResponseTypes, RestClientEvents } from './types';
 
 
 const defaultHeaders: {[key: string]: string} = {
@@ -976,7 +977,7 @@ export class Client extends EventSpewer {
   async createMessage(
     channelId: string,
     options: RequestTypes.CreateMessage | string = {},
-  ): Promise<any> {
+  ): Promise<ResponseTypes.CreateMessage> {
     if (typeof(options) === 'string') {
       options = {content: options};
     }
@@ -989,13 +990,11 @@ export class Client extends EventSpewer {
       application_id?: string,
       content?: string,
       embed?: RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction,
-      hasSpoiler?: boolean,
       nonce?: string,
       tts?: boolean,
     } = {
       application_id: options.applicationId,
       content: options.content,
-      hasSpoiler: options.hasSpoiler,
       nonce: options.nonce,
       tts: options.tts,
     };
@@ -1068,6 +1067,14 @@ export class Client extends EventSpewer {
       !files.length
     ) {
       throw new Error('Cannot send an empty message.');
+    }
+
+    if (options.hasSpoiler) {
+      for (let file of files) {
+        if (file.filename && !file.filename.startsWith(SPOILER_ATTACHMENT_PREFIX)) {
+          file.filename = `${SPOILER_ATTACHMENT_PREFIX}${file.filename}`;
+        }
+      }
     }
 
     return this.request({
@@ -1825,6 +1832,7 @@ export class Client extends EventSpewer {
       owner_id: options.ownerId,
       preferred_locale: options.preferredLocale,
       region: options.region,
+      rules_channel_id: options.rulesChannelId,
       splash: bufferToBase64(options.splash),
       system_channel_flags: options.systemChannelFlags,
       system_channel_id: options.systemChannelId,
@@ -2262,16 +2270,18 @@ export class Client extends EventSpewer {
     channelId: string,
     messageId: string,
     options: RequestTypes.EditMessage | string = {},
-  ): Promise<any> {
+  ): Promise<ResponseTypes.EditMessage> {
     if (typeof(options) === 'string') {
       options = {content: options};
     }
     const body: {
       content?: string,
       embed?: null | RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction,
+      flags?: number,
     } = {
       content: options.content,
       embed: options.embed,
+      flags: options.flags,
     };
     const params = {channelId, messageId};
 

@@ -141,10 +141,18 @@ export const Routes = Tools.URIEncodeWrap({
     '/authorize-ip',
   BILLING_BRAINTREE_POPUP_BRIDGE_CALLBACK:
     '/billing/braintree/popup-bridge/callback',
+  BILLING_GUILD_SUBSCRIPTIONS_PURCHASE:
+    '/billing/guild-subscriptions/purchase',
   BILLING_PAYMENTS:
     '/billing/payments',
+  BILLING_PAYMENT_SOURCES_CREATE:
+    '/billing/payment-sources/create',
   BILLING_PREMIUM:
     '/billing/premium',
+  BILLING_PREMIUM_SUBSCRIBE:
+    '/billing/premium/subscribe',
+  BILLING_PREMIUM_SWITCH_PLAN:
+    '/billing/premium/switch-plan',
   BRANDING:
     '/branding',
   CHANGELOGS:
@@ -231,6 +239,8 @@ export const Routes = Tools.URIEncodeWrap({
     '/privacy',
   PRIVACY_2017:
     '/privacy-2017',
+  PROMOTIONS_XBOX_GAME_PASS_REDEEM: (token: string) =>
+    `/promotions/xbox-game-pass/redeem/${token}`,
   REGISTER:
     '/register',
   REGISTER_REDIRECT_TO: (redirectTo: string) =>
@@ -673,6 +683,8 @@ export const Api = Object.freeze({
     '/users/@me/activities/statistics/applications',
   ME_ACTIVITY_JOIN_INVITE:
     `/users/@me/sessions/:currentSessionId/activities/:applicationId/${ActivityActionTypes.JOIN_REQUEST}/:userId`,
+  ME_AFFINITIES_USERS:
+    '/users/@me/affinities/users',
   ME_AGREEMENTS:
     '/users/@me/agreements',
   ME_APPLICATION_achievementS:
@@ -863,6 +875,10 @@ export const Api = Object.freeze({
     '/promotions',
   PROMOTIONS_ACK:
     '/promotions/ack',
+  PROMOTIONS_XBOX_GAME_PASS:
+    '/promotions/xbox-game-pass',
+  PROMOTIONS_XBOX_GAME_PASS_REDEEM:
+    '/promotions/xbox-game-pass/redeem',
 
   REPORT:
     '/report',

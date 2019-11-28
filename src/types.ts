@@ -389,7 +389,7 @@ export namespace RequestTypes {
   }
 
   export interface EditGuild {
-    afkChannelId?: string,
+    afkChannelId?: null | string,
     afkTimeout?: number,
     banner?: Buffer | string,
     code?: string,
@@ -403,9 +403,10 @@ export namespace RequestTypes {
     preferredLocale?: string,
     reason?: string,
     region?: string,
+    rulesChannelId?: null | string,
     splash?: Buffer | string | null,
     systemChannelFlags?: number,
-    systemChannelId?: string,
+    systemChannelId?: null | string,
     verificationLevel?: number,
   }
 
@@ -539,7 +540,7 @@ export namespace RequestTypes {
   export interface EditMessage {
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction | null,
-    mentions?: Array<any>, // idk, the sourcecode has this
+    flags?: number,
   }
 
   export interface EditOauth2Application {
@@ -845,5 +846,132 @@ export namespace RequestTypes {
     id?: string,
     theme?: string,
     username?: string,
+  }
+}
+
+export namespace ResponseTypes {
+  export type CreateMessage = DiscordTypes.Message;
+  export type EditMessage = DiscordTypes.Message;
+}
+
+
+export namespace DiscordTypes {
+  export interface ChannelPartial {
+    id: string,
+    name: string,
+  }
+
+  export interface Message {
+    activity?: {
+      cover_image?: string,
+      name?: string,
+      party_id: string,
+      type: number,
+    },
+    application?: {
+      cover_image: null | string,
+      description: string,
+      icon: null | string,
+      id: string,
+      name: string,
+      primary_sku_id: string,
+    },
+    attachments?: Array<MessageAttachment>,
+    author: User,
+    call?: {
+      ended_timestamp: null | string,
+      participiants: Array<string>,
+    },
+    channel_id: string,
+    content: string,
+    edited_timestamp?: string,
+    embeds?: Array<MessageEmbed>,
+    guild_id?: string,
+    id: string,
+    mention_channels?: Array<ChannelPartial>,
+    mention_everyone: boolean,
+    mention_roles: Array<string>,
+    mentions: Array<{
+      bot: boolean,
+      discriminator: string,
+      id: string,
+      username: string,
+    }>,
+    message_reference?: {
+      channel_id: string,
+      guild_id?: string,
+      message_id: string,
+    },
+    nonce: null | string,
+    pinned: boolean,
+    timestamp: string,
+    tts: boolean,
+    type: number,
+    webhook_id?: string,
+  }
+
+  export interface MessageAttachment {
+    filename: string,
+    height: number,
+    id: string,
+    proxy_url: string,
+    size: number,
+    url: string,
+    width: number,
+  }
+
+  export interface MessageEmbed {
+    author?: {
+      icon_url?: string,
+      name?: string,
+      proxy_icon_url?: string,
+      url?: string,
+    },
+    color?: number,
+    description?: string,
+    fields?: Array<{
+      inline?: boolean,
+      name: string,
+      value: string,
+    }>,
+    footer?: {
+      icon_url?: string,
+      proxy_icon_url?: string,
+      text: string,
+    },
+    image?: {
+      height?: number,
+      proxy_url?: string,
+      url?: string,
+      width?: number,
+    },
+    provider?: {
+      name?: string,
+      url?: string,
+    },
+    reference_id?: string,
+    thumbnail?: {
+      height?: number,
+      proxy_url?: string,
+      url?: string,
+      width?: number,
+    },
+    timestamp?: string,
+    title?: string,
+    type?: string,
+    url?: string,
+    video?: {
+      height?: number,
+      url?: string,
+      width?: number,
+    },
+  }
+
+  export interface User {
+    avatar: null | string,
+    bot: boolean,
+    discriminator: string,
+    id: string,
+    username: string,
   }
 }
