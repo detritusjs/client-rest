@@ -395,6 +395,7 @@ export namespace RequestTypes {
     code?: string,
     defaultMessageNotifications?: string,
     description?: string,
+    discoverySplash?: Buffer | string | null,
     explicitContentFilter?: number,
     features?: Array<string>,
     icon?: Buffer | string | null,

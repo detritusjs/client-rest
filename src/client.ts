@@ -1825,6 +1825,7 @@ export class Client extends EventSpewer {
       code: options.code,
       default_message_notifications: options.defaultMessageNotifications,
       description: options.description,
+      discovery_splash: bufferToBase64(options.discoverySplash),
       explicit_content_filter: options.explicitContentFilter,
       features: options.features,
       icon: bufferToBase64(options.icon),
