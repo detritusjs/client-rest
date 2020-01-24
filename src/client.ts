@@ -1580,6 +1580,24 @@ export class Client extends EventSpewer {
     });
   }
 
+  async deleteReactionsEmoji(
+    channelId: string,
+    messageId: string,
+    emoji: string,
+  ): Promise<any> {
+    const params = {channelId, messageId, emoji};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.CHANNEL_MESSAGE_REACTION,
+        params,
+      },
+    });
+  }
+
   async deleteReaction(
     channelId: string,
     messageId: string,
@@ -3736,6 +3754,20 @@ export class Client extends EventSpewer {
         method: HTTPMethods.GET,
         path: Api.STORE_PUBLISHED_LISTINGS_SKU_SUBSCRIPTION_PLANS,
       },
+    });
+  }
+
+  async fetchStreamPreview(streamKey: string): Promise<any> {
+    const params = {streamKey};
+    if (this.clientsideChecks) {
+      
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.STREAM_PREVIEW,
+        params,
+      }
     });
   }
 

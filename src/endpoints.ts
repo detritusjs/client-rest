@@ -113,6 +113,10 @@ export const Routes = Tools.URIEncodeWrap({
   URL: 'https://discordapp.com',
   INDEX:
     '/',
+  INDEX_WORD:
+    '/index',
+  INDEX_BUCKET: (bucketId: string): string =>
+    `/index/${bucketId}`,
   404:
     '/404',
   APP:
@@ -287,6 +291,8 @@ export const Routes = Tools.URIEncodeWrap({
     `/welcome/${guildId}/${channelId}/${type}`,
   WIDGET:
     '/widget',
+  XBOX_OFFER:
+    '/discord-xbox-offer-2019',
 });
 
 export const RoutesQuery = Object.freeze({
@@ -443,6 +449,8 @@ export const Api = Object.freeze({
     '/channels/:channelId/call/ring',
   CHANNEL_CALL_STOP_RINGING:
     '/channels/:channelId/call/stop-ringing',
+  CHANNEL_FOLLOWER_MESSAGE_STATS:
+    '/channels/:channelId/follower-message-stats',
   CHANNEL_FOLLOWER_STATS:
     '/channels/:channelId/follower-stats',
   CHANNEL_FOLLOWERS:
@@ -535,6 +543,8 @@ export const Api = Object.freeze({
 
   FRIEND_SUGGESTIONS:
     '/friend-suggestions',
+  FRIEND_SUGGESTIONS_ACCEPT_MUTUAL_CONTACTS:
+    '/friend-suggestions/accept-mutual-contacts',
   FRIEND_SUGGESTIONS_SYNC:
     '/friend-suggestions/sync',
   FRIEND_SUGGESTION:
@@ -585,6 +595,8 @@ export const Api = Object.freeze({
     '/guilds/:guildId/channels',
   GUILD_DELETE:
     '/guilds/:guildId/delete',
+  GUILD_DISCOVERY_CHECKLIST:
+    '/guilds/:guildId/discovery-checklist',
   GUILD_EMBED:
     '/guilds/:guildId/embed',
   GUILD_EMBED_JSON:
@@ -683,6 +695,8 @@ export const Api = Object.freeze({
     '/users/@me/activities/statistics/applications',
   ME_ACTIVITY_JOIN_INVITE:
     `/users/@me/sessions/:currentSessionId/activities/:applicationId/${ActivityActionTypes.JOIN_REQUEST}/:userId`,
+  ME_AFFINITIES_GUILDS:
+    '/users/@me/affinities/guilds',
   ME_AFFINITIES_USERS:
     '/users/@me/affinities/users',
   ME_AGREEMENTS:
@@ -793,12 +807,21 @@ export const Api = Object.freeze({
     '/users/@me/relationships',
   ME_RELATIONSHIP:
     '/users/@me/relationships/:userId',
+  ME_REMOTE_AUTH:
+    '/users/@me/remote-auth',
+  ME_REMOTE_AUTH_CANCEL:
+    '/users/@me/remote-auth/cancel',
+  ME_REMOTE_AUTH_FINISH:
+    '/users/@me/remote-auth/finish',
   ME_SETTINGS:
     '/users/@me/settings',
   ME_SETTINGS_GAME_NOTIFICATIONS:
     '/users/@me/settings/game-notifications',
   ME_SETTINGS_GAME_NOTIFICATIONS_OVERRIDES:
     '/users/@me/settings/game-notifications/overrides',
+
+  NATIVE_DEBUG_LOGS:
+    '/native/debug-logs',
 
   NETWORKING_TOKEN:
     '/networking/token',
@@ -879,6 +902,9 @@ export const Api = Object.freeze({
     '/promotions/xbox-game-pass',
   PROMOTIONS_XBOX_GAME_PASS_REDEEM:
     '/promotions/xbox-game-pass/redeem',
+
+  READ_STATES_ACK_BULK:
+    '/read-states/ack-bulk',
 
   REPORT:
     '/report',

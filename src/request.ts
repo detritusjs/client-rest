@@ -246,7 +246,7 @@ export class RestRequest {
 
     const data = await response.body();
     if (!response.ok) {
-      if (typeof(data) === 'object') {
+      if (data && typeof(data) === 'object') {
         if (
           (this.client.restClient.baseUrl instanceof URL) &&
           (this.client.restClient.baseUrl.host === this.request.url.host)
