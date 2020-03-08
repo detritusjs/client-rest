@@ -263,6 +263,11 @@ export namespace RequestTypes {
       sessionId?: string,
       type?: number,
     },
+    allowedMentions?: {
+      parse?: Array<string>,
+      roles?: Array<string>,
+      users?: Array<string>,
+    },
     applicationId?: string,
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction | null,

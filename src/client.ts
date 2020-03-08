@@ -987,6 +987,11 @@ export class Client extends EventSpewer {
         session_id?: string,
         type?: number,
       },
+      allowed_mentions?: {
+        parse?: Array<string>,
+        roles?: Array<string>,
+        users?: Array<string>,
+      },
       application_id?: string,
       content?: string,
       embed?: RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction,
@@ -999,11 +1004,18 @@ export class Client extends EventSpewer {
       tts: options.tts,
     };
 
-    if (typeof(options.activity) === 'object') {
+    if (options.activity && typeof(options.activity) === 'object') {
       body.activity = {
         party_id: options.activity.partyId,
         session_id: options.activity.sessionId,
         type: options.activity.type,
+      };
+    }
+    if (options.allowedMentions && typeof(options.allowedMentions) === 'object') {
+      body.allowed_mentions = {
+        parse: options.allowedMentions.parse,
+        roles: options.allowedMentions.roles,
+        users: options.allowedMentions.users,
       };
     }
     if (options.embed && typeof(options.embed) === 'object') {
@@ -1044,10 +1056,10 @@ export class Client extends EventSpewer {
       });
       verifyData(body, {
         activity: {type: VerifyTypes.OBJECT},
+        allowed_mentions: {type: VerifyTypes.OBJECT},
         application_id: {type: VerifyTypes.SNOWFLAKE},
         content: {type: VerifyTypes.STRING},
         embed: {type: VerifyTypes.OBJECT},
-        hasSpoiler: {type: VerifyTypes.BOOLEAN},
         nonce: {type: VerifyTypes.STRING},
         tts: {type: VerifyTypes.BOOLEAN},
       });
@@ -2047,11 +2059,10 @@ export class Client extends EventSpewer {
   async editGuildNick(
     guildId: string,
     nick: string,
-    userId: string = '@me',
     options: RequestTypes.EditGuildNick = {},
   ): Promise<any> {
     const body = {nick};
-    const params = {guildId, userId};
+    const params = {guildId};
     if (this.clientsideChecks) {
 
     }
@@ -2708,6 +2719,15 @@ export class Client extends EventSpewer {
         method: HTTPMethods.GET,
         path: Api.APPLICATION,
         params,
+      },
+    });
+  }
+
+  async fetchApplicationsDetectable(): Promise<any> {
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.APPLICATIONS_DETECTABLE,
       },
     });
   }

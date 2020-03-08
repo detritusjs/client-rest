@@ -624,7 +624,7 @@ export const Api = Object.freeze({
   GUILD_MEMBER:
     '/guilds/:guildId/members/:userId',
   GUILD_MEMBER_NICK:
-    '/guilds/:guildId/members/:userId/nick',
+    '/guilds/:guildId/members/@me/nick',
   GUILD_MEMBER_ROLE:
     '/guilds/:guildId/members/:userId/roles/:roleId',
   GUILD_MFA:
@@ -898,6 +898,10 @@ export const Api = Object.freeze({
     '/promotions',
   PROMOTIONS_ACK:
     '/promotions/ack',
+  PROMOTIONS_FUNIMATION:
+    '/promotions/funimation',
+  PROMOTIONS_FUNIMATION_REDEEM:
+    '/promotions/funimation/redeem',
   PROMOTIONS_XBOX_GAME_PASS:
     '/promotions/xbox-game-pass',
   PROMOTIONS_XBOX_GAME_PASS_REDEEM:
