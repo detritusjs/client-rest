@@ -11,18 +11,26 @@ import { RequestTypes } from './types';
 
 export { replacePathParameters as formatRoute } from 'detritus-rest';
 
-export const Urls = Object.freeze({
-  CANARY: 'https://canary.discordapp.com/',
-  CDN: 'https://cdn.discordapp.com/',
-  GIFT: 'https://discord.gift/',
-  INVITE: 'https://discord.gg/',
-  MEDIA: 'https://media.discordapp.net/',
-  ROUTER: 'https://router.discordapp.net/',
-  STABLE: 'https://discordapp.com/',
-});
+
+export enum Urls {
+  BLOG = 'https://blog.discord.com/',
+  CANARY = 'https://canary.discord.com/',
+  CDN = 'https://cdn.discordapp.com/',
+  FEEDBACK = 'https://feedback.discord.com/',
+  GIFT = 'https://discord.gift/',
+  INVITE = 'https://discord.gg/',
+  MEDIA = 'https://media.discordapp.net/',
+  ROUTER = 'https://router.discordapp.net/',
+  STABLE = 'https://discord.com/',
+  STABLE_OLD = 'https://discordapp.com/',
+  STATUS = 'https://status.discord.com/',
+  SUPPORT = 'https://support.discord.com/',
+  SUPPORT_DEV = 'https://support-dev.discord.com/',
+  TEMPLATE = 'https://discord.new/',
+}
 
 export const Assets = Tools.URIEncodeWrap({
-  URL: 'https://discordapp.com/assets',
+  URL: `${Urls.STABLE.slice(0, -1)}/assets`,
 
   DM_GROUP:
     '/f046e2247d730629309457e902d5c5b3.svg',
@@ -32,7 +40,7 @@ export const Assets = Tools.URIEncodeWrap({
 });
 
 export const CDN = Tools.URIEncodeWrap({
-  URL: 'https://cdn.discordapp.com',
+  URL: Urls.CDN.slice(0, -1),
 
   APP_ASSET: (applicationId: string, hash: string, format: string = 'png'): string =>
     `/app-assets/${applicationId}/${hash}.${format}`,
@@ -97,20 +105,20 @@ export const EmbedUrls = Tools.URIEncodeWrap({
 
 export const Gift = Tools.URIEncodeWrap({
   LONG: (code: string): string =>
-    `https://discordapp.com/gifts/${code}`,
+    `${Urls.STABLE.slice(0, -1)}/gifts/${code}`,
   SHORT: (code: string): string =>
-    `https://discord.gift/${code}`,
+    `${Urls.GIFT.slice(0, -1)}/${code}`,
 });
 
 export const Invite = Tools.URIEncodeWrap({
   LONG: (code: string): string =>
-    `https://discordapp.com/invite/${code}`,
+    `${Urls.STABLE.slice(0, -1)}/invite/${code}`,
   SHORT: (code: string): string =>
-    `https://discord.gg/${code}`,
+    `${Urls.INVITE.slice(0, -1)}/${code}`,
 });
 
 export const Routes = Tools.URIEncodeWrap({
-  URL: 'https://discordapp.com',
+  URL: Urls.STABLE.slice(0, -1),
   INDEX:
     '/',
   INDEX_WORD:
@@ -277,6 +285,10 @@ export const Routes = Tools.URIEncodeWrap({
     '/store-terms',
   STREAMKIT:
     '/streamkit',
+  TEMPLATE: (templateId: string) =>
+    `/template/${templateId}`,
+  TEMPLATE_LOGIN: (templateId: string) =>
+    `/template/${templateId}/login`,
   TERMS:
     '/terms',
   USER: (userId: string): string =>
@@ -294,6 +306,14 @@ export const Routes = Tools.URIEncodeWrap({
   XBOX_OFFER:
     '/discord-xbox-offer-2019',
 });
+
+export const Template = Tools.URIEncodeWrap({
+  LONG: (code: string): string =>
+    `${Urls.STABLE.slice(0, -1)}/template/${code}`,
+  SHORT: (code: string): string =>
+    `${Urls.TEMPLATE.slice(0, -1)}/${code}`,
+});
+
 
 export const RoutesQuery = Object.freeze({
   INVITE: (code: string, options: RequestTypes.RouteInvite = {}) => {
@@ -316,8 +336,8 @@ export const RoutesQuery = Object.freeze({
 });
 
 export const Api = Object.freeze({
-  URL_STABLE: 'https://discordapp.com',
-  URL_CANARY: 'https://canary.discordapp.com',
+  URL_STABLE: Urls.STABLE.slice(0, -1),
+  URL_CANARY: Urls.CANARY.slice(0, -1),
   PATH: `/api/v${ApiVersion}`,
   VERSION: ApiVersion,
 
@@ -575,6 +595,8 @@ export const Api = Object.freeze({
     '/guilds',
   GUILDS_DISCOVERY:
     '/guilds/discoverable',
+  GUILDS_TEMPLATE:
+    '/guilds/templates/:templateId',
   GUILD:
     '/guilds/:guildId',
   GUILD_ACK:
@@ -647,6 +669,10 @@ export const Api = Object.freeze({
     '/guilds/:guildId/messages/search',
   GUILD_SPLASH:
     '/guilds/:guildId/splashes/:hash.jpg',
+  GUILD_TEMPLATES:
+    '/guilds/:guildId/templates',
+  GUILD_TEMPLATE:
+    '/guilds/:guildId/templates/:templateId',
   GUILD_VANITY_URL:
     '/guilds/:guildId/vanity-url',
   GUILD_WEBHOOKS:
@@ -731,6 +757,8 @@ export const Api = Object.freeze({
     '/users/@me/billings/trials/:trialId/eligibility',
   ME_CAPTCHA_VERIFY:
     '/users/@me/captcha/verify',
+  ME_CHANNELS:
+    '/users/@me/channels',
   ME_CONNECTIONS:
     '/users/@me/connections',
   ME_CONNECTION:
@@ -757,6 +785,8 @@ export const Api = Object.freeze({
     '/users/@me/feed/settings',
   ME_FEED_UNSUBSCRIBED_USERS:
     '/users/@me/feed/unsubscribed_users',
+  ME_GUILDS:
+    '/users/@me/guilds',
   ME_GUILDS_PREMIUM_SUBSCRIPTIONS:
     '/users/@me/guilds/premium/subscriptions',
   ME_GUILDS_PREMIUM_SUBSCRIPTIONS_COOLDOWN:
@@ -985,6 +1015,9 @@ export const Api = Object.freeze({
     '/teams/:teamId/payouts',
   TEAM_PAYOUTS_IFRAME:
     '/teams/:teamId/payouts/onboarding',
+
+  TEMPLATE_ICON:
+    '/templates/:templateId/icons/:hash.jpg',
 
   TRACK:
     '/science',

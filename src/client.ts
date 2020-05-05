@@ -148,8 +148,9 @@ export class Client extends EventSpewer {
       type = type.toUpperCase();
     }
     for (let key in AuthTypes) {
-      if (AuthTypes[key] === type || key === type) {
-        this.authType = (<any> AuthTypes)[key];
+      const authType = (<any> AuthTypes)[key];
+      if (authType === type || key === type) {
+        this.authType = authType;
         break;
       }
     }
@@ -737,8 +738,7 @@ export class Client extends EventSpewer {
       body,
       route: {
         method: HTTPMethods.POST,
-        path: Api.USER_CHANNELS,
-        params: {userId: '@me'},
+        path: Api.ME_CHANNELS,
       },
     });
   }
@@ -903,6 +903,28 @@ export class Client extends EventSpewer {
         params,
       },
     })
+  }
+
+  async createGuildTemplate(
+    guildId: string,
+    options: RequestTypes.CreateGuildTemplate,
+  ): Promise<any> {
+    const body = {
+      description: options.description,
+      name: options.name,
+    };
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.GUILD_TEMPLATES,
+        params,
+      },
+    });
   }
 
   async createLobby(
@@ -1414,6 +1436,23 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.DELETE,
         path: Api.GUILD_ROLE,
+        params,
+      },
+    });
+  }
+
+  async deleteGuildTemplate(
+    guildId: string,
+    templateId: string,
+  ): Promise<any> {
+    const params = {guildId, templateId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.GUILD_TEMPLATE,
         params,
       },
     });
@@ -2305,6 +2344,11 @@ export class Client extends EventSpewer {
       options = {content: options};
     }
     const body: {
+      allowed_mentions?: {
+        parse?: Array<string>,
+        roles?: Array<string>,
+        users?: Array<string>,
+      },
       content?: string,
       embed?: null | RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction,
       flags?: number,
@@ -2315,6 +2359,13 @@ export class Client extends EventSpewer {
     };
     const params = {channelId, messageId};
 
+    if (options.allowedMentions && typeof(options.allowedMentions) === 'object') {
+      body.allowed_mentions = {
+        parse: options.allowedMentions.parse,
+        roles: options.allowedMentions.roles,
+        users: options.allowedMentions.users,
+      };
+    }
     if (options.embed && typeof(options.embed) === 'object') {
       if ('toJSON' in options.embed) {
         body.embed = options.embed;
@@ -2548,6 +2599,11 @@ export class Client extends EventSpewer {
       options = {content: options};
     }
     const body: {
+      allowed_mentions?: {
+        parse?: Array<string>,
+        roles?: Array<string>,
+        users?: Array<string>,
+      },
       avatar_url?: string,
       content?: string,
       embeds?: Array<RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction>,
@@ -2591,6 +2647,13 @@ export class Client extends EventSpewer {
       }
     }
 
+    if (options.allowedMentions && typeof(options.allowedMentions) === 'object') {
+      body.allowed_mentions = {
+        parse: options.allowedMentions.parse,
+        roles: options.allowedMentions.roles,
+        users: options.allowedMentions.users,
+      };
+    }
     if (options.embed) {
       if (options.embeds) {
         options.embeds = [options.embed, ...options.embeds];
@@ -3227,6 +3290,22 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchGuildTemplates(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_TEMPLATES,
+        params,
+      },
+    });
+  }
+
   async fetchGuildVanityUrl(
     guildId: string,
   ): Promise<any> {
@@ -3386,6 +3465,14 @@ export class Client extends EventSpewer {
     });
   }
 
+  fetchMeChannels(): Promise<any> {
+    return this.request({
+      route: {
+        path: Api.ME_CHANNELS,
+      },
+    });
+  }
+
   fetchMeConnections(): Promise<any> {
     return this.request({
       route: {
@@ -3441,6 +3528,25 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.ME_FEED_SETTINGS,
+      },
+    });
+  }
+
+  async fetchMeGuilds(
+    options: RequestTypes.FetchMeGuilds = {},
+  ): Promise<any> {
+    const query = {
+      after: options.after,
+      before: options.before,
+      limit: options.limit,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        path: Api.ME_GUILDS,
       },
     });
   }
@@ -3872,6 +3978,22 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.TEAM_PAYOUTS,
+        params,
+      },
+    });
+  }
+
+  async fetchTemplate(
+    templateId: string,
+  ): Promise<any> {
+    const params = {templateId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILDS_TEMPLATE,
         params,
       },
     });
@@ -4527,9 +4649,11 @@ export class Client extends EventSpewer {
       content: options.content,
       has: options.has,
       include_nsfw: options.includeNSFW,
+      limit: options.limit,
       max_id: options.maxId,
       mentions: options.mentions,
       min_id: options.minId,
+      offset: options.offset,
     };
     if (this.clientsideChecks) {
 
