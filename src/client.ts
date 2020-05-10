@@ -320,7 +320,7 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.POST,
         path: Api.INVITE,
-        params: {code},
+        params,
       },
     });
   }
@@ -335,6 +335,25 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.POST,
         path: Api.TEAMS_INVITE_ACCEPT,
+      },
+    });
+  }
+
+  async acceptTemplate(templateId: string, options: RequestTypes.AcceptTemplate): Promise<any> {
+    const body = {
+      icon: bufferToBase64(options.icon),
+      name: options.name,
+    };
+    const params = {templateId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.GUILDS_TEMPLATE,
+        params,
       },
     });
   }

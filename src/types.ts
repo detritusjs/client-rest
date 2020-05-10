@@ -56,6 +56,11 @@ export namespace RequestTypes {
 
   /* Option Interfaces */
 
+  export interface AcceptTemplate {
+    icon?: Buffer | string,
+    name: string,
+  }
+
   export interface ActivateOauth2ApplicationLicense {
     code?: string,
     guildId: string,
