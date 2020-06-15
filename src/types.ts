@@ -1,4 +1,4 @@
-import { Request, Response, Route } from 'detritus-rest';
+import { Request, RequestFile, RequestOptions, Response, Route } from 'detritus-rest';
 
 import { RestRequest } from './request';
 
@@ -16,45 +16,26 @@ export namespace RestClientEvents {
 }
 
 export namespace RequestTypes {
-  export interface RequestFile {
-    contentType?: string,
-    data: any,
-    filename?: string,
-    name?: string,
-  };
+  export interface File extends RequestFile {
 
-  export interface RequestOptions {
-    body?: any,
+  }
+
+  export interface Options extends RequestOptions {
     dataOnly?: boolean,
     errorOnRatelimit?: boolean,
-    files?: Array<RequestFile>,
     fingerprint?: string,
-    headers?: {[key: string]: string | undefined},
-    jsonify?: boolean,
-    method?: string,
-    multipart?: boolean,
-    path?: string,
-    query?: {
-      [key: string]: any,
-    },
-    route?: Route | {
-      method?: string,
-      params?: {[key: string]: string},
-      path?: string,
-      urlPath?: null,
-    },
-    settings?: {
-      multipartJsonKey?: string,
-      timeout?: number,
-    },
     skipRatelimitCheck?: boolean,
     token?: string,
-    url?: string | URL,
     useAuth?: boolean,
-  };
+  }
 
 
   /* Option Interfaces */
+
+  export interface AcceptTemplate {
+    icon?: Buffer | string,
+    name: string,
+  }
 
   export interface ActivateOauth2ApplicationLicense {
     code?: string,
@@ -227,6 +208,11 @@ export namespace RequestTypes {
     name?: string,
     permissions?: number,
     reason?: string,
+  }
+
+  export interface CreateGuildTemplate {
+    description?: string,
+    name: string,
   }
 
   export interface CreateLobby {
@@ -544,6 +530,11 @@ export namespace RequestTypes {
   }
 
   export interface EditMessage {
+    allowedMentions?: {
+      parse?: Array<string>,
+      roles?: Array<string>,
+      users?: Array<string>,
+    },
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction | null,
     flags?: number,
@@ -575,6 +566,11 @@ export namespace RequestTypes {
   }
 
   export interface ExecuteWebhook {
+    allowedMentions?: {
+      parse?: Array<string>,
+      roles?: Array<string>,
+      users?: Array<string>,
+    },
     avatarUrl?: string,
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
@@ -623,6 +619,12 @@ export namespace RequestTypes {
 
   export interface FetchMeFeedSettings {
     includeAutosubscribedGames?: boolean,
+  }
+
+  export interface FetchMeGuilds {
+    after?: string,
+    before?: string,
+    limit?: number,
   }
 
   export interface FetchMentions {
@@ -773,9 +775,11 @@ export namespace RequestTypes {
     content?: string,
     has?: string | Array<string>,
     includeNSFW?: boolean,
+    limit?: number,
     maxId?: string,
     mentions?: string | Array<string>,
     minId?: string,
+    offset?: number,
   }
 
   export interface SendFriendRequest {

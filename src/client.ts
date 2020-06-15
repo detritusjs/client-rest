@@ -3,9 +3,14 @@ import { URL } from 'url';
 
 import {
   Client as RestClient,
+  ClientOptions as RestClientOptions,
+  Constants as RestConstants,
   Response,
+  createHeaders,
 } from 'detritus-rest';
 import { BaseCollection, EventSpewer, Snowflake } from 'detritus-utils';
+
+const { ContentTypes, HTTPHeaders } = RestConstants;
 
 import { Bucket } from './bucket';
 import { BucketCollection } from './bucketcollection';
@@ -56,17 +61,14 @@ const requestDefaults = {
   skipRatelimitCheck: false,
 };
 
-export interface ClientOptions {
+export interface ClientOptions extends RestClientOptions {
   authType?: string | number,
-  baseUrl?: string,
   bucketsExpireIn?: number,
   clientsideChecks?: boolean,
   errorOnRatelimit?: boolean,
   fingerprint?: string,
   globalBucket?: Bucket,
-  headers?: {[key: string]: string},
   routesCollection?: BaseCollection<string, string>,
-  settings?: any,
 }
 
 export class Client extends EventSpewer {
@@ -90,14 +92,14 @@ export class Client extends EventSpewer {
       errorOnRatelimit: false,
     }, options);
 
-    this.restClient = new RestClient({
-      baseUrl: options.baseUrl,
-      headers: {
-        'user-agent': defaultHeaders['user-agent'],
-        ...options.headers,
-      },
-      settings: options.settings,
-    });
+    options.headers = createHeaders(options.headers);
+    for (let key in defaultHeaders) {
+      if (!options.headers.has(key)) {
+        const value = (defaultHeaders as any)[key];
+        options.headers.set(key, value);
+      }
+    }
+    this.restClient = new RestClient(options);
 
     this.buckets = new BucketCollection({expire: options.bucketsExpireIn});
     this.clientsideChecks = !!(options.clientsideChecks || options.clientsideChecks === undefined);
@@ -148,55 +150,59 @@ export class Client extends EventSpewer {
       type = type.toUpperCase();
     }
     for (let key in AuthTypes) {
-      if (AuthTypes[key] === type || key === type) {
-        this.authType = (<any> AuthTypes)[key];
+      const authType = (<any> AuthTypes)[key];
+      if (authType === type || key === type) {
+        this.authType = authType;
         break;
       }
     }
   }
 
   async request(
-    options?: RequestTypes.RequestOptions | string,
+    info: RequestTypes.Options | string | URL,
+    init?: RequestTypes.Options,
   ): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = <RequestTypes.RequestOptions> {url: options, ...requestDefaults};
-    } else {
-      options = Object.assign({
+    if (typeof(info) !== 'string' && !(info instanceof URL)) {
+      init = Object.assign({
         errorOnRatelimit: this.errorOnRatelimit,
-      }, requestDefaults, options);
+      }, requestDefaults, info, init);
+    } else {
+      init = Object.assign({
+        errorOnRatelimit: this.errorOnRatelimit,
+      }, requestDefaults, init);
     }
 
-    const request = await this.restClient.createRequest(options);
+    const request = await this.restClient.createRequest(info, init);
     if (
       (this.restClient.baseUrl instanceof URL) &&
-      (request.url.host === this.restClient.baseUrl.host)
+      (this.restClient.baseUrl.host === request.parsedUrl.host)
     ) {
-      if (!(DiscordHeaders.SUPER_PROPERTIES in request.options.headers)) {
-        request.options.headers[DiscordHeaders.SUPER_PROPERTIES] = defaultHeaders[DiscordHeaders.SUPER_PROPERTIES];
+      if (!request.headers.has(DiscordHeaders.SUPER_PROPERTIES)) {
+        request.headers.set(DiscordHeaders.SUPER_PROPERTIES, defaultHeaders[DiscordHeaders.SUPER_PROPERTIES]);
       }
 
-      if (options.useAuth || options.useAuth === undefined) {
+      if (init.useAuth || init.useAuth === undefined) {
         if (this.token) {
-          request.options.headers['authorization'] = this.tokenFormatted;
+          request.headers.set('authorization', this.tokenFormatted);
         } else if (this.fingerprint) {
-          request.options.headers[DiscordHeaders.FINGERPRINT] = this.fingerprint;
+          request.headers.set(DiscordHeaders.FINGERPRINT, this.fingerprint);
         }
       }
     }
-  
-    if (options.fingerprint) {
-      request.options.headers[DiscordHeaders.FINGERPRINT] = options.fingerprint;
+
+    if (init.fingerprint) {
+      request.headers.set(DiscordHeaders.FINGERPRINT, init.fingerprint);
     }
 
-    if (options.token) {
-      request.options.headers['authorization'] = options.token;
+    if (init.token) {
+      request.headers.set('authorization', init.token);
     }
 
     let response: Response;
-    const restRequest = new RestRequest(this, request, options);
+    const restRequest = new RestRequest(this, request, init);
     this.emit(RestEvents.REQUEST, {request, restRequest: restRequest});
 
-    if (restRequest.shouldRatelimitCheck && !options.errorOnRatelimit) {
+    if (restRequest.shouldRatelimitCheck && !init.errorOnRatelimit) {
       response = await new Promise((resolve, reject) => {
         const delayed = {request: restRequest, resolve, reject};
         if (this.globalBucket.locked) {
@@ -215,74 +221,75 @@ export class Client extends EventSpewer {
       response = await restRequest.send();
     }
 
-    if (options.dataOnly) {
-      return response.body();
+    if (init.dataOnly) {
+      switch (response.headers.get(HTTPHeaders.CONTENT_TYPE)) {
+        case ContentTypes.APPLICATION_JSON: {
+          return response.json();
+        };
+        case ContentTypes.TEXT_PLAIN: {
+          return response.text();
+        };
+      }
+      return response.buffer();
     } else {
       return response;
     }
   }
 
-  async delete(options?: RequestTypes.RequestOptions | string): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = {method: HTTPMethods.DELETE, url: options};
-    } else {
-      options = Object.assign({}, options, {method: HTTPMethods.DELETE});
-    }
-    return this.request(options);
+  async delete(
+    info: string | URL | RequestTypes.Options,
+    init?: RequestTypes.Options,
+  ): Promise<Response> {
+    init = Object.assign({}, init, {method: HTTPMethods.DELETE});
+    return this.request(info, init);
   }
 
-  async get(options?: RequestTypes.RequestOptions | string): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = {method: HTTPMethods.GET, url: options};
-    } else {
-      options = Object.assign({}, options, {method: HTTPMethods.GET});
-    }
-    return this.request(options);
+  async get(
+    info: string | URL | RequestTypes.Options,
+    init?: RequestTypes.Options,
+  ): Promise<Response> {
+    init = Object.assign({}, init, {method: HTTPMethods.GET});
+    return this.request(info, init);
   }
 
-  async head(options?: RequestTypes.RequestOptions | string): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = {method: HTTPMethods.HEAD, url: options};
-    } else {
-      options = Object.assign({}, options, {method: HTTPMethods.HEAD});
-    }
-    return this.request(options);
+  async head(
+    info: string | URL | RequestTypes.Options,
+    init?: RequestTypes.Options,
+  ): Promise<Response> {
+    init = Object.assign({}, init, {method: HTTPMethods.HEAD});
+    return this.request(info, init);
   }
 
-  async options(options?: RequestTypes.RequestOptions | string): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = {method: HTTPMethods.OPTIONS, url: options};
-    } else {
-      options = Object.assign({}, options, {method: HTTPMethods.OPTIONS});
-    }
-    return this.request(options);
+  async options(
+    info: string | URL | RequestTypes.Options,
+    init?: RequestTypes.Options,
+  ): Promise<Response> {
+    init = Object.assign({}, init, {method: HTTPMethods.OPTIONS});
+    return this.request(info, init);
   }
 
-  async patch(options?: RequestTypes.RequestOptions | string): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = {method: HTTPMethods.PATCH, url: options};
-    } else {
-      options = Object.assign({}, options, {method: HTTPMethods.PATCH});
-    }
-    return this.request(options);
+  async patch(
+    info: string | URL | RequestTypes.Options,
+    init?: RequestTypes.Options,
+  ): Promise<Response> {
+    init = Object.assign({}, init, {method: HTTPMethods.PATCH});
+    return this.request(info, init);
   }
 
-  async post(options?: RequestTypes.RequestOptions | string): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = {method: HTTPMethods.POST, url: options};
-    } else {
-      options = Object.assign({}, options, {method: HTTPMethods.POST});
-    }
-    return this.request(options);
+  async post(
+    info: string | URL | RequestTypes.Options,
+    init?: RequestTypes.Options,
+  ): Promise<Response> {
+    init = Object.assign({}, init, {method: HTTPMethods.POST});
+    return this.request(info, init);
   }
 
-  async put(options?: RequestTypes.RequestOptions | string): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = {method: HTTPMethods.PUT, url: options};
-    } else {
-      options = Object.assign({}, options, {method: HTTPMethods.PUT});
-    }
-    return this.request(options);
+  async put(
+    info: string | URL | RequestTypes.Options,
+    init?: RequestTypes.Options,
+  ): Promise<Response> {
+    init = Object.assign({}, init, {method: HTTPMethods.PUT});
+    return this.request(info, init);
   }
 
   on(event: string | symbol, listener: (...args: any[]) => void): this;
@@ -319,7 +326,7 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.POST,
         path: Api.INVITE,
-        params: {code},
+        params,
       },
     });
   }
@@ -334,6 +341,25 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.POST,
         path: Api.TEAMS_INVITE_ACCEPT,
+      },
+    });
+  }
+
+  async acceptTemplate(templateId: string, options: RequestTypes.AcceptTemplate): Promise<any> {
+    const body = {
+      icon: bufferToBase64(options.icon),
+      name: options.name,
+    };
+    const params = {templateId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.GUILDS_TEMPLATE,
+        params,
       },
     });
   }
@@ -737,8 +763,7 @@ export class Client extends EventSpewer {
       body,
       route: {
         method: HTTPMethods.POST,
-        path: Api.USER_CHANNELS,
-        params: {userId: '@me'},
+        path: Api.ME_CHANNELS,
       },
     });
   }
@@ -905,6 +930,28 @@ export class Client extends EventSpewer {
     })
   }
 
+  async createGuildTemplate(
+    guildId: string,
+    options: RequestTypes.CreateGuildTemplate,
+  ): Promise<any> {
+    const body = {
+      description: options.description,
+      name: options.name,
+    };
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.GUILD_TEMPLATES,
+        params,
+      },
+    });
+  }
+
   async createLobby(
     applicationId: string,
     options: RequestTypes.CreateLobby = {},
@@ -1039,7 +1086,7 @@ export class Client extends EventSpewer {
       }
     }
 
-    const files: Array<RequestTypes.RequestFile> = [];
+    const files: Array<RequestTypes.File> = [];
     if (options.file) {
       files.push(options.file);
     }
@@ -1163,7 +1210,7 @@ export class Client extends EventSpewer {
     applicationId: string,
     options: RequestTypes.CreateStoreApplicationAsset = {},
   ): Promise<any> {
-    const files: Array<RequestTypes.RequestFile> = [];
+    const files: Array<RequestTypes.File> = [];
     const params = {applicationId};
 
     if (options.file) {
@@ -1414,6 +1461,23 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.DELETE,
         path: Api.GUILD_ROLE,
+        params,
+      },
+    });
+  }
+
+  async deleteGuildTemplate(
+    guildId: string,
+    templateId: string,
+  ): Promise<any> {
+    const params = {guildId, templateId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.GUILD_TEMPLATE,
         params,
       },
     });
@@ -2305,6 +2369,11 @@ export class Client extends EventSpewer {
       options = {content: options};
     }
     const body: {
+      allowed_mentions?: {
+        parse?: Array<string>,
+        roles?: Array<string>,
+        users?: Array<string>,
+      },
       content?: string,
       embed?: null | RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction,
       flags?: number,
@@ -2315,6 +2384,13 @@ export class Client extends EventSpewer {
     };
     const params = {channelId, messageId};
 
+    if (options.allowedMentions && typeof(options.allowedMentions) === 'object') {
+      body.allowed_mentions = {
+        parse: options.allowedMentions.parse,
+        roles: options.allowedMentions.roles,
+        users: options.allowedMentions.users,
+      };
+    }
     if (options.embed && typeof(options.embed) === 'object') {
       if ('toJSON' in options.embed) {
         body.embed = options.embed;
@@ -2548,6 +2624,11 @@ export class Client extends EventSpewer {
       options = {content: options};
     }
     const body: {
+      allowed_mentions?: {
+        parse?: Array<string>,
+        roles?: Array<string>,
+        users?: Array<string>,
+      },
       avatar_url?: string,
       content?: string,
       embeds?: Array<RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction>,
@@ -2559,7 +2640,7 @@ export class Client extends EventSpewer {
       tts: options.tts,
       username: options.username,
     };
-    const files: Array<RequestTypes.RequestFile> = [];
+    const files: Array<RequestTypes.File> = [];
     const params = {webhookId, token};
     const query: {wait?: boolean} = {};
     const route = {
@@ -2591,6 +2672,13 @@ export class Client extends EventSpewer {
       }
     }
 
+    if (options.allowedMentions && typeof(options.allowedMentions) === 'object') {
+      body.allowed_mentions = {
+        parse: options.allowedMentions.parse,
+        roles: options.allowedMentions.roles,
+        users: options.allowedMentions.users,
+      };
+    }
     if (options.embed) {
       if (options.embeds) {
         options.embeds = [options.embed, ...options.embeds];
@@ -3227,6 +3315,22 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchGuildTemplates(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_TEMPLATES,
+        params,
+      },
+    });
+  }
+
   async fetchGuildVanityUrl(
     guildId: string,
   ): Promise<any> {
@@ -3386,6 +3490,14 @@ export class Client extends EventSpewer {
     });
   }
 
+  fetchMeChannels(): Promise<any> {
+    return this.request({
+      route: {
+        path: Api.ME_CHANNELS,
+      },
+    });
+  }
+
   fetchMeConnections(): Promise<any> {
     return this.request({
       route: {
@@ -3441,6 +3553,25 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.ME_FEED_SETTINGS,
+      },
+    });
+  }
+
+  async fetchMeGuilds(
+    options: RequestTypes.FetchMeGuilds = {},
+  ): Promise<any> {
+    const query = {
+      after: options.after,
+      before: options.before,
+      limit: options.limit,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        path: Api.ME_GUILDS,
       },
     });
   }
@@ -3872,6 +4003,22 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.TEAM_PAYOUTS,
+        params,
+      },
+    });
+  }
+
+  async fetchTemplate(
+    templateId: string,
+  ): Promise<any> {
+    const params = {templateId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILDS_TEMPLATE,
         params,
       },
     });
@@ -4527,9 +4674,11 @@ export class Client extends EventSpewer {
       content: options.content,
       has: options.has,
       include_nsfw: options.includeNSFW,
+      limit: options.limit,
       max_id: options.maxId,
       mentions: options.mentions,
       min_id: options.minId,
+      offset: options.offset,
     };
     if (this.clientsideChecks) {
 
@@ -4540,7 +4689,7 @@ export class Client extends EventSpewer {
       query,
       route,
     });
-    const body = await response.body();
+    const body = await response.json();
     if (response.status === 202 && retry) {
       if (5 < ++retryNumber) {
         throw new Error('Retried 5 times, stopping the search.');
