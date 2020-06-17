@@ -244,16 +244,19 @@ export class RestRequest {
     }
 
     if (!response.ok) {
-      let data: any = await response.buffer();
-      switch (response.headers.get(HTTPHeaders.CONTENT_TYPE)) {
+      let data: any;
+      switch ((response.headers.get(HTTPHeaders.CONTENT_TYPE) || '').split(';').shift()) {
         case ContentTypes.APPLICATION_JSON: {
-          data = JSON.parse(data);
+          data = await response.json();
         }; break;
         case ContentTypes.TEXT_PLAIN: {
-          data = data.toString();
+          data = await response.text();
         }; break;
+        default: {
+          data = await response.buffer();
+        };
       }
-      if (data && typeof(data) === 'object') {
+      if (data && typeof(data) === 'object' && !Buffer.isBuffer(data)) {
         if (
           (this.client.restClient.baseUrl instanceof URL) &&
           (this.client.restClient.baseUrl.host === this.request.parsedUrl.host)
