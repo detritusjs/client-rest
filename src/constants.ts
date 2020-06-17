@@ -6,7 +6,7 @@ export { HTTPMethods };
 
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.8.0-beta.3',
+  VERSION: '0.8.0-beta.4',
 });
 
 

@@ -93,11 +93,8 @@ export class Client extends EventSpewer {
     }, options);
 
     options.headers = createHeaders(options.headers);
-    for (let key in defaultHeaders) {
-      if (!options.headers.has(key)) {
-        const value = (defaultHeaders as any)[key];
-        options.headers.set(key, value);
-      }
+    if (!options.headers.has('user-agent')) {
+      options.headers.set('user-agent', defaultHeaders['user-agent']);
     }
     this.restClient = new RestClient(options);
 
