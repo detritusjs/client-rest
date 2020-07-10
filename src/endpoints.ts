@@ -643,6 +643,8 @@ export const Api = Object.freeze({
     '/guilds/:guildId/members/@me',
   GUILD_MEMBERS:
     '/guilds/:guildId/members',
+  GUILD_MEMBERS_SEARCH:
+    '/guilds/:guildId/members/search',
   GUILD_MEMBER:
     '/guilds/:guildId/members/:userId',
   GUILD_MEMBER_NICK:

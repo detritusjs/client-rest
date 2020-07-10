@@ -1,7 +1,7 @@
 import { URL } from 'url';
 
-import { Constants as RestConstants, Request, Response } from 'detritus-rest';
-const { ContentTypes, HTTPHeaders } = RestConstants;
+import { Request, Response } from 'detritus-rest';
+import { ContentTypes, HTTPHeaders } from 'detritus-rest/lib/constants';
 
 import { Bucket } from './bucket';
 import { Client } from './client';
@@ -254,6 +254,9 @@ export class RestRequest {
         }; break;
         default: {
           data = await response.buffer();
+          if (!data.length) {
+            data = null;
+          }
         };
       }
       if (data && typeof(data) === 'object' && !Buffer.isBuffer(data)) {

@@ -1,40 +1,40 @@
 {
-  "name": "detritus-client-rest",
-  "version": "0.8.0-beta.4",
-  "description": "A minimalistic TypeScript library to interact with all, or most, of Discord's rest endpoints",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "author": "cakedan",
+  "bugs": {
+    "url": "https://github.com/detritusjs/client-rest/issues"
+  },
   "files": [
     "lib/**/*"
   ],
   "dependencies": {
-    "detritus-rest": "^0.5.0-beta.8",
+    "detritus-rest": "^0.6.0-beta.4",
     "detritus-utils": "^0.2.6"
   },
+  "description": "A minimalistic TypeScript library to interact with all, or most, of Discord's rest endpoints",
   "devDependencies": {
-    "@types/node": "^13.13.4",
+    "@types/node": "^13.13.13",
     "@types/node-fetch": "^2.5.7",
     "typedoc": "^0.15.8"
   },
+  "homepage": "https://github.com/detritusjs/client-rest#readme",
+  "keywords": [
+    "rest",
+    "library"
+  ],
+  "license": "MIT",
+  "main": "lib/index.js",
+  "name": "detritus-client-rest",
   "peerDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://git8ub.com/detritusjs/client-rest.git"
+  },
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "typedoc": "typedoc ./src"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/detritusjs/client-rest.git"
-  },
-  "keywords": [
-    "rest",
-    "library"
-  ],
-  "author": "cakedan",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/detritusjs/client-rest/issues"
-  },
-  "homepage": "https://github.com/detritusjs/client-rest#readme"
+  "types": "lib/index.d.ts",
+  "version": "0.8.0-beta.9"
 }

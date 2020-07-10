@@ -4,13 +4,11 @@ import { URL } from 'url';
 import {
   Client as RestClient,
   ClientOptions as RestClientOptions,
-  Constants as RestConstants,
   Response,
   createHeaders,
 } from 'detritus-rest';
+import { ContentTypes, HTTPHeaders } from 'detritus-rest/lib/constants';
 import { BaseCollection, EventSpewer, Snowflake } from 'detritus-utils';
-
-const { ContentTypes, HTTPHeaders } = RestConstants;
 
 import { Bucket } from './bucket';
 import { BucketCollection } from './bucketcollection';
@@ -35,7 +33,7 @@ import { RequestTypes, ResponseTypes, RestClientEvents } from './types';
 
 
 const defaultHeaders: {[key: string]: string} = {
-  'user-agent': [
+  [HTTPHeaders.USER_AGENT]: [
     'DiscordBot',
     `(${Package.URL}, v${Package.VERSION})`,
     `(${os.type()} ${os.release()}; ${os.arch()})`,
@@ -46,7 +44,7 @@ const defaultHeaders: {[key: string]: string} = {
 defaultHeaders[DiscordHeaders.SUPER_PROPERTIES] = Buffer.from(
   JSON.stringify({
     browser: process.release.name || 'node',
-    browser_user_agent: defaultHeaders['user-agent'],
+    browser_user_agent: defaultHeaders[HTTPHeaders.USER_AGENT],
     browser_version: process.version,
     device: 'Detritus',
     os: os.type(),
@@ -93,8 +91,8 @@ export class Client extends EventSpewer {
     }, options);
 
     options.headers = createHeaders(options.headers);
-    if (!options.headers.has('user-agent')) {
-      options.headers.set('user-agent', defaultHeaders['user-agent']);
+    if (!options.headers.has(HTTPHeaders.USER_AGENT)) {
+      options.headers.set(HTTPHeaders.USER_AGENT, defaultHeaders[HTTPHeaders.USER_AGENT]);
     }
     this.restClient = new RestClient(options);
 
@@ -1203,6 +1201,24 @@ export class Client extends EventSpewer {
     });
   }
 
+  async createReaction(
+    channelId: string,
+    messageId: string,
+    emoji: string,
+  ): Promise<any> {
+    const params = {channelId, messageId, emoji, userId: '@me'};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.PUT,
+        path: Api.CHANNEL_MESSAGE_REACTION_USER,
+        params,
+      },
+    });
+  }
+
   async createStoreApplicationAsset(
     applicationId: string,
     options: RequestTypes.CreateStoreApplicationAsset = {},
@@ -1226,24 +1242,6 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.POST,
         path: Api.STORE_APPLICATION_ASSETS,
-        params,
-      },
-    });
-  }
-
-  async createReaction(
-    channelId: string,
-    messageId: string,
-    emoji: string,
-  ): Promise<any> {
-    const params = {channelId, messageId, emoji, userId: '@me'};
-    if (this.clientsideChecks) {
-
-    }
-    return this.request({
-      route: {
-        method: HTTPMethods.PUT,
-        path: Api.CHANNEL_MESSAGE_REACTION_USER,
         params,
       },
     });
@@ -2255,7 +2253,9 @@ export class Client extends EventSpewer {
     userId: string,
     options: RequestTypes.EditLobbyMember = {},
   ): Promise<any> {
-    const body = {metadata: options.metadata};
+    const body = {
+      metadata: options.metadata,
+    };
     const params = {lobbyId, userId};
     if (this.clientsideChecks) {
 
@@ -2520,7 +2520,7 @@ export class Client extends EventSpewer {
     });
   }
 
-  async editUser(options: RequestTypes.EditMe): Promise<any> {
+  async editUser(options: RequestTypes.EditMe = {}): Promise<any> {
     return this.editMe(options);
   }
 
@@ -2851,29 +2851,6 @@ export class Client extends EventSpewer {
     });
   }
 
-  fetchDiscoverableGuilds(): Promise<any> {
-    return this.request({
-      route: {
-        method: HTTPMethods.GET,
-        path: Api.DISCOVERABLE_GUILDS,
-      },
-    });
-  }
-
-  async fetchDms(userId: string = '@me'): Promise<any> {
-    const params = {userId};
-    if (this.clientsideChecks) {
-
-    }
-    return this.request({
-      route: {
-        method: HTTPMethods.GET,
-        path: Api.USER_CHANNELS,
-        params,
-      },
-    });
-  }
-
   async fetchChannel(
     channelId: string,
   ): Promise<any> {
@@ -2975,6 +2952,29 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.CONNECTION_AUTHORIZE,
+        params,
+      },
+    });
+  }
+
+  fetchDiscoverableGuilds(): Promise<any> {
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.DISCOVERABLE_GUILDS,
+      },
+    });
+  }
+
+  async fetchDms(userId: string = '@me'): Promise<any> {
+    const params = {userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.USER_CHANNELS,
         params,
       },
     });
@@ -3231,6 +3231,28 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchGuildMembersSearch(
+    guildId: string,
+    options: RequestTypes.FetchGuildMembersSearch,
+  ): Promise<any> {
+    const params = {guildId};
+    const query = {
+      limit: options.limit,
+      query: options.query,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_MEMBERS_SEARCH,
+        params,
+      },
+    });
+  }
+
   async fetchGuildMember(
     guildId: string,
     userId: string,
@@ -3282,6 +3304,7 @@ export class Client extends EventSpewer {
 
   async fetchGuildPruneCount(
     guildId: string,
+    options: RequestTypes.FetchGuildPruneCount = {},
   ): Promise<any> {
     const params = {guildId};
     if (this.clientsideChecks) {
@@ -3434,7 +3457,9 @@ export class Client extends EventSpewer {
     });
   }
 
-  async fetchMe(options: RequestTypes.FetchMe = {}): Promise<any> {
+  async fetchMe(
+    options: RequestTypes.FetchMe = {},
+  ): Promise<any> {
     const query = {
       with_analytics_token: options.withAnalyticsToken,
     };
@@ -4056,7 +4081,7 @@ export class Client extends EventSpewer {
   }
 
   async fetchUserChannels(
-    userId: string = '@me',
+    userId: string,
   ): Promise<any> {
     const params = {userId};
     if (this.clientsideChecks) {
@@ -4082,39 +4107,6 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.USER_PROFILE,
-        params,
-      },
-    });
-  }
-
-  async fetchWebhook(
-    webhookId: string,
-  ): Promise<any> {
-    const params = {webhookId};
-    if (this.clientsideChecks) {
-
-    }
-    return this.request({
-      route: {
-        method: HTTPMethods.GET,
-        path: Api.WEBHOOK,
-        params,
-      },
-    });
-  }
-
-  async fetchWebhookToken(
-    webhookId: string,
-    token: string,
-  ): Promise<any> {
-    const params = {webhookId, token};
-    if (this.clientsideChecks) {
-
-    }
-    return this.request({
-      route: {
-        method: HTTPMethods.GET,
-        path: Api.WEBHOOK_TOKEN,
         params,
       },
     });
@@ -4151,6 +4143,39 @@ export class Client extends EventSpewer {
     }
 
     return this.request({route});
+  }
+
+  async fetchWebhook(
+    webhookId: string,
+  ): Promise<any> {
+    const params = {webhookId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.WEBHOOK,
+        params,
+      },
+    });
+  }
+
+  async fetchWebhookToken(
+    webhookId: string,
+    token: string,
+  ): Promise<any> {
+    const params = {webhookId, token};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.WEBHOOK_TOKEN,
+        params,
+      },
+    });
   }
 
   async forgotPassword(
@@ -4722,12 +4747,7 @@ export class Client extends EventSpewer {
 
   async searchLobbies(
     applicationId: string,
-    options: {
-      filter?: Array<{key: string, comparison: number, cast: number, value: string}>,
-      sort?: Array<{key: string, cast: number, near_value: string}>,
-      limit?: number,
-      distance?: number,
-    } = {},
+    options: RequestTypes.SearchLobbies = {},
   ): Promise<any> {
     const body = {
       application_id: applicationId,

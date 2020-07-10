@@ -600,6 +600,15 @@ export namespace RequestTypes {
     limit?: number,
   }
 
+  export interface FetchGuildMembersSearch {
+    limit?: number,
+    query: string,
+  }
+
+  export interface FetchGuildPruneCount {
+    days?: number,
+  }
+
   export interface FetchGuildWidgetPng {
     style?: string,
   }
@@ -765,6 +774,13 @@ export namespace RequestTypes {
     password: string,
     ticket: string,
     token: string,
+  }
+
+  export interface SearchLobbies {
+    filter?: Array<{key: string, comparison: number, cast: number, value: string}>,
+    sort?: Array<{key: string, cast: number, near_value: string}>,
+    limit?: number,
+    distance?: number,
   }
 
   export interface SearchOptions {

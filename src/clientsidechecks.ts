@@ -1,11 +1,11 @@
-export const Types = Object.freeze({
-  ARRAY: 'array',
-  BOOLEAN: 'boolean',
-  NUMBER: 'number',
-  OBJECT: 'object',
-  SNOWFLAKE: 'snowflake',
-  STRING: 'string',
-});
+export enum Types {
+  ARRAY = 'array',
+  BOOLEAN = 'boolean',
+  NUMBER = 'number',
+  OBJECT = 'object',
+  SNOWFLAKE = 'snowflake',
+  STRING = 'string',
+}
 
 export const Regexes = {
   [Types.SNOWFLAKE]: /^\d+|@me$/,
