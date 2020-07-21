@@ -552,6 +552,8 @@ export const Api = Object.freeze({
 
   EMOJI:
     '/emojis/:emojiId.:format',
+  EMOJI_GUILD:
+    '/emojis/:emojiId/guild',
 
   ENTITLEMENTS_GIFT_CODE:
     '/entitlements/gift-codes/:code',

@@ -2980,6 +2980,19 @@ export class Client extends EventSpewer {
     });
   }
 
+  fetchEmojiGuild(
+    emojiId: string,
+  ): Promise<any> {
+    const params = {emojiId};
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.EMOJI_GUILD,
+        params,
+      },
+    });
+  }
+
   fetchExperiments(
     fingerprint?: string,
   ): Promise<any> {
