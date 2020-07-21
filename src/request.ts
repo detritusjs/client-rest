@@ -1,9 +1,7 @@
 import { URL } from 'url';
 
-import {
-  Request,
-  Response,
-} from 'detritus-rest';
+import { Request, Response } from 'detritus-rest';
+import { ContentTypes, HTTPHeaders } from 'detritus-rest/lib/constants';
 
 import { Bucket } from './bucket';
 import { Client } from './client';
@@ -15,6 +13,11 @@ import {
 } from './constants';
 import { DiscordHTTPError, HTTPError } from './errors';
 
+
+export interface RestRequestOptions {
+  errorOnRatelimit?: boolean,
+  skipRatelimitCheck?: boolean,
+}
 
 export class RestRequest {
   readonly bucketPath?: string;
@@ -33,17 +36,14 @@ export class RestRequest {
   constructor(
     client: Client,
     request: Request,
-    options: {
-      errorOnRatelimit?: boolean,
-      skipRatelimitCheck?: boolean,
-    } = {},
+    options: RestRequestOptions = {},
   ) {
     this.client = client;
     this.request = request;
 
     if (this.shouldRatelimitCheck) {
       if (client.isBot) {
-        request.options.headers[RatelimitHeaders.PRECISION] = RatelimitPrecisionTypes.MILLISECOND;
+        request.headers.set(RatelimitHeaders.PRECISION, RatelimitPrecisionTypes.MILLISECOND);
       }
 
       if (request.route) {
@@ -105,7 +105,7 @@ export class RestRequest {
   get shouldRatelimitCheck(): boolean {
     return (
       (this.client.restClient.baseUrl instanceof URL) &&
-      (this.client.restClient.baseUrl.host === this.request.url.host)
+      (this.client.restClient.baseUrl.host === this.request.parsedUrl.host)
     );
   }
 
@@ -146,8 +146,8 @@ export class RestRequest {
 
         let shouldHaveBucket: boolean = false;
         if (this.client.isBot) {
-          if (RatelimitHeaders.BUCKET in response.headers) {
-            this.client.routes.set(<string> this.bucketPath, response.headers[RatelimitHeaders.BUCKET]);
+          if (response.headers.has(RatelimitHeaders.BUCKET)) {
+            this.client.routes.set(this.bucketPath as string, response.headers.get(RatelimitHeaders.BUCKET) as string);
             shouldHaveBucket = true;
           } else {
             // no ratelimit on this path
@@ -160,19 +160,19 @@ export class RestRequest {
         if (shouldHaveBucket && !this.skipRatelimitCheck) {
           bucket = this.bucket;
           if (!bucket) {
-            bucket = new Bucket(<string> this.bucketKey);
+            bucket = new Bucket(this.bucketKey as string);
             this.client.buckets.insert(bucket);
           }
         }
       }
 
       if (bucket) {
-        if (RatelimitHeaders.LIMIT in response.headers) {
+        if (response.headers.has(RatelimitHeaders.LIMIT)) {
           bucket.setRatelimit(
-            parseInt(response.headers[RatelimitHeaders.LIMIT]),
-            parseInt(response.headers[RatelimitHeaders.REMAINING]),
-            (parseFloat(response.headers[RatelimitHeaders.RESET]) || 0) * 1000,
-            (parseFloat(response.headers[RatelimitHeaders.RESET_AFTER]) || 0) * 1000,
+            parseInt(response.headers.get(RatelimitHeaders.LIMIT) || ''),
+            parseInt(response.headers.get(RatelimitHeaders.REMAINING) || ''),
+            (parseFloat(response.headers.get(RatelimitHeaders.RESET) || '') || 0) * 1000,
+            (parseFloat(response.headers.get(RatelimitHeaders.RESET_AFTER) || '') || 0) * 1000,
           );
         }
 
@@ -187,11 +187,11 @@ export class RestRequest {
 
       if (response.statusCode === 429 && !this.errorOnRatelimit) {
         // ratelimited, retry
-        let retryAfter = parseInt(response.headers[RatelimitHeaders.RETRY_AFTER]) || 0;
+        let retryAfter = parseInt(response.headers.get(RatelimitHeaders.RETRY_AFTER) || '') || 0;
 
         // since discord's retry-after is in milliseconds (should be seconds, like cloudflare)
         // described here https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
-        const isDiscordRatelimit = ('via' in response.headers);
+        const isDiscordRatelimit = response.headers.has('via');
         if (!isDiscordRatelimit) {
           retryAfter *= 1000;
         }
@@ -199,19 +199,19 @@ export class RestRequest {
           const delayed = {request: this, resolve, reject};
 
           if (this.client.isBot) {
-            if (response.headers[RatelimitHeaders.GLOBAL] === 'true') {
+            if (response.headers.get(RatelimitHeaders.GLOBAL) === 'true') {
               this.client.globalBucket.lock(retryAfter);
               this.client.globalBucket.add(delayed);
-              return response.close();
+              return;
             }
           } else {
             if (isDiscordRatelimit) {
               // check json body since users dont get the above header
-              const data = await response.body();
+              const data = await response.json() as {global: boolean};
               if (data.global) {
                 this.client.globalBucket.lock(retryAfter);
                 this.client.globalBucket.add(delayed);
-                return response.close();
+                return;
               }
             }
           }
@@ -221,11 +221,10 @@ export class RestRequest {
             bucket.ratelimit.resetAfter = retryAfter;
             bucket.lock(retryAfter);
             bucket.add(delayed, true);
-            return response.close();
+            return;
           }
-          // unsure of what to do since we should've gotten global ratelimited
 
-          await response.buffer();
+          // unsure of what to do since we should've gotten global ratelimited
           return reject(new HTTPError(response));
         });
       }
@@ -240,23 +239,37 @@ export class RestRequest {
         setTimeout(() => {
           this.request.send().then(resolve).catch(reject);
         }, this.retryDelay);
-        return response.close();
+        return;
       });
     }
 
-    const data = await response.body();
     if (!response.ok) {
-      if (data && typeof(data) === 'object') {
+      let data: any;
+      switch ((response.headers.get(HTTPHeaders.CONTENT_TYPE) || '').split(';').shift()) {
+        case ContentTypes.APPLICATION_JSON: {
+          data = await response.json();
+        }; break;
+        case ContentTypes.TEXT_PLAIN: {
+          data = await response.text();
+        }; break;
+        default: {
+          data = await response.buffer();
+          if (!data.length) {
+            data = null;
+          }
+        };
+      }
+      if (data && typeof(data) === 'object' && !Buffer.isBuffer(data)) {
         if (
           (this.client.restClient.baseUrl instanceof URL) &&
-          (this.client.restClient.baseUrl.host === this.request.url.host)
+          (this.client.restClient.baseUrl.host === this.request.parsedUrl.host)
         ) {
           throw new DiscordHTTPError(response, data);
         } else {
           throw new HTTPError(response, data.message, data.code);
         }
       } else {
-        throw new HTTPError(response);
+        throw new HTTPError(response, data);
       }
     }
     return response;

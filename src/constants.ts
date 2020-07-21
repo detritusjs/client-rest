@@ -1,12 +1,8 @@
-import { Constants } from 'detritus-rest';
-
-
-const { HTTPMethods } = Constants;
-export { HTTPMethods };
+export { HTTPMethods } from 'detritus-rest/lib/constants';
 
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.7.1',
+  VERSION: '0.8.0',
 });
 
 

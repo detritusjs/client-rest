@@ -3,8 +3,11 @@ import { URL } from 'url';
 
 import {
   Client as RestClient,
+  ClientOptions as RestClientOptions,
   Response,
+  createHeaders,
 } from 'detritus-rest';
+import { ContentTypes, HTTPHeaders } from 'detritus-rest/lib/constants';
 import { BaseCollection, EventSpewer, Snowflake } from 'detritus-utils';
 
 import { Bucket } from './bucket';
@@ -30,7 +33,7 @@ import { RequestTypes, ResponseTypes, RestClientEvents } from './types';
 
 
 const defaultHeaders: {[key: string]: string} = {
-  'user-agent': [
+  [HTTPHeaders.USER_AGENT]: [
     'DiscordBot',
     `(${Package.URL}, v${Package.VERSION})`,
     `(${os.type()} ${os.release()}; ${os.arch()})`,
@@ -41,7 +44,7 @@ const defaultHeaders: {[key: string]: string} = {
 defaultHeaders[DiscordHeaders.SUPER_PROPERTIES] = Buffer.from(
   JSON.stringify({
     browser: process.release.name || 'node',
-    browser_user_agent: defaultHeaders['user-agent'],
+    browser_user_agent: defaultHeaders[HTTPHeaders.USER_AGENT],
     browser_version: process.version,
     device: 'Detritus',
     os: os.type(),
@@ -56,17 +59,14 @@ const requestDefaults = {
   skipRatelimitCheck: false,
 };
 
-export interface ClientOptions {
+export interface ClientOptions extends RestClientOptions {
   authType?: string | number,
-  baseUrl?: string,
   bucketsExpireIn?: number,
   clientsideChecks?: boolean,
   errorOnRatelimit?: boolean,
   fingerprint?: string,
   globalBucket?: Bucket,
-  headers?: {[key: string]: string},
   routesCollection?: BaseCollection<string, string>,
-  settings?: any,
 }
 
 export class Client extends EventSpewer {
@@ -90,14 +90,11 @@ export class Client extends EventSpewer {
       errorOnRatelimit: false,
     }, options);
 
-    this.restClient = new RestClient({
-      baseUrl: options.baseUrl,
-      headers: {
-        'user-agent': defaultHeaders['user-agent'],
-        ...options.headers,
-      },
-      settings: options.settings,
-    });
+    options.headers = createHeaders(options.headers);
+    if (!options.headers.has(HTTPHeaders.USER_AGENT)) {
+      options.headers.set(HTTPHeaders.USER_AGENT, defaultHeaders[HTTPHeaders.USER_AGENT]);
+    }
+    this.restClient = new RestClient(options);
 
     this.buckets = new BucketCollection({expire: options.bucketsExpireIn});
     this.clientsideChecks = !!(options.clientsideChecks || options.clientsideChecks === undefined);
@@ -157,47 +154,50 @@ export class Client extends EventSpewer {
   }
 
   async request(
-    options?: RequestTypes.RequestOptions | string,
+    info: RequestTypes.Options | string | URL,
+    init?: RequestTypes.Options,
   ): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = <RequestTypes.RequestOptions> {url: options, ...requestDefaults};
-    } else {
-      options = Object.assign({
+    if (typeof(info) !== 'string' && !(info instanceof URL)) {
+      init = Object.assign({
         errorOnRatelimit: this.errorOnRatelimit,
-      }, requestDefaults, options);
+      }, requestDefaults, info, init);
+    } else {
+      init = Object.assign({
+        errorOnRatelimit: this.errorOnRatelimit,
+      }, requestDefaults, init);
     }
 
-    const request = await this.restClient.createRequest(options);
+    const request = await this.restClient.createRequest(info, init);
     if (
       (this.restClient.baseUrl instanceof URL) &&
-      (request.url.host === this.restClient.baseUrl.host)
+      (this.restClient.baseUrl.host === request.parsedUrl.host)
     ) {
-      if (!(DiscordHeaders.SUPER_PROPERTIES in request.options.headers)) {
-        request.options.headers[DiscordHeaders.SUPER_PROPERTIES] = defaultHeaders[DiscordHeaders.SUPER_PROPERTIES];
+      if (!request.headers.has(DiscordHeaders.SUPER_PROPERTIES)) {
+        request.headers.set(DiscordHeaders.SUPER_PROPERTIES, defaultHeaders[DiscordHeaders.SUPER_PROPERTIES]);
       }
 
-      if (options.useAuth || options.useAuth === undefined) {
+      if (init.useAuth || init.useAuth === undefined) {
         if (this.token) {
-          request.options.headers['authorization'] = this.tokenFormatted;
+          request.headers.set('authorization', this.tokenFormatted);
         } else if (this.fingerprint) {
-          request.options.headers[DiscordHeaders.FINGERPRINT] = this.fingerprint;
+          request.headers.set(DiscordHeaders.FINGERPRINT, this.fingerprint);
         }
       }
     }
-  
-    if (options.fingerprint) {
-      request.options.headers[DiscordHeaders.FINGERPRINT] = options.fingerprint;
+
+    if (init.fingerprint) {
+      request.headers.set(DiscordHeaders.FINGERPRINT, init.fingerprint);
     }
 
-    if (options.token) {
-      request.options.headers['authorization'] = options.token;
+    if (init.token) {
+      request.headers.set('authorization', init.token);
     }
 
     let response: Response;
-    const restRequest = new RestRequest(this, request, options);
+    const restRequest = new RestRequest(this, request, init);
     this.emit(RestEvents.REQUEST, {request, restRequest: restRequest});
 
-    if (restRequest.shouldRatelimitCheck && !options.errorOnRatelimit) {
+    if (restRequest.shouldRatelimitCheck && !init.errorOnRatelimit) {
       response = await new Promise((resolve, reject) => {
         const delayed = {request: restRequest, resolve, reject};
         if (this.globalBucket.locked) {
@@ -216,74 +216,75 @@ export class Client extends EventSpewer {
       response = await restRequest.send();
     }
 
-    if (options.dataOnly) {
-      return response.body();
+    if (init.dataOnly) {
+      switch (response.headers.get(HTTPHeaders.CONTENT_TYPE)) {
+        case ContentTypes.APPLICATION_JSON: {
+          return response.json();
+        };
+        case ContentTypes.TEXT_PLAIN: {
+          return response.text();
+        };
+      }
+      return response.buffer();
     } else {
       return response;
     }
   }
 
-  async delete(options?: RequestTypes.RequestOptions | string): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = {method: HTTPMethods.DELETE, url: options};
-    } else {
-      options = Object.assign({}, options, {method: HTTPMethods.DELETE});
-    }
-    return this.request(options);
+  async delete(
+    info: string | URL | RequestTypes.Options,
+    init?: RequestTypes.Options,
+  ): Promise<Response> {
+    init = Object.assign({}, init, {method: HTTPMethods.DELETE});
+    return this.request(info, init);
   }
 
-  async get(options?: RequestTypes.RequestOptions | string): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = {method: HTTPMethods.GET, url: options};
-    } else {
-      options = Object.assign({}, options, {method: HTTPMethods.GET});
-    }
-    return this.request(options);
+  async get(
+    info: string | URL | RequestTypes.Options,
+    init?: RequestTypes.Options,
+  ): Promise<Response> {
+    init = Object.assign({}, init, {method: HTTPMethods.GET});
+    return this.request(info, init);
   }
 
-  async head(options?: RequestTypes.RequestOptions | string): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = {method: HTTPMethods.HEAD, url: options};
-    } else {
-      options = Object.assign({}, options, {method: HTTPMethods.HEAD});
-    }
-    return this.request(options);
+  async head(
+    info: string | URL | RequestTypes.Options,
+    init?: RequestTypes.Options,
+  ): Promise<Response> {
+    init = Object.assign({}, init, {method: HTTPMethods.HEAD});
+    return this.request(info, init);
   }
 
-  async options(options?: RequestTypes.RequestOptions | string): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = {method: HTTPMethods.OPTIONS, url: options};
-    } else {
-      options = Object.assign({}, options, {method: HTTPMethods.OPTIONS});
-    }
-    return this.request(options);
+  async options(
+    info: string | URL | RequestTypes.Options,
+    init?: RequestTypes.Options,
+  ): Promise<Response> {
+    init = Object.assign({}, init, {method: HTTPMethods.OPTIONS});
+    return this.request(info, init);
   }
 
-  async patch(options?: RequestTypes.RequestOptions | string): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = {method: HTTPMethods.PATCH, url: options};
-    } else {
-      options = Object.assign({}, options, {method: HTTPMethods.PATCH});
-    }
-    return this.request(options);
+  async patch(
+    info: string | URL | RequestTypes.Options,
+    init?: RequestTypes.Options,
+  ): Promise<Response> {
+    init = Object.assign({}, init, {method: HTTPMethods.PATCH});
+    return this.request(info, init);
   }
 
-  async post(options?: RequestTypes.RequestOptions | string): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = {method: HTTPMethods.POST, url: options};
-    } else {
-      options = Object.assign({}, options, {method: HTTPMethods.POST});
-    }
-    return this.request(options);
+  async post(
+    info: string | URL | RequestTypes.Options,
+    init?: RequestTypes.Options,
+  ): Promise<Response> {
+    init = Object.assign({}, init, {method: HTTPMethods.POST});
+    return this.request(info, init);
   }
 
-  async put(options?: RequestTypes.RequestOptions | string): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = {method: HTTPMethods.PUT, url: options};
-    } else {
-      options = Object.assign({}, options, {method: HTTPMethods.PUT});
-    }
-    return this.request(options);
+  async put(
+    info: string | URL | RequestTypes.Options,
+    init?: RequestTypes.Options,
+  ): Promise<Response> {
+    init = Object.assign({}, init, {method: HTTPMethods.PUT});
+    return this.request(info, init);
   }
 
   on(event: string | symbol, listener: (...args: any[]) => void): this;
@@ -1080,7 +1081,7 @@ export class Client extends EventSpewer {
       }
     }
 
-    const files: Array<RequestTypes.RequestFile> = [];
+    const files: Array<RequestTypes.File> = [];
     if (options.file) {
       files.push(options.file);
     }
@@ -1200,11 +1201,29 @@ export class Client extends EventSpewer {
     });
   }
 
+  async createReaction(
+    channelId: string,
+    messageId: string,
+    emoji: string,
+  ): Promise<any> {
+    const params = {channelId, messageId, emoji, userId: '@me'};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.PUT,
+        path: Api.CHANNEL_MESSAGE_REACTION_USER,
+        params,
+      },
+    });
+  }
+
   async createStoreApplicationAsset(
     applicationId: string,
     options: RequestTypes.CreateStoreApplicationAsset = {},
   ): Promise<any> {
-    const files: Array<RequestTypes.RequestFile> = [];
+    const files: Array<RequestTypes.File> = [];
     const params = {applicationId};
 
     if (options.file) {
@@ -1223,24 +1242,6 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.POST,
         path: Api.STORE_APPLICATION_ASSETS,
-        params,
-      },
-    });
-  }
-
-  async createReaction(
-    channelId: string,
-    messageId: string,
-    emoji: string,
-  ): Promise<any> {
-    const params = {channelId, messageId, emoji, userId: '@me'};
-    if (this.clientsideChecks) {
-
-    }
-    return this.request({
-      route: {
-        method: HTTPMethods.PUT,
-        path: Api.CHANNEL_MESSAGE_REACTION_USER,
         params,
       },
     });
@@ -2252,7 +2253,9 @@ export class Client extends EventSpewer {
     userId: string,
     options: RequestTypes.EditLobbyMember = {},
   ): Promise<any> {
-    const body = {metadata: options.metadata};
+    const body = {
+      metadata: options.metadata,
+    };
     const params = {lobbyId, userId};
     if (this.clientsideChecks) {
 
@@ -2517,7 +2520,7 @@ export class Client extends EventSpewer {
     });
   }
 
-  async editUser(options: RequestTypes.EditMe): Promise<any> {
+  async editUser(options: RequestTypes.EditMe = {}): Promise<any> {
     return this.editMe(options);
   }
 
@@ -2634,7 +2637,7 @@ export class Client extends EventSpewer {
       tts: options.tts,
       username: options.username,
     };
-    const files: Array<RequestTypes.RequestFile> = [];
+    const files: Array<RequestTypes.File> = [];
     const params = {webhookId, token};
     const query: {wait?: boolean} = {};
     const route = {
@@ -2848,29 +2851,6 @@ export class Client extends EventSpewer {
     });
   }
 
-  fetchDiscoverableGuilds(): Promise<any> {
-    return this.request({
-      route: {
-        method: HTTPMethods.GET,
-        path: Api.DISCOVERABLE_GUILDS,
-      },
-    });
-  }
-
-  async fetchDms(userId: string = '@me'): Promise<any> {
-    const params = {userId};
-    if (this.clientsideChecks) {
-
-    }
-    return this.request({
-      route: {
-        method: HTTPMethods.GET,
-        path: Api.USER_CHANNELS,
-        params,
-      },
-    });
-  }
-
   async fetchChannel(
     channelId: string,
   ): Promise<any> {
@@ -2972,6 +2952,42 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.CONNECTION_AUTHORIZE,
+        params,
+      },
+    });
+  }
+
+  fetchDiscoverableGuilds(): Promise<any> {
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.DISCOVERABLE_GUILDS,
+      },
+    });
+  }
+
+  async fetchDms(userId: string = '@me'): Promise<any> {
+    const params = {userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.USER_CHANNELS,
+        params,
+      },
+    });
+  }
+
+  fetchEmojiGuild(
+    emojiId: string,
+  ): Promise<any> {
+    const params = {emojiId};
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.EMOJI_GUILD,
         params,
       },
     });
@@ -3228,6 +3244,28 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchGuildMembersSearch(
+    guildId: string,
+    options: RequestTypes.FetchGuildMembersSearch,
+  ): Promise<any> {
+    const params = {guildId};
+    const query = {
+      limit: options.limit,
+      query: options.query,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_MEMBERS_SEARCH,
+        params,
+      },
+    });
+  }
+
   async fetchGuildMember(
     guildId: string,
     userId: string,
@@ -3279,6 +3317,7 @@ export class Client extends EventSpewer {
 
   async fetchGuildPruneCount(
     guildId: string,
+    options: RequestTypes.FetchGuildPruneCount = {},
   ): Promise<any> {
     const params = {guildId};
     if (this.clientsideChecks) {
@@ -3431,7 +3470,9 @@ export class Client extends EventSpewer {
     });
   }
 
-  async fetchMe(options: RequestTypes.FetchMe = {}): Promise<any> {
+  async fetchMe(
+    options: RequestTypes.FetchMe = {},
+  ): Promise<any> {
     const query = {
       with_analytics_token: options.withAnalyticsToken,
     };
@@ -4053,7 +4094,7 @@ export class Client extends EventSpewer {
   }
 
   async fetchUserChannels(
-    userId: string = '@me',
+    userId: string,
   ): Promise<any> {
     const params = {userId};
     if (this.clientsideChecks) {
@@ -4079,39 +4120,6 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.USER_PROFILE,
-        params,
-      },
-    });
-  }
-
-  async fetchWebhook(
-    webhookId: string,
-  ): Promise<any> {
-    const params = {webhookId};
-    if (this.clientsideChecks) {
-
-    }
-    return this.request({
-      route: {
-        method: HTTPMethods.GET,
-        path: Api.WEBHOOK,
-        params,
-      },
-    });
-  }
-
-  async fetchWebhookToken(
-    webhookId: string,
-    token: string,
-  ): Promise<any> {
-    const params = {webhookId, token};
-    if (this.clientsideChecks) {
-
-    }
-    return this.request({
-      route: {
-        method: HTTPMethods.GET,
-        path: Api.WEBHOOK_TOKEN,
         params,
       },
     });
@@ -4148,6 +4156,39 @@ export class Client extends EventSpewer {
     }
 
     return this.request({route});
+  }
+
+  async fetchWebhook(
+    webhookId: string,
+  ): Promise<any> {
+    const params = {webhookId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.WEBHOOK,
+        params,
+      },
+    });
+  }
+
+  async fetchWebhookToken(
+    webhookId: string,
+    token: string,
+  ): Promise<any> {
+    const params = {webhookId, token};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.WEBHOOK_TOKEN,
+        params,
+      },
+    });
   }
 
   async forgotPassword(
@@ -4683,7 +4724,7 @@ export class Client extends EventSpewer {
       query,
       route,
     });
-    const body = await response.body();
+    const body = await response.json();
     if (response.status === 202 && retry) {
       if (5 < ++retryNumber) {
         throw new Error('Retried 5 times, stopping the search.');
@@ -4719,12 +4760,7 @@ export class Client extends EventSpewer {
 
   async searchLobbies(
     applicationId: string,
-    options: {
-      filter?: Array<{key: string, comparison: number, cast: number, value: string}>,
-      sort?: Array<{key: string, cast: number, near_value: string}>,
-      limit?: number,
-      distance?: number,
-    } = {},
+    options: RequestTypes.SearchLobbies = {},
   ): Promise<any> {
     const body = {
       application_id: applicationId,

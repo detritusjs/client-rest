@@ -1,4 +1,4 @@
-import { Request, Response, Route } from 'detritus-rest';
+import { Request, RequestFile, RequestOptions, Response, Route } from 'detritus-rest';
 
 import { RestRequest } from './request';
 
@@ -16,42 +16,18 @@ export namespace RestClientEvents {
 }
 
 export namespace RequestTypes {
-  export interface RequestFile {
-    contentType?: string,
-    data: any,
-    filename?: string,
-    name?: string,
-  };
+  export interface File extends RequestFile {
 
-  export interface RequestOptions {
-    body?: any,
+  }
+
+  export interface Options extends RequestOptions {
     dataOnly?: boolean,
     errorOnRatelimit?: boolean,
-    files?: Array<RequestFile>,
     fingerprint?: string,
-    headers?: {[key: string]: string | undefined},
-    jsonify?: boolean,
-    method?: string,
-    multipart?: boolean,
-    path?: string,
-    query?: {
-      [key: string]: any,
-    },
-    route?: Route | {
-      method?: string,
-      params?: {[key: string]: string},
-      path?: string,
-      urlPath?: null,
-    },
-    settings?: {
-      multipartJsonKey?: string,
-      timeout?: number,
-    },
     skipRatelimitCheck?: boolean,
     token?: string,
-    url?: string | URL,
     useAuth?: boolean,
-  };
+  }
 
 
   /* Option Interfaces */
@@ -624,6 +600,15 @@ export namespace RequestTypes {
     limit?: number,
   }
 
+  export interface FetchGuildMembersSearch {
+    limit?: number,
+    query: string,
+  }
+
+  export interface FetchGuildPruneCount {
+    days?: number,
+  }
+
   export interface FetchGuildWidgetPng {
     style?: string,
   }
@@ -789,6 +774,13 @@ export namespace RequestTypes {
     password: string,
     ticket: string,
     token: string,
+  }
+
+  export interface SearchLobbies {
+    filter?: Array<{key: string, comparison: number, cast: number, value: string}>,
+    sort?: Array<{key: string, cast: number, near_value: string}>,
+    limit?: number,
+    distance?: number,
   }
 
   export interface SearchOptions {
