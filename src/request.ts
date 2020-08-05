@@ -1,7 +1,8 @@
 import { URL } from 'url';
 
 import { Request, Response } from 'detritus-rest';
-import { ContentTypes, HTTPHeaders } from 'detritus-rest/lib/constants';
+import { ContentTypes, HTTPHeaders, HTTPMethods } from 'detritus-rest/lib/constants';
+import { Snowflake } from 'detritus-utils';
 
 import { Bucket } from './bucket';
 import { Client } from './client';
@@ -9,8 +10,11 @@ import {
   RatelimitHeaders,
   RatelimitPrecisionTypes,
   RestEvents,
+  MESSAGE_DELETE_RATELIMIT_CHECK,
+  MESSAGE_DELETE_RATELIMIT_CHECK_OLDER,
   RATELIMIT_BUCKET_MAJOR_PARAMS,
 } from './constants';
+import { Api } from './endpoints';
 import { DiscordHTTPError, HTTPError } from './errors';
 
 
@@ -48,6 +52,17 @@ export class RestRequest {
 
       if (request.route) {
         this.bucketPath = `${request.route.method}-${request.route.path}`;
+        if (request.route.method === HTTPMethods.DELETE && request.route.path === Api.CHANNEL_MESSAGE) {
+          if ('messageId' in request.route.params) {
+            const difference = Date.now() - Snowflake.timestamp(request.route.params.messageId);
+            // 250 ms leeway incase our clock is wrong
+            if ((MESSAGE_DELETE_RATELIMIT_CHECK_OLDER - 250) <= difference) {
+              this.bucketPath = `${this.bucketPath}.${MESSAGE_DELETE_RATELIMIT_CHECK_OLDER}`;
+            } else if ((MESSAGE_DELETE_RATELIMIT_CHECK - 250) <= difference) {
+              this.bucketPath = `${this.bucketPath}.${MESSAGE_DELETE_RATELIMIT_CHECK}`;
+            }
+          }
+        }
       }
     }
 
@@ -70,10 +85,10 @@ export class RestRequest {
       return this._bucketHash;
     }
     if (!this.skipRatelimitCheck && this.request.route && this.shouldRatelimitCheck) {
-      const path = <string> this.bucketPath;
+      const path = this.bucketPath as string;
       if (this.client.isBot) {
         if (this.client.routes.has(path)) {
-          return this._bucketHash = <string> this.client.routes.get(path);
+          return this._bucketHash = this.client.routes.get(path) as string;
         }
       } else {
         return this._bucketHash = path;
@@ -146,8 +161,8 @@ export class RestRequest {
 
         let shouldHaveBucket: boolean = false;
         if (this.client.isBot) {
-          if (response.headers.has(RatelimitHeaders.BUCKET)) {
-            this.client.routes.set(this.bucketPath as string, response.headers.get(RatelimitHeaders.BUCKET) as string);
+          if (response.headers.has(RatelimitHeaders.BUCKET) && this.bucketPath) {
+            this.client.routes.set(this.bucketPath, response.headers.get(RatelimitHeaders.BUCKET) as string);
             shouldHaveBucket = true;
           } else {
             // no ratelimit on this path

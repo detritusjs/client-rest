@@ -8,7 +8,7 @@ import {
   createHeaders,
 } from 'detritus-rest';
 import { ContentTypes, HTTPHeaders } from 'detritus-rest/lib/constants';
-import { BaseCollection, EventSpewer, Snowflake } from 'detritus-utils';
+import { BaseCollection, EventSpewer } from 'detritus-utils';
 
 import { Bucket } from './bucket';
 import { BucketCollection } from './bucketcollection';
@@ -23,7 +23,6 @@ import {
   HTTPMethods,
   Package,
   RestEvents,
-  MESSAGE_DELETE_RATELIMIT_CHECK,
   SPOILER_ATTACHMENT_PREFIX,
 } from './constants';
 import { Api } from './endpoints';
@@ -1551,20 +1550,12 @@ export class Client extends EventSpewer {
     messageId: string,
     options: RequestTypes.DeleteMessage = {},
   ): Promise<any> {
-    let skipRatelimitCheck = false;
-
     const params = {channelId, messageId};
     if (this.clientsideChecks) {
       verifyData(params, {
         channelId: {required: true, type: VerifyTypes.SNOWFLAKE},
         messageId: {required: true, type: VerifyTypes.SNOWFLAKE},
       });
-
-      const difference = Date.now() - Snowflake.timestamp(params.messageId);
-      // 500 ms incase our clock is off and to account for networking
-      if (difference < (MESSAGE_DELETE_RATELIMIT_CHECK - 500)) {
-        skipRatelimitCheck = true;
-      }
     }
     return this.request({
       headers: {
@@ -1575,7 +1566,6 @@ export class Client extends EventSpewer {
         path: Api.CHANNEL_MESSAGE,
         params,
       },
-      skipRatelimitCheck,
     });
   }
 
