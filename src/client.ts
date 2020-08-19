@@ -499,7 +499,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PUT,
@@ -620,7 +620,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       query,
       route: {
@@ -1412,11 +1412,11 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.DELETE,
-        path: Api.GUILD_INTEGRATIONS,
+        path: Api.GUILD_INTEGRATION,
         params,
       },
     });
@@ -1450,7 +1450,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.DELETE,
@@ -1487,7 +1487,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.DELETE,
@@ -1559,7 +1559,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.DELETE,
@@ -1740,7 +1740,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.DELETE,
@@ -1761,7 +1761,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.DELETE,
@@ -1838,7 +1838,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PATCH,
@@ -1865,7 +1865,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PUT,
@@ -1926,7 +1926,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PATCH,
@@ -1963,7 +1963,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PATCH,
@@ -1988,7 +1988,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PATCH,
@@ -2014,7 +2014,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PATCH,
@@ -2041,7 +2041,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PATCH,
@@ -2070,7 +2070,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PATCH,
@@ -2095,7 +2095,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.POST,
@@ -2118,7 +2118,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PATCH,
@@ -2147,7 +2147,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PATCH,
@@ -2180,7 +2180,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PATCH,
@@ -2203,7 +2203,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PATCH,
@@ -2530,7 +2530,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PATCH,
@@ -2557,7 +2557,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PATCH,
@@ -4463,7 +4463,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.DELETE,
@@ -4484,7 +4484,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.DELETE,
@@ -4506,7 +4506,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.DELETE,
