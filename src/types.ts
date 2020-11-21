@@ -251,6 +251,7 @@ export namespace RequestTypes {
     },
     allowedMentions?: {
       parse?: Array<string>,
+      repliedUser?: boolean,
       roles?: Array<string>,
       users?: Array<string>,
     },
@@ -260,7 +261,13 @@ export namespace RequestTypes {
     file?: RequestFile,
     files?: Array<RequestFile>,
     hasSpoiler?: boolean,
+    messageReference?: {
+      channelId: string,
+      guildId?: string,
+      messageId: string,
+    },
     nonce?: string,
+    stickerIds?: Array<string>,
     tts?: boolean,
   }
 

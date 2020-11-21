@@ -29,6 +29,7 @@ export class Bucket {
   readonly timeout = new Timers.Timeout();
 
   locked: boolean = false;
+  lockedUntil: number = 0;
   queue: Array<RatelimitQueue> = [];
 
   constructor(key: string) {
@@ -46,6 +47,10 @@ export class Bucket {
 
   get size(): number {
     return this.queue.length;
+  }
+
+  get unlockIn(): number {
+    return Math.max(this.lockedUntil - Date.now(), 0);
   }
 
   setRatelimit(
@@ -76,8 +81,7 @@ export class Bucket {
       Date.now() + resetAfter,
       this.ratelimit.resetAtLocal,
     );
-
-    this.timeout.start(resetAfter, () => this.reset(), false);
+    this.lockedUntil = this.ratelimit.resetAtLocal;
 
     return this;
   }
@@ -90,7 +94,7 @@ export class Bucket {
     }
 
     this.locked = true;
-    this.timeout.start(unlockIn, () => this.reset(), false);
+    this.lockedUntil = Date.now() + unlockIn;
   }
 
   add(delayed: RatelimitQueue, unshift: boolean = false) {
@@ -103,12 +107,22 @@ export class Bucket {
   }
 
   shift(): void {
-    if (!this.locked && this.size) {
-      const delayed = <RatelimitQueue> this.queue.shift();
-      delayed.request.send()
-        .then(delayed.resolve)
-        .catch(delayed.reject)
-        .then(() => this.shift());
+    if (this.size) {
+      if (this.locked && !this.timeout.hasStarted) {
+        if (this.lockedUntil <= Date.now()) {
+          this.locked = false;
+        } else {
+          this.timeout.start(this.unlockIn, () => this.reset(), false);
+        }
+      }
+
+      if (!this.locked) {
+        const delayed = <RatelimitQueue> this.queue.shift();
+        delayed.request.send()
+          .then(delayed.resolve)
+          .catch(delayed.reject)
+          .then(() => this.shift());
+      }
     }
   }
 

@@ -1030,18 +1030,26 @@ export class Client extends EventSpewer {
       },
       allowed_mentions?: {
         parse?: Array<string>,
+        replied_user?: boolean,
         roles?: Array<string>,
         users?: Array<string>,
       },
       application_id?: string,
       content?: string,
       embed?: RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction,
+      message_reference?: {
+        channel_id: string,
+        guild_id?: string,
+        message_id: string,
+      },
       nonce?: string,
+      sticker_ids?: Array<string>,
       tts?: boolean,
     } = {
       application_id: options.applicationId,
       content: options.content,
       nonce: options.nonce,
+      sticker_ids: options.stickerIds,
       tts: options.tts,
     };
 
@@ -1055,6 +1063,7 @@ export class Client extends EventSpewer {
     if (options.allowedMentions && typeof(options.allowedMentions) === 'object') {
       body.allowed_mentions = {
         parse: options.allowedMentions.parse,
+        replied_user: options.allowedMentions.repliedUser,
         roles: options.allowedMentions.roles,
         users: options.allowedMentions.users,
       };
@@ -1079,6 +1088,13 @@ export class Client extends EventSpewer {
         }
       }
     }
+    if (options.messageReference && typeof(options.messageReference) === 'object') {
+      body.message_reference = {
+        channel_id: options.messageReference.channelId,
+        guild_id: options.messageReference.guildId,
+        message_id: options.messageReference.messageId,
+      };
+    }
 
     const files: Array<RequestTypes.File> = [];
     if (options.file) {
@@ -1101,7 +1117,9 @@ export class Client extends EventSpewer {
         application_id: {type: VerifyTypes.SNOWFLAKE},
         content: {type: VerifyTypes.STRING},
         embed: {type: VerifyTypes.OBJECT},
+        message_reference: {type: VerifyTypes.OBJECT},
         nonce: {type: VerifyTypes.STRING},
+        sticker_ids: {type: VerifyTypes.ARRAY},
         tts: {type: VerifyTypes.BOOLEAN},
       });
       if ('activity' in body) {
@@ -1111,12 +1129,20 @@ export class Client extends EventSpewer {
           type: {type: VerifyTypes.NUMBER},
         });
       }
+      if ('message_reference' in body) {
+        verifyData(<{[key: string]: string}> body.message_reference, {
+          channel_id: {type: VerifyTypes.STRING},
+          guild_id: {type: VerifyTypes.STRING},
+          message_id: {type: VerifyTypes.STRING},
+        });
+      }
     }
 
     if (
       !('activity' in body) &&
       !('content' in body) &&
       !('embed' in body) &&
+      !('sticker_ids' in body) &&
       !files.length
     ) {
       throw new Error('Cannot send an empty message.');
@@ -3683,6 +3709,19 @@ export class Client extends EventSpewer {
         method: HTTPMethods.GET,
         path: Api.CHANNEL_MESSAGES,
         params,
+      },
+    });
+  }
+
+  async fetchMeStickerPacks(countryCode?: string): Promise<any> {
+    const query = {
+      country_code: countryCode,
+    };
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.ME_STICKER_PACKS,
       },
     });
   }

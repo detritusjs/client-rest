@@ -60,14 +60,16 @@ export const CDN = Tools.URIEncodeWrap({
     `/embed/avatars/${+(discriminator) % 5}.png`,
   CHANNEL_ICON: (channelId: string, hash: string, format: string = 'png'): string =>
     `/channel-icons/${channelId}/${hash}.${format}`,
+  EMOJI: (emojiId: string, format: string = 'png'): string =>
+    `/emojis/${emojiId}.${format}`,
   GUILD_BANNER: (guildId: string, hash: string, format: string = 'png'): string =>
     `/banners/${guildId}/${hash}.${format}`,
   GUILD_ICON: (guildId: string, hash: string, format: string = 'png'): string =>
     `/icons/${guildId}/${hash}.${format}`,
   GUILD_SPLASH: (guildId: string, hash: string, format: string = 'png'): string =>
     `/splashes/${guildId}/${hash}.${format}`,
-  EMOJI: (emojiId: string, format: string = 'png'): string =>
-    `/emojis/${emojiId}.${format}`,
+  STICKER: (stickerId: string, hash: string, format: string = 'png'): string =>
+    `/stickers/${stickerId}/${hash}.${format}`,
   TEAM_ICON: (teamId: string, hash: string, format: string = 'png'): string =>
     `/team-icons/${teamId}/${hash}.${format}`,
 
@@ -343,6 +345,8 @@ export const Api = Object.freeze({
 
   ACTIVITIES:
     '/activities',
+  ACTIVITIES_APPLICATION_JOIN_TICKET:
+    '/activities/applications/:applicationId/:ticketId/join-ticket',
   ACTIVITIES_STATISTICS_APPLICATION:
     '/activities/statistics/applications/:applicationId',
 
@@ -619,8 +623,14 @@ export const Api = Object.freeze({
     '/guilds/:guildId/channels',
   GUILD_DELETE:
     '/guilds/:guildId/delete',
+  GUILD_DISCOVERY_CATEGORIES:
+    '/guilds/:guildId/discovery-categories',
   GUILD_DISCOVERY_CHECKLIST:
     '/guilds/:guildId/discovery-checklist',
+  GUILD_DISCOVERY_METADATA:
+    '/guilds/:guildId/discovery-metadata',
+  GUILD_DISCOVERY_VALID_TERM:
+    '/guilds/:guildId/valid-term',
   GUILD_EMBED:
     '/guilds/:guildId/embed',
   GUILD_EMBED_JSON:
@@ -701,6 +711,9 @@ export const Api = Object.freeze({
     '/integrations/:integrationId/join',
   INTEGRATION_SEARCH:
     '/integrations/:integrationId/search',
+
+  INTERACTIONS:
+    '/interactions',
 
   INVITE:
     '/invites/:code',
@@ -853,6 +866,8 @@ export const Api = Object.freeze({
     '/users/@me/settings/game-notifications',
   ME_SETTINGS_GAME_NOTIFICATIONS_OVERRIDES:
     '/users/@me/settings/game-notifications/overrides',
+  ME_STICKER_PACKS:
+    '/users/@me/sticker-packs',
 
   NATIVE_DEBUG_LOGS:
     '/native/debug-logs',
@@ -927,6 +942,8 @@ export const Api = Object.freeze({
     '/partners/apply',
   PARTNERS_CONNECTIONS:
     '/partners/connections',
+  PARTNER_REQUIREMENTS:
+    '/partners/:guildId/requirements',
 
   PROMOTIONS:
     '/promotions',
@@ -952,6 +969,14 @@ export const Api = Object.freeze({
 
   SSO:
     '/sso',
+
+  STICKER_ASSET:
+    '/stickers/:stickerId/:assetId.:format',
+
+  STICKER_PACKS_DIRECTORY:
+    '/sticker-packs/directory/:directoryId',
+  STICKER_PACK:
+    '/sticker-packs/:stickerPackId',
 
   STORE_APPLICATION_ASSETS:
     '/store/applications/:applicationId/assets',

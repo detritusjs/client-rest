@@ -4,13 +4,6 @@ import { Bucket } from './bucket';
 
 
 export class BucketCollection extends BaseCollection<string, Bucket> {
-  constructor(options: BaseCollectionOptions = {}) {
-    super(options);
-    if (this.interval) {
-      this.interval.unref();
-    }
-  }
-
   insert(bucket: Bucket) {
     this.set(bucket.key, bucket);
   }
@@ -20,6 +13,13 @@ export class BucketCollection extends BaseCollection<string, Bucket> {
       this.get(bucket.key);
     } else {
       this.insert(bucket);
+    }
+  }
+
+  startInterval(): void {
+    super.startInterval();
+    if (this.interval) {
+      this.interval.unref();
     }
   }
 

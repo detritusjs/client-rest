@@ -2,11 +2,11 @@ export { HTTPMethods } from 'detritus-rest/lib/constants';
 
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.8.3',
+  VERSION: '0.9.0',
 });
 
 
-export const ApiVersion = 7;
+export const ApiVersion = 8;
 
 export enum AuthTypes {
   BOT = 'bot',
@@ -47,6 +47,8 @@ export enum DiscordAbortCodes {
   USER_NOT_AUTHORIZED_FOR_APPLICATION = 20012,
   ACCOUNT_DISABLED = 20013,
   SLOWMODE_RATE_LIMITED = 20016,
+  CHANNEL_FOLLOWING_EDIT_RATE_LIMITED = 20017,
+  UNDER_MINIMUM_AGE = 20024,
 
   TOO_MANY_USER_GUILDS = 30001,
   TOO_MANY_BOT_GUILDS = 30001,
@@ -119,6 +121,7 @@ export enum DiscordAbortCodes {
   MFA_INVALID_SESSION = 60009,
 
   PHONE_NUMBER_UNABLE_TO_SEND = 70003,
+  PHONE_VERIFICATION_REQUIRED = 70007,
 
   RELATIONSHIP_INCOMING_DISABLED = 80000,
   RELATIONSHIP_INCOMING_BLOCKED = 80001,

@@ -30,7 +30,6 @@ export function verifyData(data: {
     type?: string,
   },
 }): void {
-  const verified = {};
   for (let key in verification) {
     const valueOptions = verification[key];
     if (!(key in data) || data[key] === undefined) {
