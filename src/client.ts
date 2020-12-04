@@ -116,9 +116,8 @@ export class Client extends EventSpewer {
   get authTypeText(): string {
     switch (this.authType) {
       case AuthTypes.BOT: return 'Bot';
-      case AuthTypes.USER: return 'Bearer';
     }
-    return '';
+    return 'Bearer';
   }
 
   get isBot(): boolean {
