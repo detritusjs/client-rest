@@ -2151,7 +2151,6 @@ export class Client extends EventSpewer {
 
   async editGuildMemberVerification(
     guildId: string,
-    userId: string,
     options: RequestTypes.EditGuildMemberVerification = {},
   ): Promise<any> {
     const body = {
@@ -2159,7 +2158,7 @@ export class Client extends EventSpewer {
       enabled: options.enabled,
       form_fields: options.formFields,
     };
-    const params = {guildId, userId};
+    const params = {guildId};
     if (this.clientsideChecks) {
 
     }
