@@ -616,8 +616,9 @@ export class Client extends EventSpewer {
   ): Promise<any> {
     const params = {guildId};
     const query = {
-      days: options.days,
       compute_prune_count: options.computePruneCount,
+      days: options.days,
+      include_roles: options.includeRoles,
     };
     if (this.clientsideChecks) {
 
@@ -714,6 +715,8 @@ export class Client extends EventSpewer {
     const body = {
       max_age: options.maxAge,
       max_uses: options.maxUses,
+      target_user: options.targetUser,
+      target_user_type: options.targetUserType,
       temporary: options.temporary,
       unique: options.unique,
     };
@@ -1317,6 +1320,23 @@ export class Client extends EventSpewer {
     });
   }
 
+  async crosspostMessage(
+    channelId: string,
+    messageId: string,
+  ): Promise<any> {
+    const params = {channelId, messageId};
+    if (this.clientsideChecks) {
+      
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.CHANNEL_MESSAGE_CROSSPOST,
+        params,
+      },
+    });
+  }
+
   async deleteAccount(
     options: RequestTypes.DeleteAccount,
   ): Promise<any> {
@@ -1802,6 +1822,25 @@ export class Client extends EventSpewer {
     });
   }
 
+  async deleteWebhookTokenMessage(
+    webhookId: string,
+    token: string,
+    messageId: string,
+  ): Promise<any> {
+    const params = {webhookId, token, messageId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.WEBHOOK_TOKEN_MESSAGE,
+        params,
+      },
+      useAuth: false,
+    });
+  }
+
   async disableAccount(
     options: RequestTypes.DisableAccount,
   ): Promise<any> {
@@ -2105,6 +2144,30 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.PATCH,
         path: Api.GUILD_MEMBER,
+        params,
+      },
+    });
+  }
+
+  async editGuildMemberVerification(
+    guildId: string,
+    userId: string,
+    options: RequestTypes.EditGuildMemberVerification = {},
+  ): Promise<any> {
+    const body = {
+      description: options.description,
+      enabled: options.enabled,
+      form_fields: options.formFields,
+    };
+    const params = {guildId, userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.GUILD_MEMBER_VERIFICATION,
         params,
       },
     });
@@ -2596,6 +2659,96 @@ export class Client extends EventSpewer {
       },
     });
   }
+
+  async editWebhookTokenMessage(
+    webhookId: string,
+    token: string,
+    messageId: string,
+    options: RequestTypes.EditWebhookTokenMessage | string = {},
+  ): Promise<any> {
+    if (typeof(options) === 'string') {
+      options = {content: options};
+    }
+    const body: {
+      allowed_mentions?: {
+        parse?: Array<string>,
+        roles?: Array<string>,
+        users?: Array<string>,
+      },
+      content?: string,
+      embeds?: Array<RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction>,
+    } = {
+      content: options.content,
+    };
+    const params = {webhookId, token, messageId};
+    if (options.allowedMentions && typeof(options.allowedMentions) === 'object') {
+      body.allowed_mentions = {
+        parse: options.allowedMentions.parse,
+        roles: options.allowedMentions.roles,
+        users: options.allowedMentions.users,
+      };
+    }
+    if (options.embed) {
+      if (options.embeds) {
+        options.embeds = [options.embed, ...options.embeds];
+      } else {
+        options.embeds = [options.embed];
+      }
+    }
+    if (options.embeds && options.embeds.length) {
+      if (!body.embeds) {
+        body.embeds = [];
+      }
+      for (let embed of options.embeds) {
+        if ('toJSON' in embed) {
+          body.embeds.push(embed);
+          continue;
+        }
+        const raw = <RequestTypes.RawChannelMessageEmbed> Object.assign({}, embed);
+        if (typeof(embed.author) === 'object') {
+          raw.author = {
+            name: embed.author.name,
+            url: embed.author.url,
+            icon_url: embed.author.iconUrl,
+          };
+        }
+        if (typeof(embed.footer) === 'object') {
+          raw.footer = {
+            text: embed.footer.text,
+            icon_url: embed.footer.iconUrl,
+          };
+        }
+        body.embeds.push(raw);
+      }
+    }
+
+    if (this.clientsideChecks) {
+      // verify body
+      // verify files?
+      verifyData(params, {
+        messageId: {required: true, type: VerifyTypes.SNOWFLAKE},
+        token: {required: true, type: VerifyTypes.STRING},
+        webhookId: {required: true, type: VerifyTypes.SNOWFLAKE},
+      });
+      if (
+        !('content' in body) &&
+        !('embeds' in body)
+      ) {
+        throw new Error('Cannot send an empty message.');
+      }
+    }
+
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.WEBHOOK_TOKEN_MESSAGE,
+        params,
+      },
+      useAuth: false,
+    });
+  }
+
 
   async enableOauth2ApplicationAssets(
     applicationId: string,
@@ -3303,6 +3456,22 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchGuildMemberVerification(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_MEMBER_VERIFICATION,
+        params,
+      },
+    });
+  }
+
   async fetchGuildPremiumSubscriptions(
     guildId: string,
   ): Promise<any> {
@@ -3340,10 +3509,15 @@ export class Client extends EventSpewer {
     options: RequestTypes.FetchGuildPruneCount = {},
   ): Promise<any> {
     const params = {guildId};
+    const query = {
+      days: options.days,
+      include_roles: options.includeRoles,
+    };
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      query,
       route: {
         method: HTTPMethods.GET,
         path: Api.GUILD_PRUNE,
@@ -4219,6 +4393,27 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.WEBHOOK_TOKEN,
+        params,
+      },
+    });
+  }
+
+  async followChannel(
+    channelId: string,
+    options: RequestTypes.FollowChannel,
+  ): Promise<any> {
+    const body = {
+      webhook_channel_id: options.webhookChannelId,
+    };
+    const params = {channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.CHANNEL_FOLLOWERS,
         params,
       },
     });

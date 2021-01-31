@@ -651,6 +651,8 @@ export const Api = Object.freeze({
     '/guilds/:guildId/integrations/:integrationId/sync',
   GUILD_INVITES:
     '/guilds/:guildId/invites',
+  GUILD_MEMBER_VERIFICATION:
+    '/guilds/:guildId/member-verification',
   GUILD_JOIN:
     '/guilds/:guildId/members/@me',
   GUILD_MEMBERS:
@@ -1106,6 +1108,8 @@ export const Api = Object.freeze({
     '/webhooks/:webhookId',
   WEBHOOK_TOKEN:
     '/webhooks/:webhookId/:token',
+  WEBHOOK_TOKEN_MESSAGE:
+    '/webhooks/:webhookId/messages/:messageId',
   WEBHOOK_TOKEN_GITHUB:
     '/webhooks/:webhookId/github',
   WEBHOOK_TOKEN_SLACK:

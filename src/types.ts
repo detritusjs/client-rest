@@ -77,6 +77,7 @@ export namespace RequestTypes {
   export interface BeginGuildPrune {
     computePruneCount?: boolean,
     days?: number,
+    includeRoles?: Array<string>,
     reason?: string,
   }
 
@@ -102,6 +103,8 @@ export namespace RequestTypes {
   export interface CreateChannelInvite {
     maxAge?: number,
     maxUses?: number,
+    targetUser?: string,
+    targetUserType?: number,
     temporary?: boolean,
     unique?: boolean,
   }
@@ -378,7 +381,7 @@ export namespace RequestTypes {
     allow?: number,
     deny?: number,
     reason?: string,
-    type?: string,
+    type?: number | string,
   }
 
   export interface EditConnection {
@@ -450,6 +453,12 @@ export namespace RequestTypes {
     nick?: string,
     reason?: string,
     roles?: Array<string>,
+  }
+
+  export interface EditGuildMemberVerification {
+    description?: string,
+    enabled?: boolean,
+    formFields?: Array<string>,
   }
 
   export interface EditGuildMfaLevel {
@@ -572,6 +581,17 @@ export namespace RequestTypes {
     reason?: string,
   }
 
+  export interface EditWebhookTokenMessage {
+    allowedMentions?: {
+      parse?: Array<string>,
+      roles?: Array<string>,
+      users?: Array<string>,
+    },
+    content?: string,
+    embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
+    embeds?: Array<CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction>,
+  }
+
   export interface ExecuteWebhook {
     allowedMentions?: {
       parse?: Array<string>,
@@ -614,6 +634,7 @@ export namespace RequestTypes {
 
   export interface FetchGuildPruneCount {
     days?: number,
+    includeRoles?: Array<string>,
   }
 
   export interface FetchGuildWidgetPng {
@@ -677,6 +698,10 @@ export namespace RequestTypes {
 
   export interface FetchTeamPayouts {
     limit?: number,
+  }
+
+  export interface FollowChannel {
+    webhookChannelId: string,
   }
 
   export interface ForgotPassword {
