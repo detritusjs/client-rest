@@ -59,7 +59,7 @@ const requestDefaults = {
 };
 
 export interface ClientOptions extends RestClientOptions {
-  authType?: string | number,
+  authType?: AuthTypes | string,
   bucketsExpireIn?: number,
   clientsideChecks?: boolean,
   errorOnRatelimit?: boolean,
@@ -115,9 +115,14 @@ export class Client extends EventSpewer {
 
   get authTypeText(): string {
     switch (this.authType) {
+      case AuthTypes.BEARER: return 'Bearer';
       case AuthTypes.BOT: return 'Bot';
     }
     return '';
+  }
+
+  get isBearer(): boolean {
+    return this.authType === AuthTypes.BEARER;
   }
 
   get isBot(): boolean {
@@ -139,14 +144,13 @@ export class Client extends EventSpewer {
     return '';
   }
 
-  setAuthType(type: string | number): void {
+  setAuthType(type: AuthTypes | string): void {
     if (typeof(type) === 'string') {
       type = type.toUpperCase();
     }
     for (let key in AuthTypes) {
-      const authType = (<any> AuthTypes)[key];
-      if (authType === type || key === type) {
-        this.authType = authType;
+      if (key === type) {
+        this.authType = key as AuthTypes;
         break;
       }
     }
@@ -795,7 +799,7 @@ export class Client extends EventSpewer {
   ): Promise<any> {
     const params = {guildId, userId};
     const query = {
-      'delete-message-days': options.deleteMessageDays,
+      delete_message_days: options.deleteMessageDays,
       reason: options.reason,
     };
     if (this.clientsideChecks) {
