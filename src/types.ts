@@ -147,10 +147,10 @@ export namespace RequestTypes {
   }
 
   export interface CreateChannelOverwrite {
-    id: string,
-    type: 'role' | 'member',
     allow: number,
     deny: number,
+    id: string,
+    type: number | string,
   }
 
   export interface CreateDm {
