@@ -2307,37 +2307,15 @@ export class Client extends EventSpewer {
 
   async editGuildVoiceState(
     guildId: string,
-    userId: string,
+    userId: string = '@me',
     options: RequestTypes.EditGuildVoiceState,
-  ): Promise<any> {
-    const body = {
-      channel_id: options.channelId,
-      suppress: options.suppress,
-    };
-    const params = {guildId, userId};
-    if (this.clientsideChecks) {
-
-    }
-    return this.request({
-      body,
-      route: {
-        method: HTTPMethods.PATCH,
-        path: Api.GUILD_VOICE_STATE,
-        params,
-      },
-    });
-  }
-
-  async editGuildVoiceStateMe(
-    guildId: string,
-    options: RequestTypes.EditGuildVoiceStateMe,
   ): Promise<any> {
     const body = {
       channel_id: options.channelId,
       request_to_speak_timestamp: options.requestToSpeakTimestamp,
       suppress: options.suppress,
     };
-    const params = {guildId, userId: '@me'};
+    const params = {guildId, userId};
     if (this.clientsideChecks) {
 
     }
