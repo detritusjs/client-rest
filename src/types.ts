@@ -497,6 +497,15 @@ export namespace RequestTypes {
     reason?: string,
   }
 
+  export interface EditGuildVoiceState {
+    channelId: string,
+    suppress?: boolean,
+  }
+
+  export interface EditGuildVoiceStateMe extends EditGuildVoiceState {
+    requestToSpeakTimestamp?: null | Date | string,
+  }
+
   export interface EditLobby {
     capacity?: number,
     locked?: boolean,

@@ -357,6 +357,8 @@ export const Api = Object.freeze({
 
   APPLICATIONS:
     '/applications',
+  APPLICATIONS_BOTS_COMMANDS:
+    '/applications/bots/:applicationId/commands',
   APPLICATIONS_DETECTABLE:
     '/applications/detectable',
   APPLICATIONS_PUBLIC:
@@ -691,6 +693,8 @@ export const Api = Object.freeze({
     '/guilds/:guildId/templates/:templateId',
   GUILD_VANITY_URL:
     '/guilds/:guildId/vanity-url',
+  GUILD_VOICE_STATE:
+    '/guilds/:guildId/voice-states/:userId',
   GUILD_WEBHOOKS:
     '/guilds/:guildId/webhooks',
   GUILD_WIDGET:
