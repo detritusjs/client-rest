@@ -5312,28 +5312,6 @@ export class Client extends EventSpewer {
     });
   }
 
-  async messageSuppressEmbeds(
-    channelId: string,
-    messageId: string,
-    options: RequestTypes.MessageSuppressEmbeds = {},
-  ): Promise<any> {
-    const body = {
-      suppress: options.suppress,
-    };
-    const params = {channelId, messageId};
-    if (this.clientsideChecks) {
-
-    }
-    return this.request({
-      body,
-      route: {
-        method: HTTPMethods.POST,
-        path: Api.CHANNEL_MESSAGE_SUPPRESS_EMBEDS,
-        params,
-      },
-    });
-  }
-
   async oauth2Authorize(
     options: RequestTypes.Oauth2Authorize = {},
   ): Promise<any> {

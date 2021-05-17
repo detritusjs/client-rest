@@ -2,11 +2,11 @@ export { HTTPMethods } from 'detritus-rest/lib/constants';
 
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.9.5-beta.2',
+  VERSION: '0.9.5-beta.3',
 });
 
 
-export const ApiVersion = 8;
+export const ApiVersion = 9;
 
 export enum AuthTypes {
   BEARER = 'BEARER',

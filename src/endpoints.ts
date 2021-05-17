@@ -517,8 +517,6 @@ export const Api = Object.freeze({
     '/channels/:channelId/messages/:messageId/reactions/:emoji',
   CHANNEL_MESSAGE_REACTION_USER:
     '/channels/:channelId/messages/:messageId/reactions/:emoji/:userId',
-  CHANNEL_MESSAGE_SUPPRESS_EMBEDS:
-    '/channels/:channelId/messages/:messageId/suppress-embeds',
   CHANNEL_MESSAGE_THREADS:
     '/channels/:channelId/messages/:messageId/threads',
   CHANNEL_PERMISSIONS:
