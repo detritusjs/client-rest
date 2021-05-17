@@ -379,10 +379,22 @@ export const Api = Object.freeze({
     '/applications/:applicationId/branches/:branchId/builds/:buildId/size',
   APPLICATION_BRANCH_STORAGE:
     '/applications/:applicationId/branches/:branchId/storage',
+  APPLICATION_COMMANDS:
+    '/applications/:applicationId/commands',
+  APPLICATION_COMMAND:
+    '/applications/:applicationId/commands/:commandId',
   APPLICATION_GIFT_CODE_BATCHES:
     '/applications/:applicationId/gift-code-batches',
   APPLICATION_GIFT_CODE_BATCHES_CSV_DOWNLOAD:
     '/applications/:applicationId/gift-code-batches/:batchId',
+  APPLICATION_GUILD_COMMANDS:
+    '/applications/:applicationId/guilds/:guildId/commands',
+  APPLICATION_GUILD_COMMANDS_PERMISSIONS:
+    '/applications/:applicationId/guilds/:guildId/commands/permissions',
+  APPLICATION_GUILD_COMMAND:
+    '/applications/:applicationId/guilds/:guildId/commands/:commandId',
+  APPLICATION_GUILD_COMMAND_PERMISSIONS:
+    '/applications/:applicationId/guilds/:guildId/commands/:commandId/permissions',
   APPLICATION_ICON:
     '/applications/:applicationId/app-icons/:hash.png',
   APPLICATION_MANIFEST_LABELS:
@@ -507,6 +519,8 @@ export const Api = Object.freeze({
     '/channels/:channelId/messages/:messageId/reactions/:emoji/:userId',
   CHANNEL_MESSAGE_SUPPRESS_EMBEDS:
     '/channels/:channelId/messages/:messageId/suppress-embeds',
+  CHANNEL_MESSAGE_THREADS:
+    '/channels/:channelId/messages/:messageId/threads',
   CHANNEL_PERMISSIONS:
     '/channels/:channelId/permissions',
   CHANNEL_PERMISSION:
@@ -527,8 +541,24 @@ export const Api = Object.freeze({
     '/channels/:channelId/store-listing/entitlement-grant',
   CHANNEL_STORE_LISTINGS_SKU:
     '/channels/:channelId/store-listings/:skuId',
+  CHANNEL_THREADS:
+    '/channels/:channelId/threads',
+  CHANNEL_THREADS_ACTIVE:
+    '/channels/:channelId/threads/active',
+  CHANNEL_THREADS_ARCHIVED_PRIVATE:
+    '/channels/:channelId/threads/archived/private',
+  CHANNEL_THREADS_ARCHIVED_PUBLIC:
+    '/channels/:channelId/threads/archived/public',
+  CHANNEL_THREAD_MEMBERS:
+    '/channels/:channelId/thread-members',
+  CHANNEL_THREAD_MEMBER:
+    '/channels/:channelId/thread-members/:userId',
+  CHANNEL_THREAD_MEMBER_ME:
+    '/channels/:channelId/thread-members/@me',
   CHANNEL_TYPING:
     '/channels/:channelId/typing',
+  CHANNEL_USER_THREADS_ARCHIVED_PRIVATE:
+    '/channels/:channelId/users/:userId/threads/archived/private',
   CHANNEL_WEBHOOKS:
     '/channels/:channelId/webhooks',
 
@@ -720,6 +750,8 @@ export const Api = Object.freeze({
 
   INTERACTIONS:
     '/interactions',
+  INTERACTION_CALLBACK:
+    '/interactions/:interactionId/:token/callback',
 
   INVITE:
     '/invites/:code',
@@ -976,6 +1008,11 @@ export const Api = Object.freeze({
   SSO:
     '/sso',
 
+  STAGE_INSTANCES:
+    '/stage-instances',
+  STAGE_INSTANCE:
+    '/stage-instances/:channelId',
+
   STICKER_ASSET:
     '/stickers/:stickerId/:assetId.:format',
 
@@ -1111,11 +1148,11 @@ export const Api = Object.freeze({
   WEBHOOK:
     '/webhooks/:webhookId',
   WEBHOOK_TOKEN:
-    '/webhooks/:webhookId/:token',
+    '/webhooks/:webhookId/:webhookToken',
   WEBHOOK_TOKEN_MESSAGE:
-    '/webhooks/:webhookId/messages/:messageId',
+    '/webhooks/:webhookId/:webhookToken/messages/:messageId',
   WEBHOOK_TOKEN_GITHUB:
-    '/webhooks/:webhookId/github',
+    '/webhooks/:webhookId/:webhookToken/github',
   WEBHOOK_TOKEN_SLACK:
-    '/webhooks/:webhookId/slack',
+    '/webhooks/:webhookId/:webhookToken/slack',
 });

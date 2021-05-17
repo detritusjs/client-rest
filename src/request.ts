@@ -217,16 +217,16 @@ export class RestRequest {
 
           const data = await response.json() as {global: boolean, retry_after: number};
           if (this.client.isBot) {
-            // incase they, for some reason, send us a differing body from the headers (happened cuz of channel edits with name/topic)
-            // just error out since this is a fluke
-            if ((data.retry_after * 1000) !== retryAfter) {
-              return reject(new HTTPError(response));
-            }
-
             if (response.headers.get(RatelimitHeaders.GLOBAL) === 'true') {
               this.client.globalBucket.lock(retryAfter);
               this.client.globalBucket.add(delayed);
               return;
+            }
+
+            // incase they, for some reason, send us a differing body from the headers (happened cuz of channel edits with name/topic)
+            // just error out since this is a fluke
+            if ((data.retry_after * 1000) !== retryAfter) {
+              return reject(new HTTPError(response));
             }
           } else {
             if (isDiscordRatelimit) {

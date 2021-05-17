@@ -2,7 +2,7 @@ export { HTTPMethods } from 'detritus-rest/lib/constants';
 
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.9.5-beta.1',
+  VERSION: '0.9.5-beta.2',
 });
 
 
@@ -169,7 +169,7 @@ export enum RestEvents {
 }
 
 
-export const RATELIMIT_BUCKET_MAJOR_PARAMS = Object.freeze(['channelId', 'guildId', 'webhookId']);
+export const RATELIMIT_BUCKET_MAJOR_PARAMS = Object.freeze(['channelId', 'guildId', 'webhookId', 'webhookToken']);
 
 export const SPOILER_ATTACHMENT_PREFIX = 'SPOILER_';
 
