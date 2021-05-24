@@ -1109,9 +1109,9 @@ export const Api = Object.freeze({
   WEBHOOK_TOKEN:
     '/webhooks/:webhookId/:token',
   WEBHOOK_TOKEN_MESSAGE:
-    '/webhooks/:webhookId/messages/:messageId',
+    '/webhooks/:webhookId/:token/messages/:messageId',
   WEBHOOK_TOKEN_GITHUB:
-    '/webhooks/:webhookId/github',
+    '/webhooks/:webhookId/:token/github',
   WEBHOOK_TOKEN_SLACK:
-    '/webhooks/:webhookId/slack',
+    '/webhooks/:webhookId/:token/slack',
 });
