@@ -752,6 +752,7 @@ export namespace RequestTypes {
 
   export interface FetchInvite {
     withCounts?: boolean,
+    withExpiration?: boolean,
   }
 
   export interface FetchMe {

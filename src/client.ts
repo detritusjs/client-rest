@@ -4300,6 +4300,7 @@ export class Client extends EventSpewer {
     const params = {code};
     const query = {
       with_counts: options.withCounts,
+      with_expiration: options.withExpiration,
     };
     if (this.clientsideChecks) {
 

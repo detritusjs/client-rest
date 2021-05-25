@@ -1,5 +1,6 @@
 const { Client } = require('../lib');
 
+
 const token = '';
 const client = new Client(token);
 
@@ -25,12 +26,9 @@ const channelId = '';
 
   {
     const raw = await client.createMessage(channelId, {
-      file: {
-        data: Buffer.from('Some file content'),
-        filename: 'file.txt',
-      },
+      file: {filename: 'file.txt', value: Buffer.from('Some file content')},
       files: [
-        {data: Buffer.from('file #2'), filename: 'file2.txt'},
+        {filename: 'file2.txt', value: Buffer.from('file #2')},
       ],
     });
   }
