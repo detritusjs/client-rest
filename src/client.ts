@@ -1148,6 +1148,116 @@ export class Client extends EventSpewer {
     });
   }
 
+  async createInteractionResponse(
+    interactionId: string,
+    token: string,
+    options: RequestTypes.CreateInteractionResponse,
+  ): Promise<any> {
+    const body: {
+      data?: {
+        allowed_mentions?: {
+          parse?: Array<string>,
+          roles?: Array<string>,
+          users?: Array<string>,
+        },
+        components?: Array<RequestTypes.RawChannelMessageComponent>,
+        content?: string,
+        embeds?: Array<RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction>,
+        flags?: number,
+        tts?: boolean,
+      },
+      type: number,
+    } = {
+      type: options.type,
+    };
+    const params = {interactionId, token};
+
+    if (options.data) {
+      const { data } = options;
+      body.data = {
+        content: data.content,
+        flags: data.flags,
+        tts: data.tts,
+      };
+
+      if (data.allowedMentions && typeof(data.allowedMentions) === 'object') {
+        body.data.allowed_mentions = {
+          parse: data.allowedMentions.parse,
+          roles: data.allowedMentions.roles,
+          users: data.allowedMentions.users,
+        };
+      }
+
+      if (data.components && typeof(data.components) === 'object') {
+        body.data.components = data.components.map((component) => {
+          return {
+            components: component.components && component.components.map((child) => {
+              return {
+                custom_id: child.customId,
+                disabled: child.disabled,
+                emoji: child.emoji,
+                label: child.label,
+                style: child.style,
+                type: child.type,
+                url: child.url,
+              };
+            }),
+            custom_id: component.customId,
+            disabled: component.disabled,
+            emoji: component.emoji,
+            label: component.label,
+            style: component.style,
+            type: component.type,
+            url: component.url,
+          };
+        });
+      }
+
+      if (data.embed) {
+        if (data.embeds) {
+          data.embeds = [data.embed, ...data.embeds];
+        } else {
+          data.embeds = [data.embed];
+        }
+      }
+      if (data.embeds && data.embeds.length) {
+        if (!body.data.embeds) {
+          body.data.embeds = [];
+        }
+        for (let embed of data.embeds) {
+          if ('toJSON' in embed) {
+            body.data.embeds.push(embed);
+            continue;
+          }
+          const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;
+          if (typeof(embed.author) === 'object') {
+            raw.author = {
+              name: embed.author.name,
+              url: embed.author.url,
+              icon_url: embed.author.iconUrl,
+            };
+          }
+          if (typeof(embed.footer) === 'object') {
+            raw.footer = {
+              text: embed.footer.text,
+              icon_url: embed.footer.iconUrl,
+            };
+          }
+          body.data.embeds.push(raw);
+        }
+      }
+    }
+
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.INTERACTION_CALLBACK,
+        params,
+      },
+    });
+  }
+
   async createLobby(
     applicationId: string,
     options: RequestTypes.CreateLobby = {},
@@ -3202,7 +3312,7 @@ export class Client extends EventSpewer {
           body.embeds.push(embed);
           continue;
         }
-        const raw = <RequestTypes.RawChannelMessageEmbed> Object.assign({}, embed);
+        const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;
         if (typeof(embed.author) === 'object') {
           raw.author = {
             name: embed.author.name,
@@ -3406,7 +3516,7 @@ export class Client extends EventSpewer {
           body.embeds.push(embed);
           continue;
         }
-        const raw = <RequestTypes.RawChannelMessageEmbed> Object.assign({}, embed);
+        const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;
         if (typeof(embed.author) === 'object') {
           raw.author = {
             name: embed.author.name,

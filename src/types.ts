@@ -268,6 +268,23 @@ export namespace RequestTypes {
     name: string,
   }
 
+  export interface CreateInteractionResponse {
+    data?: {
+      allowedMentions?: {
+        parse?: Array<string>,
+        roles?: Array<string>,
+        users?: Array<string>,
+      },
+      components?: Array<CreateChannelMessageComponent>,
+      content?: string,
+      embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
+      embeds?: Array<CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction>,
+      flags?: number,
+      tts?: boolean,
+    },
+    type: number,
+  }
+
   export interface CreateLobby {
     capacity?: number,
     locked?: boolean,
