@@ -3127,6 +3127,7 @@ export class Client extends EventSpewer {
         path: Api.WEBHOOK_TOKEN,
         params,
       },
+      useAuth: false,
     });
   }
 
@@ -5183,6 +5184,26 @@ export class Client extends EventSpewer {
         path: Api.WEBHOOK_TOKEN,
         params,
       },
+      useAuth: false,
+    });
+  }
+
+  async fetchWebhookTokenMessage(
+    webhookId: string,
+    webhookToken: string,
+    messageId: string,
+  ): Promise<any> {
+    const params = {webhookId, webhookToken, messageId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.WEBHOOK_TOKEN_MESSAGE,
+        params,
+      },
+      useAuth: false,
     });
   }
 
