@@ -1237,6 +1237,7 @@ export class Client extends EventSpewer {
         users?: Array<string>,
       },
       application_id?: string,
+      components?: Array<RequestTypes.RawChannelMessageComponent>,
       content?: string,
       embed?: RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction,
       message_reference?: {
@@ -1270,6 +1271,30 @@ export class Client extends EventSpewer {
         roles: options.allowedMentions.roles,
         users: options.allowedMentions.users,
       };
+    }
+    if (options.components && typeof(options.components) === 'object') {
+      body.components = options.components.map((component) => {
+        return {
+          components: component.components && component.components.map((child) => {
+            return {
+              custom_id: child.customId,
+              disabled: child.disabled,
+              emoji: child.emoji,
+              label: child.label,
+              style: child.style,
+              type: child.type,
+              url: child.url,
+            };
+          }),
+          custom_id: component.customId,
+          disabled: component.disabled,
+          emoji: component.emoji,
+          label: component.label,
+          style: component.style,
+          type: component.type,
+          url: component.url,
+        };
+      });
     }
     if (options.embed && typeof(options.embed) === 'object') {
       if ('toJSON' in options.embed) {
@@ -2827,6 +2852,7 @@ export class Client extends EventSpewer {
         users?: Array<string>,
       },
       attachments?: Array<{id: string}>,
+      components?: Array<RequestTypes.RawChannelMessageComponent>,
       content?: string,
       embed?: null | RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction,
       flags?: number,
@@ -2846,7 +2872,30 @@ export class Client extends EventSpewer {
         users: options.allowedMentions.users,
       };
     }
-
+    if (options.components && typeof(options.components) === 'object') {
+      body.components = options.components.map((component) => {
+        return {
+          components: component.components && component.components.map((child) => {
+            return {
+              custom_id: child.customId,
+              disabled: child.disabled,
+              emoji: child.emoji,
+              label: child.label,
+              style: child.style,
+              type: child.type,
+              url: child.url,
+            };
+          }),
+          custom_id: component.customId,
+          disabled: component.disabled,
+          emoji: component.emoji,
+          label: component.label,
+          style: component.style,
+          type: component.type,
+          url: component.url,
+        };
+      });
+    }
     if (options.embed && typeof(options.embed) === 'object') {
       if ('toJSON' in options.embed) {
         body.embed = options.embed;
@@ -3097,6 +3146,7 @@ export class Client extends EventSpewer {
         users?: Array<string>,
       },
       attachments?: Array<{id: string}>,
+      components?: Array<RequestTypes.RawChannelMessageComponent>,
       content?: string,
       embeds?: Array<RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction>,
     } = {
@@ -3110,6 +3160,30 @@ export class Client extends EventSpewer {
         roles: options.allowedMentions.roles,
         users: options.allowedMentions.users,
       };
+    }
+    if (options.components && typeof(options.components) === 'object') {
+      body.components = options.components.map((component) => {
+        return {
+          components: component.components && component.components.map((child) => {
+            return {
+              custom_id: child.customId,
+              disabled: child.disabled,
+              emoji: child.emoji,
+              label: child.label,
+              style: child.style,
+              type: child.type,
+              url: child.url,
+            };
+          }),
+          custom_id: component.customId,
+          disabled: component.disabled,
+          emoji: component.emoji,
+          label: component.label,
+          style: component.style,
+          type: component.type,
+          url: component.url,
+        };
+      });
     }
     if (options.embed) {
       if (options.embeds) {
@@ -3245,23 +3319,25 @@ export class Client extends EventSpewer {
         users?: Array<string>,
       },
       avatar_url?: string,
+      components?: Array<RequestTypes.RawChannelMessageComponent>,
       content?: string,
       embeds?: Array<RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction>,
       flags?: number,
-      thread_id?: string,
       tts?: boolean,
       username?: string,
     } = {
       avatar_url: options.avatarUrl,
       content: options.content,
       flags: options.flags,
-      thread_id: options.threadId,
       tts: options.tts,
       username: options.username,
     };
     const files: Array<RequestTypes.File> = [];
     const params = {webhookId, webhookToken};
-    const query: {wait?: boolean} = {};
+    const query = {
+      thread_id: options.threadId,
+      wait: options.wait,
+    }
     const route = {
       method: HTTPMethods.POST,
       path: Api.WEBHOOK_TOKEN,
@@ -3288,6 +3364,30 @@ export class Client extends EventSpewer {
         roles: options.allowedMentions.roles,
         users: options.allowedMentions.users,
       };
+    }
+    if (options.components && typeof(options.components) === 'object') {
+      body.components = options.components.map((component) => {
+        return {
+          components: component.components && component.components.map((child) => {
+            return {
+              custom_id: child.customId,
+              disabled: child.disabled,
+              emoji: child.emoji,
+              label: child.label,
+              style: child.style,
+              type: child.type,
+              url: child.url,
+            };
+          }),
+          custom_id: component.customId,
+          disabled: component.disabled,
+          emoji: component.emoji,
+          label: component.label,
+          style: component.style,
+          type: component.type,
+          url: component.url,
+        };
+      });
     }
     if (options.embed) {
       if (options.embeds) {
@@ -3341,10 +3441,6 @@ export class Client extends EventSpewer {
           file.filename = `${SPOILER_ATTACHMENT_PREFIX}${file.filename}`;
         }
       }
-    }
-
-    if (options.wait) {
-      query.wait = options.wait;
     }
 
     if (this.clientsideChecks) {
@@ -3620,28 +3716,6 @@ export class Client extends EventSpewer {
     });
   }
 
-  async fetchChannelJoinedThreadsArchivedPrivate(
-    channelId: string,
-    options: RequestTypes.FetchChannelJoinedThreadsArchivedPrivate = {},
-  ): Promise<any> {
-    const params = {channelId, userId: '@me'};
-    const query = {
-      before: options.before,
-      limit: options.limit,
-    };
-    if (this.clientsideChecks) {
-
-    }
-    return this.request({
-      query,
-      route: {
-        method: HTTPMethods.GET,
-        path: Api.CHANNEL_USER_THREADS_ARCHIVED_PRIVATE,
-        params,
-      },
-    });
-  }
-
   async fetchChannelInvites(
     channelId: string,
   ): Promise<any> {
@@ -3707,6 +3781,28 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.CHANNEL_THREADS_ARCHIVED_PRIVATE,
+        params,
+      },
+    });
+  }
+
+  async fetchChannelThreadsArchivedPrivateJoined(
+    channelId: string,
+    options: RequestTypes.FetchChannelThreadsArchivedPrivateJoined = {},
+  ): Promise<any> {
+    const params = {channelId, userId: '@me'};
+    const query = {
+      before: options.before,
+      limit: options.limit,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.CHANNEL_USER_THREADS_ARCHIVED_PRIVATE,
         params,
       },
     });

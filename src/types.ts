@@ -130,6 +130,21 @@ export namespace RequestTypes {
     unique?: boolean,
   }
 
+  export interface CreateChannelMessageComponent {
+    components?: Array<CreateChannelMessageComponent>,
+    customId?: string,
+    disabled?: boolean,
+    emoji?: {
+      animated?: boolean,
+      id?: string,
+      name: string,
+    },
+    label?: string,
+    style?: number,
+    type: number,
+    url?: string,
+  }
+
   export interface CreateChannelMessageEmbed {
     author?: {
       iconUrl?: string,
@@ -294,6 +309,7 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     applicationId?: string,
+    components?: Array<CreateChannelMessageComponent>,
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction | null,
     file?: File,
@@ -627,6 +643,7 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     attachments?: Array<{id: string}>,
+    components?: Array<CreateChannelMessageComponent>,
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction | null,
     file?: File,
@@ -671,6 +688,7 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     attachments?: Array<{id: string}>,
+    components?: Array<CreateChannelMessageComponent>,
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
     embeds?: Array<CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction>,
@@ -686,6 +704,7 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     avatarUrl?: string,
+    components?: Array<CreateChannelMessageComponent>,
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
     embeds?: Array<CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction>,
@@ -699,13 +718,13 @@ export namespace RequestTypes {
     wait?: boolean,
   }
 
-  export interface FetchChannelJoinedThreadsArchivedPrivate {
-    before?: string,
+  export interface FetchChannelThreadsArchivedPrivate {
+    before?: Date | string,
     limit?: number,
   }
 
-  export interface FetchChannelThreadsArchivedPrivate {
-    before?: Date | string,
+  export interface FetchChannelThreadsArchivedPrivateJoined {
+    before?: string,
     limit?: number,
   }
 
@@ -968,6 +987,21 @@ export namespace RequestTypes {
   }
 
   /* Raw Types */
+  export interface RawChannelMessageComponent {
+    components?: Array<RawChannelMessageComponent>,
+    custom_id?: string,
+    disabled?: boolean,
+    emoji?: {
+      animated?: boolean,
+      id?: string,
+      name: string,
+    },
+    label?: string,
+    style?: number,
+    type: number,
+    url?: string,
+  }
+
   export interface RawChannelMessageEmbed {
     author?: {
       icon_url?: string,
