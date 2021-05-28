@@ -3246,8 +3246,8 @@ export class Client extends EventSpewer {
       // verify files?
       verifyData(params, {
         messageId: {required: true, type: VerifyTypes.SNOWFLAKE},
-        token: {required: true, type: VerifyTypes.STRING},
         webhookId: {required: true, type: VerifyTypes.SNOWFLAKE},
+        webhookToken: {required: true, type: VerifyTypes.STRING},
       });
       if (
         !('content' in body) &&
@@ -3448,8 +3448,8 @@ export class Client extends EventSpewer {
       // verify body
       // verify files?
       verifyData(params, {
-        token: {required: true, type: VerifyTypes.STRING},
         webhookId: {required: true, type: VerifyTypes.SNOWFLAKE},
+        webhookToken: {required: true, type: VerifyTypes.STRING},
       });
       if (
         !('content' in body) &&
