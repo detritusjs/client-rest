@@ -27,7 +27,7 @@
   "peerDependencies": {},
   "repository": {
     "type": "git",
-    "url": "git+https://git8ub.com/detritusjs/client-rest.git"
+    "url": "git+https://github.com/detritusjs/client-rest.git"
   },
   "scripts": {
     "build": "tsc",
