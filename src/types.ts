@@ -134,15 +134,23 @@ export namespace RequestTypes {
     components?: Array<CreateChannelMessageComponent>,
     customId?: string,
     disabled?: boolean,
-    emoji?: {
-      animated?: boolean,
-      id?: string,
-      name: string,
-    },
+    emoji?: RawEmojiPartial,
     label?: string,
+    maxValues?: number,
+    minValues?: number,
+    options?: Array<CreateChannelMessageComponentSelectMenuOption>,
+    placeholder?: string,
     style?: number,
     type: number,
     url?: string,
+  }
+
+  export interface CreateChannelMessageComponentSelectMenuOption {
+    default?: boolean,
+    description?: string,
+    emoji?: RawEmojiPartial,
+    label: string,
+    value: string,
   }
 
   export interface CreateChannelMessageEmbed {
@@ -1008,15 +1016,23 @@ export namespace RequestTypes {
     components?: Array<RawChannelMessageComponent>,
     custom_id?: string,
     disabled?: boolean,
-    emoji?: {
-      animated?: boolean,
-      id?: string,
-      name: string,
-    },
+    emoji?: RawEmojiPartial,
     label?: string,
+    max_values?: number,
+    min_values?: number,
+    options?: Array<RawChannelMessageComponentSelectMenuOption>,
+    placeholder?: string,
     style?: number,
     type: number,
     url?: string,
+  }
+
+  export interface RawChannelMessageComponentSelectMenuOption {
+    default?: boolean,
+    description?: string,
+    emoji?: RawEmojiPartial,
+    label: string,
+    value: string,
   }
 
   export interface RawChannelMessageEmbed {
@@ -1053,6 +1069,12 @@ export namespace RequestTypes {
     video?: {
       url?: string,
     },
+  }
+
+  export interface RawEmojiPartial  {
+    animated?: boolean,
+    id?: string,
+    name: string,
   }
 
   /* Route Types */
