@@ -130,8 +130,12 @@ export namespace RequestTypes {
     unique?: boolean,
   }
 
+  export interface CreateChannelMessageComponentFunction {
+    toJSON: () => RawChannelMessageComponent,
+  }
+
   export interface CreateChannelMessageComponent {
-    components?: Array<CreateChannelMessageComponent>,
+    components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
     customId?: string,
     disabled?: boolean,
     emoji?: RawEmojiPartial,
@@ -283,7 +287,7 @@ export namespace RequestTypes {
         roles?: Array<string>,
         users?: Array<string>,
       },
-      components?: Array<CreateChannelMessageComponent>,
+      components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
       content?: string,
       embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
       embeds?: Array<CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction>,
@@ -334,7 +338,7 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     applicationId?: string,
-    components?: Array<CreateChannelMessageComponent>,
+    components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction | null,
     file?: File,
@@ -668,7 +672,7 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     attachments?: Array<{id: string}>,
-    components?: Array<CreateChannelMessageComponent>,
+    components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction | null,
     file?: File,
@@ -713,7 +717,7 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     attachments?: Array<{id: string}>,
-    components?: Array<CreateChannelMessageComponent>,
+    components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
     embeds?: Array<CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction>,
@@ -729,7 +733,7 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     avatarUrl?: string,
-    components?: Array<CreateChannelMessageComponent>,
+    components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
     embeds?: Array<CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction>,
@@ -1013,7 +1017,7 @@ export namespace RequestTypes {
 
   /* Raw Types */
   export interface RawChannelMessageComponent {
-    components?: Array<RawChannelMessageComponent>,
+    components?: Array<RawChannelMessageComponent | CreateChannelMessageComponentFunction>,
     custom_id?: string,
     disabled?: boolean,
     emoji?: RawEmojiPartial,
