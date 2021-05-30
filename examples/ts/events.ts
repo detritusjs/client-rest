@@ -1,4 +1,5 @@
-const { Client } = require('../lib');
+import { Client } from '../lib';
+
 
 const token = '';
 const client = new Client(token);

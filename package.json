@@ -12,9 +12,10 @@
   },
   "description": "A minimalistic TypeScript library to interact with all, or most, of Discord's rest endpoints",
   "devDependencies": {
-    "@types/node": "^14.14.9",
-    "@types/node-fetch": "^2.5.7",
-    "typedoc": "^0.19.2"
+    "@types/node": "^14.17.1",
+    "@types/node-fetch": "^2.5.10",
+    "typedoc": "^0.20.36",
+    "typescript": "^4.2.4"
   },
   "homepage": "https://github.com/detritusjs/client-rest#readme",
   "keywords": [
@@ -27,14 +28,14 @@
   "peerDependencies": {},
   "repository": {
     "type": "git",
-    "url": "git+https://git8ub.com/detritusjs/client-rest.git"
+    "url": "git+https://github.com/detritusjs/client-rest.git"
   },
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "typedoc": "typedoc ./src"
+    "typedoc": "typedoc"
   },
   "types": "lib/index.d.ts",
-  "version": "0.9.4"
+  "version": "0.10.0"
 }

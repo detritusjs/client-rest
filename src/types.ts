@@ -17,7 +17,7 @@ export namespace RestClientEvents {
 
 export namespace RequestTypes {
   export interface File extends RequestFile {
-
+    hasSpoiler?: boolean,
   }
 
   export interface Options extends RequestOptions {
@@ -90,6 +90,26 @@ export namespace RequestTypes {
     state: string,
   }
 
+  export interface CreateApplicationCommand {
+    defaultPermission?: boolean,
+    description: string,
+    name: string,
+    options?: Array<CreateApplicationCommandOption>,
+  }
+
+  export interface CreateApplicationCommandOption {
+    choices?: Array<{name: string, value: string | number}>,
+    description: string,
+    name: string,
+    options?: Array<CreateApplicationCommandOption>,
+    required?: boolean,
+    type: number,
+  }
+
+  export interface CreateApplicationGuildCommand extends CreateApplicationCommand {
+
+  }
+
   export interface CreateApplicationNews {
     applicationId: string,
     channelId: string,
@@ -103,10 +123,38 @@ export namespace RequestTypes {
   export interface CreateChannelInvite {
     maxAge?: number,
     maxUses?: number,
-    targetUser?: string,
-    targetUserType?: number,
+    targetApplicationId?: string,
+    targetType?: number,
+    targetUserId?: string,
     temporary?: boolean,
     unique?: boolean,
+  }
+
+  export interface CreateChannelMessageComponentFunction {
+    toJSON: () => RawChannelMessageComponent,
+  }
+
+  export interface CreateChannelMessageComponent {
+    components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
+    customId?: string,
+    disabled?: boolean,
+    emoji?: RawEmojiPartial,
+    label?: string,
+    maxValues?: number,
+    minValues?: number,
+    options?: Array<CreateChannelMessageComponentSelectMenuOption>,
+    placeholder?: string,
+    style?: number,
+    type: number,
+    url?: string,
+  }
+
+  export interface CreateChannelMessageComponentSelectMenuOption {
+    default?: boolean,
+    description?: string,
+    emoji?: RawEmojiPartial,
+    label: string,
+    value: string,
   }
 
   export interface CreateChannelMessageEmbed {
@@ -149,11 +197,21 @@ export namespace RequestTypes {
     toJSON: () => RawChannelMessageEmbed,
   }
 
+  export interface CreateChannelMessageThread {
+    autoArchiveDuration: number,
+    name: string,
+  }
+
   export interface CreateChannelOverwrite {
     allow: number,
     deny: number,
     id: string,
     type: number | string,
+  }
+
+  export interface CreateChannelThread {
+    autoArchiveDuration: number,
+    name: string,
   }
 
   export interface CreateDm {
@@ -162,13 +220,17 @@ export namespace RequestTypes {
   }
 
   export interface CreateGuild {
-    channels?: Array<CreateGuildChannel>,
+    afkChannelId?: string,
+    afkTimeout?: number,
+    channels?: Array<CreateGuildChannel & {id?: string}>,
     defaultMessageNotifications?: number,
     explicitContentFilter?: number,
     icon?: Buffer | string,
     name: string,
     region: string,
     roles?: Array<CreateGuildRole>,
+    systemChannelFlags?: number,
+    systemChannelId?: string,
     verificationLevel?: number,
   }
 
@@ -218,6 +280,23 @@ export namespace RequestTypes {
     name: string,
   }
 
+  export interface CreateInteractionResponse {
+    data?: {
+      allowedMentions?: {
+        parse?: Array<string>,
+        roles?: Array<string>,
+        users?: Array<string>,
+      },
+      components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
+      content?: string,
+      embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
+      embeds?: Array<CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction>,
+      flags?: number,
+      tts?: boolean,
+    },
+    type: number,
+  }
+
   export interface CreateLobby {
     capacity?: number,
     locked?: boolean,
@@ -259,13 +338,15 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     applicationId?: string,
+    components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction | null,
-    file?: RequestFile,
-    files?: Array<RequestFile>,
+    file?: File,
+    files?: Array<File>,
     hasSpoiler?: boolean,
     messageReference?: {
       channelId: string,
+      failIfNotExists?: boolean,
       guildId?: string,
       messageId: string,
     },
@@ -285,9 +366,14 @@ export namespace RequestTypes {
     type: string,
   }
 
+  export interface CreateStageInstance {
+    channelId: string,
+    topic: string,
+  }
+
   export interface CreateStoreApplicationAsset {
-    file?: RequestFile,
-    files?: Array<RequestFile>,
+    file?: File,
+    files?: Array<File>,
   }
 
   export interface CreateTeam {
@@ -354,6 +440,27 @@ export namespace RequestTypes {
     password: string,
   }
 
+  export interface EditApplicationCommand {
+    defaultPermission?: boolean,
+    description?: string,
+    name?: string,
+    options?: Array<CreateApplicationCommandOption>,
+  }
+
+  export interface EditApplicationGuildCommand extends EditApplicationCommand {
+
+  }
+
+  export interface EditApplicationGuildCommandPermission {
+    id: string,
+    permission: boolean,
+    type: string,
+  }
+
+  export interface EditApplicationGuildCommandPermissions {
+    permissions: Array<EditApplicationGuildCommandPermission>,
+  }
+
   export interface EditApplicationNews {
     channelId?: string,
     description?: string,
@@ -363,8 +470,11 @@ export namespace RequestTypes {
   }
 
   export interface EditChannel {
+    archived?: boolean,
+    autoArchiveDuration?: number,
     bitrate?: number,
     icon?: Buffer | string,
+    locked?: boolean,
     name?: string,
     nsfw?: boolean,
     parentId?: string,
@@ -372,9 +482,11 @@ export namespace RequestTypes {
     position?: string,
     rateLimitPerUser?: number,
     reason?: string,
+    rtcRegion?: string,
     topic?: string,
     type?: number,
     userLimit?: number,
+    videoQualityMode?: number,
   }
 
   export interface EditChannelOverwrite {
@@ -403,6 +515,7 @@ export namespace RequestTypes {
     name?: string,
     ownerId?: string,
     preferredLocale?: string,
+    publicUpdatesChannelId?: string,
     reason?: string,
     region?: string,
     rulesChannelId?: null | string,
@@ -497,6 +610,12 @@ export namespace RequestTypes {
     reason?: string,
   }
 
+  export interface EditGuildVoiceState {
+    channelId: string,
+    requestToSpeakTimestamp?: null | Date | string,
+    suppress?: boolean,
+  }
+
   export interface EditLobby {
     capacity?: number,
     locked?: boolean,
@@ -548,12 +667,18 @@ export namespace RequestTypes {
   export interface EditMessage {
     allowedMentions?: {
       parse?: Array<string>,
+      repliedUser?: boolean,
       roles?: Array<string>,
       users?: Array<string>,
     },
+    attachments?: Array<{id: string}>,
+    components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction | null,
+    file?: File,
+    files?: Array<File>,
     flags?: number,
+    hasSpoiler?: boolean,
   }
 
   export interface EditOauth2Application {
@@ -565,6 +690,10 @@ export namespace RequestTypes {
 
   export interface EditSettings {
     [key: string]: any,
+  }
+
+  export interface EditStageInstance {
+    topic?: string,
   }
 
   export interface EditTeam {
@@ -587,9 +716,14 @@ export namespace RequestTypes {
       roles?: Array<string>,
       users?: Array<string>,
     },
+    attachments?: Array<{id: string}>,
+    components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
     embeds?: Array<CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction>,
+    file?: File,
+    files?: Array<File>,
+    hasSpoiler?: boolean,
   }
 
   export interface ExecuteWebhook {
@@ -599,20 +733,43 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     avatarUrl?: string,
+    components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
     content?: string,
     embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
     embeds?: Array<CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction>,
-    file?: RequestFile,
-    files?: Array<RequestFile>,
+    file?: File,
+    files?: Array<File>,
+    flags?: number,
+    hasSpoiler?: boolean,
+    threadId?: string,
     tts?: boolean,
     username?: string,
     wait?: boolean,
+  }
+
+  export interface FetchChannelThreadsArchivedPrivate {
+    before?: Date | string,
+    limit?: number,
+  }
+
+  export interface FetchChannelThreadsArchivedPrivateJoined {
+    before?: string,
+    limit?: number,
+  }
+
+  export interface FetchChannelThreadsArchivedPublic {
+    before?: Date | string,
+    limit?: number,
   }
 
   export interface FetchGiftCode {
     countryCode?: string,
     withApplication?: boolean,
     withSubscriptionPlan?: boolean,
+  }
+
+  export interface FetchGuild {
+    withCounts?: boolean,
   }
 
   export interface FetchGuildAuditLogs {
@@ -643,6 +800,7 @@ export namespace RequestTypes {
 
   export interface FetchInvite {
     withCounts?: boolean,
+    withExpiration?: boolean,
   }
 
   export interface FetchMe {
@@ -858,6 +1016,29 @@ export namespace RequestTypes {
   }
 
   /* Raw Types */
+  export interface RawChannelMessageComponent {
+    components?: Array<RawChannelMessageComponent | CreateChannelMessageComponentFunction>,
+    custom_id?: string,
+    disabled?: boolean,
+    emoji?: RawEmojiPartial,
+    label?: string,
+    max_values?: number,
+    min_values?: number,
+    options?: Array<RawChannelMessageComponentSelectMenuOption>,
+    placeholder?: string,
+    style?: number,
+    type: number,
+    url?: string,
+  }
+
+  export interface RawChannelMessageComponentSelectMenuOption {
+    default?: boolean,
+    description?: string,
+    emoji?: RawEmojiPartial,
+    label: string,
+    value: string,
+  }
+
   export interface RawChannelMessageEmbed {
     author?: {
       icon_url?: string,
@@ -892,6 +1073,12 @@ export namespace RequestTypes {
     video?: {
       url?: string,
     },
+  }
+
+  export interface RawEmojiPartial  {
+    animated?: boolean,
+    id?: string,
+    name: string,
   }
 
   /* Route Types */

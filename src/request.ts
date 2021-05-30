@@ -55,13 +55,15 @@ export class RestRequest {
         if (request.route.method === HTTPMethods.DELETE && request.route.path === Api.CHANNEL_MESSAGE) {
           if ('messageId' in request.route.params) {
             const difference = Date.now() - Snowflake.timestamp(request.route.params.messageId);
-            // 250 ms leeway incase our clock is wrong
-            if ((MESSAGE_DELETE_RATELIMIT_CHECK_OLDER - 250) <= difference) {
+            if (MESSAGE_DELETE_RATELIMIT_CHECK_OLDER <= difference) {
               this.bucketPath = `${this.bucketPath}.${MESSAGE_DELETE_RATELIMIT_CHECK_OLDER}`;
-            } else if ((MESSAGE_DELETE_RATELIMIT_CHECK - 250) <= difference) {
+            } else if (MESSAGE_DELETE_RATELIMIT_CHECK <= difference) {
               this.bucketPath = `${this.bucketPath}.${MESSAGE_DELETE_RATELIMIT_CHECK}`;
             }
           }
+        } else if (request.route.method === HTTPMethods.PATCH && request.route.path === Api.CHANNEL) {
+          // add custom bucketPaths for editing {name} and {topic}
+          // https://github.com/discord/discord-api-docs/issues/2190
         }
       }
     }
@@ -213,16 +215,22 @@ export class RestRequest {
         return new Promise(async (resolve, reject) => {
           const delayed = {request: this, resolve, reject};
 
+          const data = await response.json() as {global: boolean, retry_after: number};
           if (this.client.isBot) {
             if (response.headers.get(RatelimitHeaders.GLOBAL) === 'true') {
               this.client.globalBucket.lock(retryAfter);
               this.client.globalBucket.add(delayed);
               return;
             }
+
+            // incase they, for some reason, send us a differing body from the headers (happened cuz of channel edits with name/topic)
+            // just error out since this is a fluke
+            if ((data.retry_after * 1000) !== retryAfter) {
+              return reject(new HTTPError(response));
+            }
           } else {
             if (isDiscordRatelimit) {
               // check json body since users dont get the above header
-              const data = await response.json() as {global: boolean};
               if (data.global) {
                 this.client.globalBucket.lock(retryAfter);
                 this.client.globalBucket.add(delayed);

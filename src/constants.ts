@@ -2,11 +2,11 @@ export { HTTPMethods } from 'detritus-rest/lib/constants';
 
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.9.4',
+  VERSION: '0.10.0',
 });
 
 
-export const ApiVersion = 8;
+export const ApiVersion = 9;
 
 export enum AuthTypes {
   BEARER = 'BEARER',
@@ -169,7 +169,7 @@ export enum RestEvents {
 }
 
 
-export const RATELIMIT_BUCKET_MAJOR_PARAMS = Object.freeze(['channelId', 'guildId', 'webhookId']);
+export const RATELIMIT_BUCKET_MAJOR_PARAMS = Object.freeze(['channelId', 'guildId', 'webhookId', 'webhookToken']);
 
 export const SPOILER_ATTACHMENT_PREFIX = 'SPOILER_';
 
