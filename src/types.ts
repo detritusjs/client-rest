@@ -153,7 +153,7 @@ export namespace RequestTypes {
   }
 
   export interface CreateChannelMessageComponent {
-    components?: Array<CreateChannelMessageComponent | toJSON<CreateChannelMessageComponent>>,
+    components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
     customId?: string,
     disabled?: boolean,
     emoji?: RawEmojiPartial,
@@ -301,7 +301,7 @@ export namespace RequestTypes {
         roles?: Array<string>,
         users?: Array<string>,
       },
-      components?: Array<CreateChannelMessageComponent | toJSON<CreateChannelMessageComponent>>,
+      components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
       content?: string,
       embed?: CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed>,
       embeds?: Array<CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed>>,
