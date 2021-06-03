@@ -1174,7 +1174,7 @@ export class Client extends EventSpewer {
     interactionId: string,
     token: string,
     optionsOrType: RequestTypes.CreateInteractionResponse | number,
-    innerData?: RequestTypes.CreateInteractionResponseInnerPayload,
+    innerData?: RequestTypes.CreateInteractionResponseInnerPayload | string,
   ): Promise<any> {
     let options: RequestTypes.CreateInteractionResponse;
     if (typeof(optionsOrType) === 'number') {
@@ -1183,6 +1183,9 @@ export class Client extends EventSpewer {
       options = optionsOrType;
     }
     if (innerData) {
+      if (typeof(innerData) === 'string') {
+        innerData = {content: innerData};
+      }
       options.data = (options.data) ? Object.assign(options.data, innerData) : innerData;
     }
 
