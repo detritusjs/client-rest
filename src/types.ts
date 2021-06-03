@@ -295,23 +295,25 @@ export namespace RequestTypes {
   }
 
   export interface CreateInteractionResponse {
-    data?: {
-      allowedMentions?: {
-        parse?: Array<string>,
-        roles?: Array<string>,
-        users?: Array<string>,
-      },
-      components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
-      content?: string,
-      embed?: CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed>,
-      embeds?: Array<CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed>>,
-      file?: File,
-      files?: Array<File>,
-      flags?: number,
-      hasSpoiler?: boolean,
-      tts?: boolean,
-    },
+    data?: CreateInteractionResponseInnerPayload,
     type: number,
+  }
+
+  export interface CreateInteractionResponseInnerPayload {
+    allowedMentions?: {
+      parse?: Array<string>,
+      roles?: Array<string>,
+      users?: Array<string>,
+    },
+    components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
+    content?: string,
+    embed?: CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed>,
+    embeds?: Array<CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed>>,
+    file?: File,
+    files?: Array<File>,
+    flags?: number,
+    hasSpoiler?: boolean,
+    tts?: boolean,
   }
 
   export interface CreateInteractionResponseData {

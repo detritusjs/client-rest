@@ -1173,8 +1173,19 @@ export class Client extends EventSpewer {
   async createInteractionResponse(
     interactionId: string,
     token: string,
-    options: RequestTypes.CreateInteractionResponse,
+    optionsOrType: RequestTypes.CreateInteractionResponse | number,
+    innerData?: RequestTypes.CreateInteractionResponseInnerPayload,
   ): Promise<any> {
+    let options: RequestTypes.CreateInteractionResponse;
+    if (typeof(optionsOrType) === 'number') {
+      options = {type: optionsOrType};
+    } else {
+      options = optionsOrType;
+    }
+    if (innerData) {
+      options.data = (options.data) ? Object.assign(options.data, innerData) : innerData;
+    }
+
     const body: RequestTypes.CreateInteractionResponseData = {
       type: options.type,
     };
