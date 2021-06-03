@@ -85,6 +85,13 @@ export namespace RequestTypes {
     reason?: string,
   }
 
+  export interface BulkOverwriteApplicationGuildCommandsPermission {
+    id: string,
+    permissions: Array<EditApplicationGuildCommandPermission>,
+  }
+
+  export type BulkOverwriteApplicationGuildCommandsPermissions = Array<BulkOverwriteApplicationGuildCommandsPermission>;
+
   export interface ConnectionCallback {
     code: string,
     friendSync: boolean,

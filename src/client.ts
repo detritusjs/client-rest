@@ -740,14 +740,19 @@ export class Client extends EventSpewer {
   async bulkOverwriteApplicationGuildCommandsPermissions(
     applicationId: string,
     guildId: string,
-    permissions: Array<RequestTypes.EditApplicationGuildCommandPermission>,
+    permissions: RequestTypes.BulkOverwriteApplicationGuildCommandsPermissions,
   ): Promise<any> {
     const params = {applicationId, guildId};
-    const body = permissions.map((options) => {
+    const body = permissions.map((command) => {
       return {
-        id: options.id,
-        permission: options.permission,
-        type: options.type,
+        id: command.id,
+        permissions: command.permissions.map((permission) => {
+          return {
+            id: permission.id,
+            permission: permission.permission,
+            type: permission.type,
+          };
+        }),
       };
     });
     if (this.clientsideChecks) {
@@ -2346,7 +2351,7 @@ export class Client extends EventSpewer {
     commandId: string,
     options: RequestTypes.EditApplicationGuildCommandPermissions,
   ): Promise<any> {
-    const params = {applicationId, guildId};
+    const params = {applicationId, commandId, guildId};
     const body = {
       permissions: options.permissions,
     };
