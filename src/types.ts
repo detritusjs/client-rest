@@ -104,6 +104,7 @@ export namespace RequestTypes {
   export interface CreateApplicationCommand {
     defaultPermission?: boolean,
     description: string,
+    id?: string,
     name: string,
     options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandData>>,
   }
@@ -111,6 +112,7 @@ export namespace RequestTypes {
   export interface CreateApplicationCommandData {
     default_permission?: boolean,
     description: string,
+    id?: string,
     name: string,
     options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandData>>
   }
@@ -307,7 +309,7 @@ export namespace RequestTypes {
     },
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
     content?: string,
-    embed?: CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed>,
+    embed?: CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed> | null,
     embeds?: Array<CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed>>,
     file?: File,
     files?: Array<File>,
@@ -790,7 +792,7 @@ export namespace RequestTypes {
     attachments?: Array<{id: string}>,
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
     content?: string,
-    embed?: CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed>,
+    embed?: CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed> | null,
     embeds?: Array<CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
     file?: File,
     files?: Array<File>,
@@ -818,7 +820,7 @@ export namespace RequestTypes {
     avatarUrl?: string,
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
     content?: string,
-    embed?: CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed>,
+    embed?: CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed> | null,
     embeds?: Array<CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
     file?: File,
     files?: Array<File>,

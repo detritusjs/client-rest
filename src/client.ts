@@ -690,6 +690,7 @@ export class Client extends EventSpewer {
       return {
         default_permission: options.defaultPermission,
         description: options.description,
+        id: options.id,
         name: options.name,
         options: options.options,
       };
@@ -720,6 +721,7 @@ export class Client extends EventSpewer {
       return {
         default_permission: options.defaultPermission,
         description: options.description,
+        id: options.id,
         name: options.name,
         options: options.options,
       };
@@ -1250,11 +1252,15 @@ export class Client extends EventSpewer {
         });
       }
 
-      if (data.embed) {
-        if (data.embeds) {
-          data.embeds = [data.embed, ...data.embeds];
-        } else {
-          data.embeds = [data.embed];
+      if (data.embed !== undefined) {
+        if (data.embed) {
+          if (data.embeds) {
+            data.embeds = [data.embed, ...data.embeds];
+          } else {
+            data.embeds = [data.embed];
+          }
+        } else if (!data.embeds) {
+          data.embeds = [];
         }
       }
       if (data.embeds && data.embeds.length) {
@@ -3347,11 +3353,15 @@ export class Client extends EventSpewer {
         };
       });
     }
-    if (options.embed) {
-      if (options.embeds) {
-        options.embeds = [options.embed, ...options.embeds];
-      } else {
-        options.embeds = [options.embed];
+    if (options.embed !== undefined) {
+      if (options.embed) {
+        if (options.embeds) {
+          options.embeds = [options.embed, ...options.embeds];
+        } else {
+          options.embeds = [options.embed];
+        }
+      } else if (!options.embeds) {
+        options.embeds = [];
       }
     }
     if (options.embeds && options.embeds.length) {
@@ -3545,11 +3555,15 @@ export class Client extends EventSpewer {
         };
       });
     }
-    if (options.embed) {
-      if (options.embeds) {
-        options.embeds = [options.embed, ...options.embeds];
-      } else {
-        options.embeds = [options.embed];
+    if (options.embed !== undefined) {
+      if (options.embed) {
+        if (options.embeds) {
+          options.embeds = [options.embed, ...options.embeds];
+        } else {
+          options.embeds = [options.embed];
+        }
+      } else if (!options.embeds) {
+        options.embeds = [];
       }
     }
     if (options.embeds && options.embeds.length) {
