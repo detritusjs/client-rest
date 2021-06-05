@@ -27,6 +27,7 @@ import {
 } from './constants';
 import { Api } from './endpoints';
 import { RestRequest } from './request';
+import { spoilerfy } from './utils';
 
 import { RequestTypes, ResponseTypes, RestClientEvents } from './types';
 
@@ -679,13 +680,17 @@ export class Client extends EventSpewer {
 
   async bulkOverwriteApplicationCommands(
     applicationId: string,
-    commands: Array<RequestTypes.CreateApplicationCommand>,
+    commands: Array<RequestTypes.CreateApplicationCommand | RequestTypes.toJSON<RequestTypes.CreateApplicationCommandData>>,
   ): Promise<any> {
     const params = {applicationId};
     const body = commands.map((options) => {
+      if ('toJSON' in options) {
+        return options;
+      }
       return {
         default_permission: options.defaultPermission,
         description: options.description,
+        id: options.id,
         name: options.name,
         options: options.options,
       };
@@ -706,13 +711,17 @@ export class Client extends EventSpewer {
   async bulkOverwriteApplicationGuildCommands(
     applicationId: string,
     guildId: string,
-    commands: Array<RequestTypes.CreateApplicationGuildCommand>,
+    commands: Array<RequestTypes.CreateApplicationGuildCommand | RequestTypes.toJSON<RequestTypes.CreateApplicationGuildCommandData>>,
   ): Promise<any> {
     const params = {applicationId, guildId};
     const body = commands.map((options) => {
+      if ('toJSON' in options) {
+        return options;
+      }
       return {
         default_permission: options.defaultPermission,
         description: options.description,
+        id: options.id,
         name: options.name,
         options: options.options,
       };
@@ -733,14 +742,19 @@ export class Client extends EventSpewer {
   async bulkOverwriteApplicationGuildCommandsPermissions(
     applicationId: string,
     guildId: string,
-    permissions: Array<RequestTypes.EditApplicationGuildCommandPermission>,
+    permissions: RequestTypes.BulkOverwriteApplicationGuildCommandsPermissions,
   ): Promise<any> {
     const params = {applicationId, guildId};
-    const body = permissions.map((options) => {
+    const body = permissions.map((command) => {
       return {
-        id: options.id,
-        permission: options.permission,
-        type: options.type,
+        id: command.id,
+        permissions: command.permissions.map((permission) => {
+          return {
+            id: permission.id,
+            permission: permission.permission,
+            type: permission.type,
+          };
+        }),
       };
     });
     if (this.clientsideChecks) {
@@ -782,15 +796,20 @@ export class Client extends EventSpewer {
 
   async createApplicationCommand(
     applicationId: string,
-    options: RequestTypes.CreateApplicationCommand,
+    options: RequestTypes.CreateApplicationCommand | RequestTypes.toJSON<RequestTypes.CreateApplicationCommandData>,
   ): Promise<any> {
     const params = {applicationId};
-    const body = {
-      default_permission: options.defaultPermission,
-      description: options.description,
-      name: options.name,
-      options: options.options,
-    };
+    let body: RequestTypes.CreateApplicationCommandData | RequestTypes.toJSON<RequestTypes.CreateApplicationCommandData>;
+    if ('toJSON' in options) {
+      body = options;
+    } else {
+      body = {
+        default_permission: options.defaultPermission,
+        description: options.description,
+        name: options.name,
+        options: options.options,
+      };
+    }
     if (this.clientsideChecks) {
 
     }
@@ -807,15 +826,20 @@ export class Client extends EventSpewer {
   async createApplicationGuildCommand(
     applicationId: string,
     guildId: string,
-    options: RequestTypes.CreateApplicationCommand,
+    options: RequestTypes.CreateApplicationGuildCommand | RequestTypes.toJSON<RequestTypes.CreateApplicationGuildCommandData>,
   ): Promise<any> {
     const params = {applicationId, guildId};
-    const body = {
-      default_permission: options.defaultPermission,
-      description: options.description,
-      name: options.name,
-      options: options.options,
-    };
+    let body: RequestTypes.CreateApplicationGuildCommandData | RequestTypes.toJSON<RequestTypes.CreateApplicationGuildCommandData>;
+    if ('toJSON' in options) {
+      body = options;
+    } else {
+      body = {
+        default_permission: options.defaultPermission,
+        description: options.description,
+        name: options.name,
+        options: options.options,
+      };
+    }
     if (this.clientsideChecks) {
 
     }
@@ -1151,27 +1175,28 @@ export class Client extends EventSpewer {
   async createInteractionResponse(
     interactionId: string,
     token: string,
-    options: RequestTypes.CreateInteractionResponse,
+    optionsOrType: RequestTypes.CreateInteractionResponse | number,
+    innerData?: RequestTypes.CreateInteractionResponseInnerPayload | string,
   ): Promise<any> {
-    const body: {
-      data?: {
-        allowed_mentions?: {
-          parse?: Array<string>,
-          roles?: Array<string>,
-          users?: Array<string>,
-        },
-        components?: Array<RequestTypes.RawChannelMessageComponent | RequestTypes.CreateChannelMessageComponentFunction>,
-        content?: string,
-        embeds?: Array<RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction>,
-        flags?: number,
-        tts?: boolean,
-      },
-      type: number,
-    } = {
+    let options: RequestTypes.CreateInteractionResponse;
+    if (typeof(optionsOrType) === 'number') {
+      options = {type: optionsOrType};
+    } else {
+      options = optionsOrType;
+    }
+    if (innerData) {
+      if (typeof(innerData) === 'string') {
+        innerData = {content: innerData};
+      }
+      options.data = (options.data) ? Object.assign(options.data, innerData) : innerData;
+    }
+
+    const body: RequestTypes.CreateInteractionResponseData = {
       type: options.type,
     };
     const params = {interactionId, token};
 
+    const files: Array<RequestTypes.File> = [];
     if (options.data) {
       const { data } = options;
       body.data = {
@@ -1227,11 +1252,15 @@ export class Client extends EventSpewer {
         });
       }
 
-      if (data.embed) {
-        if (data.embeds) {
-          data.embeds = [data.embed, ...data.embeds];
-        } else {
-          data.embeds = [data.embed];
+      if (data.embed !== undefined) {
+        if (data.embed) {
+          if (data.embeds) {
+            data.embeds = [data.embed, ...data.embeds];
+          } else {
+            data.embeds = [data.embed];
+          }
+        } else if (!data.embeds) {
+          data.embeds = [];
         }
       }
       if (data.embeds && data.embeds.length) {
@@ -1256,15 +1285,34 @@ export class Client extends EventSpewer {
           return raw;
         });
       }
+
+      if (data.file) {
+        files.push(data.file);
+      }
+      if (data.files && data.files.length) {
+        for (let file of data.files) {
+          if (file.hasSpoiler) {
+            spoilerfy(file);
+          }
+          files.push(file);
+        }
+      }
+      if (data.hasSpoiler) {
+        for (let file of files) {
+          spoilerfy(file);
+        }
+      }
     }
 
     return this.request({
       body,
+      files,
       route: {
         method: HTTPMethods.POST,
         path: Api.INTERACTION_CALLBACK,
         params,
       },
+      useAuth: false,
     });
   }
 
@@ -1344,32 +1392,7 @@ export class Client extends EventSpewer {
     if (typeof(options) === 'string') {
       options = {content: options};
     }
-    const body: {
-      activity?: {
-        party_id?: string,
-        session_id?: string,
-        type?: number,
-      },
-      allowed_mentions?: {
-        parse?: Array<string>,
-        replied_user?: boolean,
-        roles?: Array<string>,
-        users?: Array<string>,
-      },
-      application_id?: string,
-      components?: Array<RequestTypes.RawChannelMessageComponent | RequestTypes.CreateChannelMessageComponentFunction>,
-      content?: string,
-      embed?: RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction,
-      message_reference?: {
-        channel_id: string,
-        fail_if_not_exists?: boolean,
-        guild_id?: string,
-        message_id: string,
-      },
-      nonce?: string,
-      sticker_ids?: Array<string>,
-      tts?: boolean,
-    } = {
+    const body: RequestTypes.CreateMessageData = {
       application_id: options.applicationId,
       content: options.content,
       nonce: options.nonce,
@@ -1465,10 +1488,15 @@ export class Client extends EventSpewer {
     }
     if (options.files && options.files.length) {
       for (let file of options.files) {
-        if (file.hasSpoiler && file.filename && !file.filename.startsWith(SPOILER_ATTACHMENT_PREFIX)) {
-          file.filename = `${SPOILER_ATTACHMENT_PREFIX}${file.filename}`;
+        if (file.hasSpoiler) {
+          spoilerfy(file);
         }
         files.push(file);
+      }
+    }
+    if (options.hasSpoiler) {
+      for (let file of files) {
+        spoilerfy(file);
       }
     }
 
@@ -1513,14 +1541,6 @@ export class Client extends EventSpewer {
       !files.length
     ) {
       throw new Error('Cannot send an empty message.');
-    }
-
-    if (options.hasSpoiler) {
-      for (let file of files) {
-        if (file.filename && !file.filename.startsWith(SPOILER_ATTACHMENT_PREFIX)) {
-          file.filename = `${SPOILER_ATTACHMENT_PREFIX}${file.filename}`;
-        }
-      }
     }
 
     return this.request({
@@ -2287,14 +2307,19 @@ export class Client extends EventSpewer {
   async editApplicationCommand(
     applicationId: string,
     commandId: string,
-    options: RequestTypes.EditApplicationCommand = {},
+    options: RequestTypes.EditApplicationCommand | RequestTypes.toJSON<RequestTypes.EditApplicationCommandData> = {},
   ): Promise<any> {
-    const body = {
-      default_permission: options.defaultPermission,
-      description: options.description,
-      name: options.name,
-      options: options.options,
-    };
+    let body: RequestTypes.EditApplicationCommandData | RequestTypes.toJSON<RequestTypes.EditApplicationCommandData>;
+    if ('toJSON' in options) {
+      body = options;
+    } else {
+      body = {
+        default_permission: options.defaultPermission,
+        description: options.description,
+        name: options.name,
+        options: options.options,
+      };
+    }
     const params = {applicationId, commandId};
     if (this.clientsideChecks) {
 
@@ -2313,14 +2338,19 @@ export class Client extends EventSpewer {
     applicationId: string,
     guildId: string,
     commandId: string,
-    options: RequestTypes.EditApplicationGuildCommand = {},
+    options: RequestTypes.EditApplicationGuildCommand | RequestTypes.toJSON<RequestTypes.EditApplicationGuildCommandData> = {},
   ): Promise<any> {
-    const body = {
-      default_permission: options.defaultPermission,
-      description: options.description,
-      name: options.name,
-      options: options.options,
-    };
+    let body: RequestTypes.EditApplicationGuildCommandData | RequestTypes.toJSON<RequestTypes.EditApplicationCommandData>;
+    if ('toJSON' in options) {
+      body = options;
+    } else {
+      body = {
+        default_permission: options.defaultPermission,
+        description: options.description,
+        name: options.name,
+        options: options.options,
+      };
+    }
     const params = {applicationId, guildId, commandId};
     if (this.clientsideChecks) {
 
@@ -2341,7 +2371,7 @@ export class Client extends EventSpewer {
     commandId: string,
     options: RequestTypes.EditApplicationGuildCommandPermissions,
   ): Promise<any> {
-    const params = {applicationId, guildId};
+    const params = {applicationId, commandId, guildId};
     const body = {
       permissions: options.permissions,
     };
@@ -2978,19 +3008,7 @@ export class Client extends EventSpewer {
     if (typeof(options) === 'string') {
       options = {content: options};
     }
-    const body: {
-      allowed_mentions?: {
-        parse?: Array<string>,
-        replied_user?: boolean,
-        roles?: Array<string>,
-        users?: Array<string>,
-      },
-      attachments?: Array<{id: string}>,
-      components?: Array<RequestTypes.RawChannelMessageComponent | RequestTypes.CreateChannelMessageComponentFunction>,
-      content?: string,
-      embed?: null | RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction,
-      flags?: number,
-    } = {
+    const body: RequestTypes.EditMessageData = {
       attachments: options.attachments,
       content: options.content,
       embed: options.embed,
@@ -3071,18 +3089,15 @@ export class Client extends EventSpewer {
     }
     if (options.files && options.files.length) {
       for (let file of options.files) {
-        if (file.hasSpoiler && file.filename && !file.filename.startsWith(SPOILER_ATTACHMENT_PREFIX)) {
-          file.filename = `${SPOILER_ATTACHMENT_PREFIX}${file.filename}`;
+        if (file.hasSpoiler) {
+          spoilerfy(file);
         }
         files.push(file);
       }
     }
-
     if (options.hasSpoiler) {
       for (let file of files) {
-        if (file.filename && !file.filename.startsWith(SPOILER_ATTACHMENT_PREFIX)) {
-          file.filename = `${SPOILER_ATTACHMENT_PREFIX}${file.filename}`;
-        }
+        spoilerfy(file);
       }
     }
 
@@ -3288,17 +3303,7 @@ export class Client extends EventSpewer {
     if (typeof(options) === 'string') {
       options = {content: options};
     }
-    const body: {
-      allowed_mentions?: {
-        parse?: Array<string>,
-        roles?: Array<string>,
-        users?: Array<string>,
-      },
-      attachments?: Array<{id: string}>,
-      components?: Array<RequestTypes.RawChannelMessageComponent | RequestTypes.CreateChannelMessageComponentFunction>,
-      content?: string,
-      embeds?: Array<RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction>,
-    } = {
+    const body: RequestTypes.EditWebhookTokenMessageData = {
       attachments: options.attachments,
       content: options.content,
     };
@@ -3348,11 +3353,15 @@ export class Client extends EventSpewer {
         };
       });
     }
-    if (options.embed) {
-      if (options.embeds) {
-        options.embeds = [options.embed, ...options.embeds];
-      } else {
-        options.embeds = [options.embed];
+    if (options.embed !== undefined) {
+      if (options.embed) {
+        if (options.embeds) {
+          options.embeds = [options.embed, ...options.embeds];
+        } else {
+          options.embeds = [options.embed];
+        }
+      } else if (!options.embeds) {
+        options.embeds = [];
       }
     }
     if (options.embeds && options.embeds.length) {
@@ -3384,18 +3393,15 @@ export class Client extends EventSpewer {
     }
     if (options.files && options.files.length) {
       for (let file of options.files) {
-        if (file.hasSpoiler && file.filename && !file.filename.startsWith(SPOILER_ATTACHMENT_PREFIX)) {
-          file.filename = `${SPOILER_ATTACHMENT_PREFIX}${file.filename}`;
+        if (file.hasSpoiler) {
+          spoilerfy(file);
         }
         files.push(file);
       }
     }
-
     if (options.hasSpoiler) {
       for (let file of files) {
-        if (file.filename && !file.filename.startsWith(SPOILER_ATTACHMENT_PREFIX)) {
-          file.filename = `${SPOILER_ATTACHMENT_PREFIX}${file.filename}`;
-        }
+        spoilerfy(file);
       }
     }
 
@@ -3471,20 +3477,7 @@ export class Client extends EventSpewer {
     if (typeof(options) === 'string') {
       options = {content: options};
     }
-    const body: {
-      allowed_mentions?: {
-        parse?: Array<string>,
-        roles?: Array<string>,
-        users?: Array<string>,
-      },
-      avatar_url?: string,
-      components?: Array<RequestTypes.RawChannelMessageComponent | RequestTypes.CreateChannelMessageComponentFunction>,
-      content?: string,
-      embeds?: Array<RequestTypes.RawChannelMessageEmbed | RequestTypes.CreateChannelMessageEmbedFunction>,
-      flags?: number,
-      tts?: boolean,
-      username?: string,
-    } = {
+    const body: RequestTypes.ExecuteWebhookData = {
       avatar_url: options.avatarUrl,
       content: options.content,
       flags: options.flags,
@@ -3562,11 +3555,15 @@ export class Client extends EventSpewer {
         };
       });
     }
-    if (options.embed) {
-      if (options.embeds) {
-        options.embeds = [options.embed, ...options.embeds];
-      } else {
-        options.embeds = [options.embed];
+    if (options.embed !== undefined) {
+      if (options.embed) {
+        if (options.embeds) {
+          options.embeds = [options.embed, ...options.embeds];
+        } else {
+          options.embeds = [options.embed];
+        }
+      } else if (!options.embeds) {
+        options.embeds = [];
       }
     }
     if (options.embeds && options.embeds.length) {

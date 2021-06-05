@@ -29,6 +29,10 @@ export namespace RequestTypes {
     useAuth?: boolean,
   }
 
+  export interface toJSON<X> {
+    toJSON: () => X,
+  }
+
 
   /* Option Interfaces */
 
@@ -81,6 +85,13 @@ export namespace RequestTypes {
     reason?: string,
   }
 
+  export interface BulkOverwriteApplicationGuildCommandsPermission {
+    id: string,
+    permissions: Array<EditApplicationGuildCommandPermission>,
+  }
+
+  export type BulkOverwriteApplicationGuildCommandsPermissions = Array<BulkOverwriteApplicationGuildCommandsPermission>;
+
   export interface ConnectionCallback {
     code: string,
     friendSync: boolean,
@@ -93,20 +104,33 @@ export namespace RequestTypes {
   export interface CreateApplicationCommand {
     defaultPermission?: boolean,
     description: string,
+    id?: string,
     name: string,
-    options?: Array<CreateApplicationCommandOption>,
+    options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandData>>,
+  }
+
+  export interface CreateApplicationCommandData {
+    default_permission?: boolean,
+    description: string,
+    id?: string,
+    name: string,
+    options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandData>>
   }
 
   export interface CreateApplicationCommandOption {
     choices?: Array<{name: string, value: string | number}>,
     description: string,
     name: string,
-    options?: Array<CreateApplicationCommandOption>,
+    options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandOption>>,
     required?: boolean,
     type: number,
   }
 
   export interface CreateApplicationGuildCommand extends CreateApplicationCommand {
+
+  }
+
+  export interface CreateApplicationGuildCommandData extends CreateApplicationCommandData {
 
   }
 
@@ -130,12 +154,8 @@ export namespace RequestTypes {
     unique?: boolean,
   }
 
-  export interface CreateChannelMessageComponentFunction {
-    toJSON: () => RawChannelMessageComponent,
-  }
-
   export interface CreateChannelMessageComponent {
-    components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
+    components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
     customId?: string,
     disabled?: boolean,
     emoji?: RawEmojiPartial,
@@ -191,10 +211,6 @@ export namespace RequestTypes {
     video?: {
       url?: string,
     },
-  }
-
-  export interface CreateChannelMessageEmbedFunction {
-    toJSON: () => RawChannelMessageEmbed,
   }
 
   export interface CreateChannelMessageThread {
@@ -281,16 +297,37 @@ export namespace RequestTypes {
   }
 
   export interface CreateInteractionResponse {
+    data?: CreateInteractionResponseInnerPayload,
+    type: number,
+  }
+
+  export interface CreateInteractionResponseInnerPayload {
+    allowedMentions?: {
+      parse?: Array<string>,
+      roles?: Array<string>,
+      users?: Array<string>,
+    },
+    components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
+    content?: string,
+    embed?: CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed> | null,
+    embeds?: Array<CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed>>,
+    file?: File,
+    files?: Array<File>,
+    flags?: number,
+    hasSpoiler?: boolean,
+    tts?: boolean,
+  }
+
+  export interface CreateInteractionResponseData {
     data?: {
-      allowedMentions?: {
+      allowed_mentions?: {
         parse?: Array<string>,
         roles?: Array<string>,
         users?: Array<string>,
       },
-      components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
+      components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
       content?: string,
-      embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
-      embeds?: Array<CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction>,
+      embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
       flags?: number,
       tts?: boolean,
     },
@@ -338,9 +375,9 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     applicationId?: string,
-    components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
+    components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
     content?: string,
-    embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction | null,
+    embed?: CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed> | null,
     file?: File,
     files?: Array<File>,
     hasSpoiler?: boolean,
@@ -352,6 +389,33 @@ export namespace RequestTypes {
     },
     nonce?: string,
     stickerIds?: Array<string>,
+    tts?: boolean,
+  }
+
+  export interface CreateMessageData {
+    activity?: {
+      party_id?: string,
+      session_id?: string,
+      type?: number,
+    },
+    allowed_mentions?: {
+      parse?: Array<string>,
+      replied_user?: boolean,
+      roles?: Array<string>,
+      users?: Array<string>,
+    },
+    application_id?: string,
+    components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
+    content?: string,
+    embed?: RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed> | null,
+    message_reference?: {
+      channel_id: string,
+      fail_if_not_exists?: boolean,
+      guild_id?: string,
+      message_id: string,
+    },
+    nonce?: string,
+    sticker_ids?: Array<string>,
     tts?: boolean,
   }
 
@@ -440,16 +504,11 @@ export namespace RequestTypes {
     password: string,
   }
 
-  export interface EditApplicationCommand {
-    defaultPermission?: boolean,
-    description?: string,
-    name?: string,
-    options?: Array<CreateApplicationCommandOption>,
-  }
+  export type EditApplicationCommand = Partial<CreateApplicationCommand>;
+  export type EditApplicationCommandData = Partial<CreateApplicationCommandData>;
 
-  export interface EditApplicationGuildCommand extends EditApplicationCommand {
-
-  }
+  export type EditApplicationGuildCommand = Partial<CreateApplicationCommand>;
+  export type EditApplicationGuildCommandData = Partial<CreateApplicationCommandData>;
 
   export interface EditApplicationGuildCommandPermission {
     id: string,
@@ -672,13 +731,27 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     attachments?: Array<{id: string}>,
-    components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
+    components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
     content?: string,
-    embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction | null,
+    embed?: CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed> | null,
     file?: File,
     files?: Array<File>,
     flags?: number,
     hasSpoiler?: boolean,
+  }
+
+  export interface EditMessageData {
+    allowed_mentions?: {
+      parse?: Array<string>,
+      replied_user?: boolean,
+      roles?: Array<string>,
+      users?: Array<string>,
+    },
+    attachments?: Array<{id: string}>,
+    components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
+    content?: string,
+    embed?: RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed> | null,
+    flags?: number,
   }
 
   export interface EditOauth2Application {
@@ -717,13 +790,25 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     attachments?: Array<{id: string}>,
-    components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
+    components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
     content?: string,
-    embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
-    embeds?: Array<CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction>,
+    embed?: CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed> | null,
+    embeds?: Array<CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
     file?: File,
     files?: Array<File>,
     hasSpoiler?: boolean,
+  }
+
+  export interface EditWebhookTokenMessageData {
+    allowed_mentions?: {
+      parse?: Array<string>,
+      roles?: Array<string>,
+      users?: Array<string>,
+    },
+    attachments?: Array<{id: string}>,
+    components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
+    content?: string,
+    embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
   }
 
   export interface ExecuteWebhook {
@@ -733,10 +818,10 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     avatarUrl?: string,
-    components?: Array<CreateChannelMessageComponent | CreateChannelMessageComponentFunction>,
+    components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
     content?: string,
-    embed?: CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction,
-    embeds?: Array<CreateChannelMessageEmbed | CreateChannelMessageEmbedFunction>,
+    embed?: CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed> | null,
+    embeds?: Array<CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
     file?: File,
     files?: Array<File>,
     flags?: number,
@@ -745,6 +830,21 @@ export namespace RequestTypes {
     tts?: boolean,
     username?: string,
     wait?: boolean,
+  }
+
+  export interface ExecuteWebhookData {
+    allowed_mentions?: {
+      parse?: Array<string>,
+      roles?: Array<string>,
+      users?: Array<string>,
+    },
+    avatar_url?: string,
+    components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
+    content?: string,
+    embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
+    flags?: number,
+    tts?: boolean,
+    username?: string,
   }
 
   export interface FetchChannelThreadsArchivedPrivate {
@@ -1017,7 +1117,7 @@ export namespace RequestTypes {
 
   /* Raw Types */
   export interface RawChannelMessageComponent {
-    components?: Array<RawChannelMessageComponent | CreateChannelMessageComponentFunction>,
+    components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
     custom_id?: string,
     disabled?: boolean,
     emoji?: RawEmojiPartial,
