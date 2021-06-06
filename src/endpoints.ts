@@ -58,16 +58,18 @@ export const CDN = Tools.URIEncodeWrap({
     `/avatars/${userId}/${hash}.${format}`,
   AVATAR_DEFAULT: (discriminator: number | string): string =>
     `/embed/avatars/${+(discriminator) % 5}.png`,
+  BANNER: (id: string, hash: string, format: string = 'png'): string =>
+    `/banners/${id}/${hash}.${format}`,
   CHANNEL_ICON: (channelId: string, hash: string, format: string = 'png'): string =>
     `/channel-icons/${channelId}/${hash}.${format}`,
   EMOJI: (emojiId: string, format: string = 'png'): string =>
     `/emojis/${emojiId}.${format}`,
-  GUILD_BANNER: (guildId: string, hash: string, format: string = 'png'): string =>
-    `/banners/${guildId}/${hash}.${format}`,
   GUILD_ICON: (guildId: string, hash: string, format: string = 'png'): string =>
     `/icons/${guildId}/${hash}.${format}`,
   GUILD_SPLASH: (guildId: string, hash: string, format: string = 'png'): string =>
     `/splashes/${guildId}/${hash}.${format}`,
+  GUILD_USER_AVATAR: (guildId: string, userId: string, hash: string, format: string = 'png') =>
+    `/guilds/${guildId}/users/${userId}/avatars/${hash}.${format}`,
   STICKER: (stickerId: string, hash: string, format: string = 'png'): string =>
     `/stickers/${stickerId}/${hash}.${format}`,
   TEAM_ICON: (teamId: string, hash: string, format: string = 'png'): string =>
