@@ -229,7 +229,8 @@ export class Client extends EventSpewer {
           return response.text();
         };
       }
-      return response.buffer();
+      const buffer = await response.buffer();
+      return (buffer.length) ? buffer : null;
     } else {
       return response;
     }
