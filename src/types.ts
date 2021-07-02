@@ -291,6 +291,14 @@ export namespace RequestTypes {
     reason?: string,
   }
 
+  export interface CreateGuildSticker {
+    description: string,
+    file: File,
+    name: string,
+    reason?: string,
+    tags: string,
+  }
+
   export interface CreateGuildTemplate {
     description?: string,
     name: string,
@@ -479,6 +487,10 @@ export namespace RequestTypes {
     reason?: string,
   }
 
+  export interface DeleteGuildSticker {
+    reason?: string,
+  }
+
   export interface DeleteInvite {
     reason?: string,
   }
@@ -663,6 +675,13 @@ export namespace RequestTypes {
 
   export interface EditGuildRolePositionsExtra {
     reason?: string,
+  }
+
+  export interface EditGuildSticker {
+    description?: string,
+    name?: string,
+    reason?: string,
+    tags?: string,
   }
 
   export interface EditGuildVanity {
