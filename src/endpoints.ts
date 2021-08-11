@@ -70,7 +70,9 @@ export const CDN = Tools.URIEncodeWrap({
     `/splashes/${guildId}/${hash}.${format}`,
   GUILD_USER_AVATAR: (guildId: string, userId: string, hash: string, format: string = 'png') =>
     `/guilds/${guildId}/users/${userId}/avatars/${hash}.${format}`,
-  STICKER: (stickerId: string, hash: string, format: string = 'png'): string =>
+  STICKER: (stickerId: string, format: string = 'png'): string =>
+    `/stickers/${stickerId}.${format}`,
+  STICKER_HASH: (stickerId: string, hash: string, format: string = 'png'): string =>
     `/stickers/${stickerId}/${hash}.${format}`,
   TEAM_ICON: (teamId: string, hash: string, format: string = 'png'): string =>
     `/team-icons/${teamId}/${hash}.${format}`,
@@ -717,6 +719,10 @@ export const Api = Object.freeze({
     '/guilds/:guildId/messages/search',
   GUILD_SPLASH:
     '/guilds/:guildId/splashes/:hash.jpg',
+  GUILD_STICKERS:
+    '/guilds/:guildId/stickers',
+  GUILD_STICKER:
+    '/guilds/:guildId/stickers/:stickerId',
   GUILD_TEMPLATES:
     '/guilds/:guildId/templates',
   GUILD_TEMPLATE:

@@ -20,6 +20,7 @@ import { DiscordHTTPError, HTTPError } from './errors';
 
 export interface RestRequestOptions {
   errorOnRatelimit?: boolean,
+  errorOnRatelimitIfMoreThan?: number,
   skipRatelimitCheck?: boolean,
 }
 
@@ -31,6 +32,7 @@ export class RestRequest {
 
   client: Client;
   errorOnRatelimit?: boolean;
+  errorOnRatelimitIfMoreThan?: number;
   maxRetries: number;
   request: Request;
   retries: number;
@@ -69,6 +71,7 @@ export class RestRequest {
     }
 
     this.errorOnRatelimit = options.errorOnRatelimit;
+    this.errorOnRatelimitIfMoreThan = options.errorOnRatelimitIfMoreThan;
     this.maxRetries = 5;
     this.retries = 0;
     this.retryDelay = 2000;
@@ -141,7 +144,7 @@ export class RestRequest {
           if (bucket.ratelimit.remaining === 1) {
             const ratelimit = bucket.ratelimit;
             const diff = Math.min(0, ratelimit.resetAtLocal - Date.now());
-            if (diff) {
+            if (diff && (!this.errorOnRatelimitIfMoreThan || diff <= this.errorOnRatelimitIfMoreThan)) {
               bucket.lock(diff);
             }
           }
@@ -211,49 +214,51 @@ export class RestRequest {
           retryAfter = (parseInt(response.headers.get(RatelimitHeaders.RETRY_AFTER) || '') || 0) * 1000;
         }
 
-        const isDiscordRatelimit = response.headers.has('via');
-        return new Promise(async (resolve, reject) => {
-          const delayed = {request: this, resolve, reject};
+        if (!this.errorOnRatelimitIfMoreThan || retryAfter <= this.errorOnRatelimitIfMoreThan) {
+          const isDiscordRatelimit = response.headers.has('via');
+          return new Promise(async (resolve, reject) => {
+            const delayed = {request: this, resolve, reject};
 
-          const data = await response.json() as {global: boolean, retry_after: number};
-          if (this.client.isBot) {
-            if (response.headers.get(RatelimitHeaders.GLOBAL) === 'true') {
-              this.client.globalBucket.lock(retryAfter);
-              this.client.globalBucket.add(delayed);
-              return;
-            }
-
-            // incase they, for some reason, send us a differing body from the headers (happened cuz of channel edits with name/topic)
-            // just error out since this is a fluke
-            if ((data.retry_after * 1000) !== retryAfter) {
-              return reject(new HTTPError(response));
-            }
-          } else {
-            if (isDiscordRatelimit) {
-              // check json body since users dont get the above header
-              if (data.global) {
+            const data = await response.json() as {global: boolean, retry_after: number};
+            if (this.client.isBot) {
+              if (response.headers.get(RatelimitHeaders.GLOBAL) === 'true') {
                 this.client.globalBucket.lock(retryAfter);
                 this.client.globalBucket.add(delayed);
                 return;
               }
+
+              // incase they, for some reason, send us a differing body from the headers (happened cuz of channel edits with name/topic)
+              // just error out since this is a fluke
+              if ((data.retry_after * 1000) !== retryAfter) {
+                return reject(new HTTPError(response));
+              }
+            } else {
+              if (isDiscordRatelimit) {
+                // check json body since users dont get the above header
+                if (data.global) {
+                  this.client.globalBucket.lock(retryAfter);
+                  this.client.globalBucket.add(delayed);
+                  return;
+                }
+              }
             }
-          }
 
-          if (bucket) {
-            bucket.ratelimit.remaining = 0;
-            bucket.ratelimit.resetAfter = retryAfter;
-            bucket.lock(retryAfter);
-            bucket.add(delayed, true);
-            return;
-          }
+            if (bucket) {
+              bucket.ratelimit.remaining = 0;
+              bucket.ratelimit.resetAfter = retryAfter;
+              bucket.lock(retryAfter);
+              bucket.add(delayed, true);
+              return;
+            }
 
-          // unsure of what to do since we should've gotten global ratelimited
-          return reject(new HTTPError(response));
-        });
-      }
+            // unsure of what to do since we should've gotten global ratelimited
+            return reject(new HTTPError(response));
+          });
+        }
 
-      if (bucket && bucket.size) {
-        this.client.buckets.resetExpire(bucket);
+        if (bucket && bucket.size) {
+          this.client.buckets.resetExpire(bucket);
+        }
       }
     }
 

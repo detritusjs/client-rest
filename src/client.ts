@@ -64,6 +64,7 @@ export interface ClientOptions extends RestClientOptions {
   bucketsExpireIn?: number,
   clientsideChecks?: boolean,
   errorOnRatelimit?: boolean,
+  errorOnRatelimitIfMoreThan?: number,
   fingerprint?: string,
   globalBucket?: Bucket,
   routesCollection?: BaseCollection<string, string>,
@@ -76,6 +77,7 @@ export class Client extends EventSpewer {
   authType: AuthTypes = AuthTypes.BOT;
   clientsideChecks: boolean = true;
   errorOnRatelimit: boolean = false;
+  errorOnRatelimitIfMoreThan: number = 0;
   fingerprint?: string;
   globalBucket: Bucket;
   restClient: RestClient;
@@ -99,6 +101,7 @@ export class Client extends EventSpewer {
     this.buckets = new BucketCollection({expire: options.bucketsExpireIn});
     this.clientsideChecks = !!(options.clientsideChecks || options.clientsideChecks === undefined);
     this.errorOnRatelimit = !!options.errorOnRatelimit;
+    this.errorOnRatelimitIfMoreThan = options.errorOnRatelimitIfMoreThan || this.errorOnRatelimitIfMoreThan;
     this.fingerprint = options.fingerprint,
     this.globalBucket = options.globalBucket || new Bucket('global');
     this.routes = options.routesCollection || new BaseCollection<string, string>();
@@ -164,10 +167,12 @@ export class Client extends EventSpewer {
     if (typeof(info) !== 'string' && !(info instanceof URL)) {
       init = Object.assign({
         errorOnRatelimit: this.errorOnRatelimit,
+        errorOnRatelimitIfMoreThan: this.errorOnRatelimitIfMoreThan,
       }, requestDefaults, info, init);
     } else {
       init = Object.assign({
         errorOnRatelimit: this.errorOnRatelimit,
+        errorOnRatelimitIfMoreThan: this.errorOnRatelimitIfMoreThan,
       }, requestDefaults, init);
     }
 
@@ -201,7 +206,7 @@ export class Client extends EventSpewer {
     const restRequest = new RestRequest(this, request, init);
     this.emit(RestEvents.REQUEST, {request, restRequest: restRequest});
 
-    if (restRequest.shouldRatelimitCheck && !init.errorOnRatelimit) {
+    if (restRequest.shouldRatelimitCheck && !restRequest.errorOnRatelimit) {
       response = await new Promise((resolve, reject) => {
         const delayed = {request: restRequest, resolve, reject};
         if (this.globalBucket.locked) {
@@ -209,8 +214,15 @@ export class Client extends EventSpewer {
         } else {
           const bucket = restRequest.bucket;
           if (bucket) {
-            bucket.add(delayed);
-            this.buckets.resetExpire(bucket);
+            const ratelimit = bucket.ratelimit;
+
+            const { errorOnRatelimitIfMoreThan } = restRequest;
+            if (!errorOnRatelimitIfMoreThan || ratelimit.resetAfter === Infinity || ratelimit.resetAfter <= errorOnRatelimitIfMoreThan) {
+              resolve(restRequest.send());
+            } else {
+              bucket.add(delayed);
+              this.buckets.resetExpire(bucket);
+            }
           } else {
             resolve(restRequest.send());
           }
@@ -694,6 +706,7 @@ export class Client extends EventSpewer {
         id: options.id,
         name: options.name,
         options: options.options,
+        type: options.type,
       };
     });
     if (this.clientsideChecks) {
@@ -725,6 +738,7 @@ export class Client extends EventSpewer {
         id: options.id,
         name: options.name,
         options: options.options,
+        type: options.type,
       };
     });
     if (this.clientsideChecks) {
@@ -809,6 +823,7 @@ export class Client extends EventSpewer {
         description: options.description,
         name: options.name,
         options: options.options,
+        type: options.type,
       };
     }
     if (this.clientsideChecks) {
@@ -839,6 +854,7 @@ export class Client extends EventSpewer {
         description: options.description,
         name: options.name,
         options: options.options,
+        type: options.type,
       };
     }
     if (this.clientsideChecks) {
@@ -920,6 +936,9 @@ export class Client extends EventSpewer {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+      },
       route: {
         method: HTTPMethods.POST,
         path: Api.CHANNEL_MESSAGE_THREADS,
@@ -951,6 +970,7 @@ export class Client extends EventSpewer {
     const body = {
       auto_archive_duration: options.autoArchiveDuration,
       name: options.name,
+      type: options.type,
     };
     const params = {channelId};
     if (this.clientsideChecks) {
@@ -958,6 +978,9 @@ export class Client extends EventSpewer {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+      },
       route: {
         method: HTTPMethods.POST,
         path: Api.CHANNEL_THREADS,
@@ -1061,7 +1084,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
       },
       route: {
         method: HTTPMethods.POST,
@@ -1088,7 +1111,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
       },
       route: {
         method: HTTPMethods.POST,
@@ -1113,7 +1136,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
       },
       route: {
         method: HTTPMethods.POST,
@@ -1141,14 +1164,43 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
       },
       route: {
         method: HTTPMethods.POST,
         path: Api.GUILD_ROLES,
         params,
       },
-    })
+    });
+  }
+
+  async createGuildSticker(
+    guildId: string,
+    options: RequestTypes.CreateGuildSticker,
+  ): Promise<any> {
+    const body = {
+      description: options.description,
+      name: options.name,
+      tags: options.tags,
+    };
+    const file = options.file;
+    const params = {guildId};
+
+    if (this.clientsideChecks) {
+      // 512kb limit
+    }
+    return this.request({
+      body,
+      files: [file],
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+      },
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.GUILD_STICKERS,
+        params,
+      },
+    });
   }
 
   async createGuildTemplate(
@@ -1795,7 +1847,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
       },
       route: {
         method: HTTPMethods.DELETE,
@@ -1816,7 +1868,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
       },
       route: {
         method: HTTPMethods.DELETE,
@@ -1873,7 +1925,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: options.reason,
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
       },
       route: {
         method: HTTPMethods.DELETE,
@@ -1937,6 +1989,27 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.DELETE,
         path: Api.GUILD_ROLE,
+        params,
+      },
+    });
+  }
+
+  async deleteGuildSticker(
+    guildId: string,
+    stickerId: string,
+    options: RequestTypes.DeleteGuildSticker = {},
+  ): Promise<any> {
+    const params = {guildId, stickerId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+      },
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.GUILD_STICKER,
         params,
       },
     });
@@ -2817,7 +2890,34 @@ export class Client extends EventSpewer {
         path: Api.GUILD_ROLES,
         params,
       },
-    })
+    });
+  }
+
+  async editGuildSticker(
+    guildId: string,
+    stickerId: string,
+    options: RequestTypes.EditGuildSticker = {},
+  ): Promise<any> {
+    const body = {
+      description: options.description,
+      name: options.name,
+      tags: options.tags,
+    };
+    const params = {guildId, stickerId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.GUILD_STICKER,
+        params,
+      },
+    });
   }
 
   async editGuildVanity(
@@ -4450,6 +4550,39 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.GUILD_ROLES,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildSticker(
+    guildId: string,
+    stickerId: string,
+  ): Promise<any> {
+    const params = {guildId, stickerId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_STICKER,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildStickers(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_STICKERS,
         params,
       },
     });
