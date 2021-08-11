@@ -2,7 +2,7 @@ export { HTTPMethods } from 'detritus-rest/lib/constants';
 
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.10.3-beta.2',
+  VERSION: '0.10.3',
 });
 
 
