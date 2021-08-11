@@ -738,6 +738,7 @@ export class Client extends EventSpewer {
         id: options.id,
         name: options.name,
         options: options.options,
+        type: options.type,
       };
     });
     if (this.clientsideChecks) {
@@ -853,6 +854,7 @@ export class Client extends EventSpewer {
         description: options.description,
         name: options.name,
         options: options.options,
+        type: options.type,
       };
     }
     if (this.clientsideChecks) {
