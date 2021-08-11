@@ -107,19 +107,21 @@ export namespace RequestTypes {
     id?: string,
     name: string,
     options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandData>>,
+    type?: number,
   }
 
   export interface CreateApplicationCommandData {
     default_permission?: boolean,
-    description: string,
+    description?: string,
     id?: string,
     name: string,
     options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandData>>
+    type?: number,
   }
 
   export interface CreateApplicationCommandOption {
     choices?: Array<{name: string, value: string | number}>,
-    description: string,
+    description?: string,
     name: string,
     options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandOption>>,
     required?: boolean,
@@ -216,6 +218,7 @@ export namespace RequestTypes {
   export interface CreateChannelMessageThread {
     autoArchiveDuration: number,
     name: string,
+    reason?: string,
   }
 
   export interface CreateChannelOverwrite {
@@ -228,6 +231,8 @@ export namespace RequestTypes {
   export interface CreateChannelThread {
     autoArchiveDuration: number,
     name: string,
+    reason?: string,
+    type?: number,
   }
 
   export interface CreateDm {

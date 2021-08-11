@@ -706,6 +706,7 @@ export class Client extends EventSpewer {
         id: options.id,
         name: options.name,
         options: options.options,
+        type: options.type,
       };
     });
     if (this.clientsideChecks) {
@@ -821,6 +822,7 @@ export class Client extends EventSpewer {
         description: options.description,
         name: options.name,
         options: options.options,
+        type: options.type,
       };
     }
     if (this.clientsideChecks) {
@@ -932,6 +934,9 @@ export class Client extends EventSpewer {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+      },
       route: {
         method: HTTPMethods.POST,
         path: Api.CHANNEL_MESSAGE_THREADS,
@@ -963,6 +968,7 @@ export class Client extends EventSpewer {
     const body = {
       auto_archive_duration: options.autoArchiveDuration,
       name: options.name,
+      type: options.type,
     };
     const params = {channelId};
     if (this.clientsideChecks) {
@@ -970,6 +976,9 @@ export class Client extends EventSpewer {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+      },
       route: {
         method: HTTPMethods.POST,
         path: Api.CHANNEL_THREADS,
