@@ -973,9 +973,13 @@ export const Api = Object.freeze({
     '/oauth2/authorize/webhook-channels',
   OAUTH2_ME:
     '/oauth2/@me',
+  OAUTH2_TOKEN:
+    '/oauth2/token',
+  OAUTH2_TOKEN_REVOKE:
+    '/oauth2/token/revoke',
   OAUTH2_TOKENS:
     '/oauth2/tokens',
-  OAUTH2_TOKEN:
+  OAUTH2_TOKENS_SINGLE:
     '/oauth2/tokens/:tokenId',
   OAUTH2_TOKEN_RPC:
     '/oauth2/token/rpc',

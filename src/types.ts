@@ -443,6 +443,15 @@ export namespace RequestTypes {
     type: string,
   }
 
+  export interface CreateOauth2Token {
+    clientId?: string,
+    clientSecret?: string,
+    code?: string,
+    grantType: string,
+    redirectUri?: string,
+    scope?: Array<string> | string,
+  }
+
   export interface CreateStageInstance {
     channelId: string,
     topic: string,

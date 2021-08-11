@@ -1666,6 +1666,31 @@ export class Client extends EventSpewer {
     });
   }
 
+  async createOAuth2Token(
+    options: RequestTypes.CreateOauth2Token,
+  ): Promise<any> {
+    const body = {
+      client_id: options.clientId,
+      client_secret: options.clientSecret,
+      code: options.code,
+      grant_type: options.grantType,
+      redirect_uri: options.redirectUri,
+      scope: (Array.isArray(options.scope)) ? options.scope.join(' ') : options.scope,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      multipart: true,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.OAUTH2_TOKEN,
+      },
+      useAuth: false,
+    });
+  }
+
   async createReaction(
     channelId: string,
     messageId: string,
@@ -5075,7 +5100,7 @@ export class Client extends EventSpewer {
     return this.request({
       route: {
         method: HTTPMethods.GET,
-        path: Api.OAUTH2_TOKEN,
+        path: Api.OAUTH2_TOKENS_SINGLE,
         params,
       },
     });
