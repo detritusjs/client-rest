@@ -391,6 +391,7 @@ export namespace RequestTypes {
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
     embed?: CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed> | null,
+    embeds?: Array<CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
     file?: File,
     files?: Array<File>,
     hasSpoiler?: boolean,
@@ -420,7 +421,7 @@ export namespace RequestTypes {
     application_id?: string,
     components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
-    embed?: RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed> | null,
+    embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
     message_reference?: {
       channel_id: string,
       fail_if_not_exists?: boolean,
@@ -767,6 +768,7 @@ export namespace RequestTypes {
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
     embed?: CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed> | null,
+    embeds?: Array<CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
     file?: File,
     files?: Array<File>,
     flags?: number,
@@ -783,7 +785,7 @@ export namespace RequestTypes {
     attachments?: Array<{id: string}>,
     components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
-    embed?: RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed> | null,
+    embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
     flags?: number,
   }
 

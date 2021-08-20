@@ -1514,25 +1514,38 @@ export class Client extends EventSpewer {
         });
       }
     }
-    if (options.embed && typeof(options.embed) === 'object') {
-      if ('toJSON' in options.embed) {
-        body.embed = options.embed;
-      } else {
-        body.embed = Object.assign({}, options.embed);
-        if (typeof(options.embed.author) === 'object') {
-          body.embed.author = {
-            name: options.embed.author.name,
-            url: options.embed.author.url,
-            icon_url: options.embed.author.iconUrl,
-          };
+    if (options.embed !== undefined) {
+      if (options.embed) {
+        if (options.embeds) {
+          options.embeds = [options.embed, ...options.embeds];
+        } else {
+          options.embeds = [options.embed];
         }
-        if (typeof(options.embed.footer) === 'object') {
-          body.embed.footer = {
-            text: options.embed.footer.text,
-            icon_url: options.embed.footer.iconUrl,
-          };
-        }
+      } else if (!options.embeds) {
+        options.embeds = [];
       }
+    }
+    if (options.embeds && options.embeds.length) {
+      body.embeds = options.embeds.map((embed) => {
+        if ('toJSON' in embed) {
+          return embed;
+        }
+        const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;
+        if (typeof(embed.author) === 'object') {
+          raw.author = {
+            name: embed.author.name,
+            url: embed.author.url,
+            icon_url: embed.author.iconUrl,
+          };
+        }
+        if (typeof(embed.footer) === 'object') {
+          raw.footer = {
+            text: embed.footer.text,
+            icon_url: embed.footer.iconUrl,
+          };
+        }
+        return raw;
+      });
     }
     if (options.messageReference && typeof(options.messageReference) === 'object') {
       body.message_reference = {
@@ -3145,7 +3158,6 @@ export class Client extends EventSpewer {
     const body: RequestTypes.EditMessageData = {
       attachments: options.attachments,
       content: options.content,
-      embed: options.embed,
       flags: options.flags,
     };
     const params = {channelId, messageId};
@@ -3200,25 +3212,38 @@ export class Client extends EventSpewer {
         });
       }
     }
-    if (options.embed && typeof(options.embed) === 'object') {
-      if ('toJSON' in options.embed) {
-        body.embed = options.embed;
-      } else {
-        body.embed = Object.assign({}, options.embed);
-        if (typeof(options.embed.author) === 'object') {
-          body.embed.author = {
-            name: options.embed.author.name,
-            url: options.embed.author.url,
-            icon_url: options.embed.author.iconUrl,
-          };
+    if (options.embed !== undefined) {
+      if (options.embed) {
+        if (options.embeds) {
+          options.embeds = [options.embed, ...options.embeds];
+        } else {
+          options.embeds = [options.embed];
         }
-        if (typeof(options.embed.footer) === 'object') {
-          body.embed.footer = {
-            text: options.embed.footer.text,
-            icon_url: options.embed.footer.iconUrl,
-          };
-        }
+      } else if (!options.embeds) {
+        options.embeds = [];
       }
+    }
+    if (options.embeds && options.embeds.length) {
+      body.embeds = options.embeds.map((embed) => {
+        if ('toJSON' in embed) {
+          return embed;
+        }
+        const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;
+        if (typeof(embed.author) === 'object') {
+          raw.author = {
+            name: embed.author.name,
+            url: embed.author.url,
+            icon_url: embed.author.iconUrl,
+          };
+        }
+        if (typeof(embed.footer) === 'object') {
+          raw.footer = {
+            text: embed.footer.text,
+            icon_url: embed.footer.iconUrl,
+          };
+        }
+        return raw;
+      });
     }
 
     const files: Array<RequestTypes.File> = [];
