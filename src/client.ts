@@ -1267,42 +1267,46 @@ export class Client extends EventSpewer {
       }
 
       if (data.components && typeof(data.components) === 'object') {
-        body.data.components = data.components.map((component) => {
-          if ('toJSON' in component) {
-            return component;
-          }
-          return {
-            components: component.components && component.components.map((child) => {
-              if ('toJSON' in child) {
-                return child;
-              }
-              return {
-                custom_id: child.customId,
-                disabled: child.disabled,
-                emoji: child.emoji,
-                label: child.label,
-                max_values: child.maxValues,
-                min_values: child.minValues,
-                options: child.options,
-                placeholder: child.placeholder,
-                style: child.style,
-                type: child.type,
-                url: child.url,
-              };
-            }),
-            custom_id: component.customId,
-            disabled: component.disabled,
-            emoji: component.emoji,
-            label: component.label,
-            max_values: component.maxValues,
-            min_values: component.minValues,
-            options: component.options,
-            placeholder: component.placeholder,
-            style: component.style,
-            type: component.type,
-            url: component.url,
-          };
-        });
+        if ('toJSON' in data.components) {
+          body.data.components = data.components;
+        } else {
+          body.data.components = data.components.map((component) => {
+            if ('toJSON' in component) {
+              return component;
+            }
+            return {
+              components: component.components && component.components.map((child) => {
+                if ('toJSON' in child) {
+                  return child;
+                }
+                return {
+                  custom_id: child.customId,
+                  disabled: child.disabled,
+                  emoji: child.emoji,
+                  label: child.label,
+                  max_values: child.maxValues,
+                  min_values: child.minValues,
+                  options: child.options,
+                  placeholder: child.placeholder,
+                  style: child.style,
+                  type: child.type,
+                  url: child.url,
+                };
+              }),
+              custom_id: component.customId,
+              disabled: component.disabled,
+              emoji: component.emoji,
+              label: component.label,
+              max_values: component.maxValues,
+              min_values: component.minValues,
+              options: component.options,
+              placeholder: component.placeholder,
+              style: component.style,
+              type: component.type,
+              url: component.url,
+            };
+          });
+        }
       }
 
       if (data.embed !== undefined) {
@@ -1469,62 +1473,79 @@ export class Client extends EventSpewer {
       };
     }
     if (options.components && typeof(options.components) === 'object') {
-      body.components = options.components.map((component) => {
-        if ('toJSON' in component) {
-          return component;
-        }
-        return {
-          components: component.components && component.components.map((child) => {
-            if ('toJSON' in child) {
-              return child;
-            }
-            return {
-              custom_id: child.customId,
-              disabled: child.disabled,
-              emoji: child.emoji,
-              label: child.label,
-              max_values: child.maxValues,
-              min_values: child.minValues,
-              options: child.options,
-              placeholder: child.placeholder,
-              style: child.style,
-              type: child.type,
-              url: child.url,
-            };
-          }),
-          custom_id: component.customId,
-          disabled: component.disabled,
-          emoji: component.emoji,
-          label: component.label,
-          max_values: component.maxValues,
-          min_values: component.minValues,
-          options: component.options,
-          placeholder: component.placeholder,
-          style: component.style,
-          type: component.type,
-          url: component.url,
-        };
-      });
-    }
-    if (options.embed && typeof(options.embed) === 'object') {
-      if ('toJSON' in options.embed) {
-        body.embed = options.embed;
+      if ('toJSON' in options.components) {
+        body.components = options.components;
       } else {
-        body.embed = Object.assign({}, options.embed);
-        if (typeof(options.embed.author) === 'object') {
-          body.embed.author = {
-            name: options.embed.author.name,
-            url: options.embed.author.url,
-            icon_url: options.embed.author.iconUrl,
+        body.components = options.components.map((component) => {
+          if ('toJSON' in component) {
+            return component;
+          }
+          return {
+            components: component.components && component.components.map((child) => {
+              if ('toJSON' in child) {
+                return child;
+              }
+              return {
+                custom_id: child.customId,
+                disabled: child.disabled,
+                emoji: child.emoji,
+                label: child.label,
+                max_values: child.maxValues,
+                min_values: child.minValues,
+                options: child.options,
+                placeholder: child.placeholder,
+                style: child.style,
+                type: child.type,
+                url: child.url,
+              };
+            }),
+            custom_id: component.customId,
+            disabled: component.disabled,
+            emoji: component.emoji,
+            label: component.label,
+            max_values: component.maxValues,
+            min_values: component.minValues,
+            options: component.options,
+            placeholder: component.placeholder,
+            style: component.style,
+            type: component.type,
+            url: component.url,
           };
-        }
-        if (typeof(options.embed.footer) === 'object') {
-          body.embed.footer = {
-            text: options.embed.footer.text,
-            icon_url: options.embed.footer.iconUrl,
-          };
-        }
+        });
       }
+    }
+    if (options.embed !== undefined) {
+      if (options.embed) {
+        if (options.embeds) {
+          options.embeds = [options.embed, ...options.embeds];
+        } else {
+          options.embeds = [options.embed];
+        }
+      } else if (!options.embeds) {
+        options.embeds = [];
+      }
+    }
+    if (options.embeds && options.embeds.length) {
+      body.embeds = options.embeds.map((embed) => {
+        if ('toJSON' in embed) {
+          return embed;
+        }
+        const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;
+        if (typeof(embed.author) === 'object') {
+          raw.author = {
+            name: embed.author.name,
+            url: embed.author.url,
+            icon_url: embed.author.iconUrl,
+          };
+        }
+        if (typeof(embed.footer) === 'object') {
+          raw.footer = {
+            text: embed.footer.text,
+            icon_url: embed.footer.iconUrl,
+          };
+        }
+        return raw;
+      });
     }
     if (options.messageReference && typeof(options.messageReference) === 'object') {
       body.message_reference = {
@@ -1663,6 +1684,31 @@ export class Client extends EventSpewer {
         path: Api.OAUTH2_APPLICATION_BOT,
         params,
       },
+    });
+  }
+
+  async createOAuth2Token(
+    options: RequestTypes.CreateOauth2Token,
+  ): Promise<any> {
+    const body = {
+      client_id: options.clientId,
+      client_secret: options.clientSecret,
+      code: options.code,
+      grant_type: options.grantType,
+      redirect_uri: options.redirectUri,
+      scope: (Array.isArray(options.scope)) ? options.scope.join(' ') : options.scope,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      multipart: true,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.OAUTH2_TOKEN,
+      },
+      useAuth: false,
     });
   }
 
@@ -3112,7 +3158,6 @@ export class Client extends EventSpewer {
     const body: RequestTypes.EditMessageData = {
       attachments: options.attachments,
       content: options.content,
-      embed: options.embed,
       flags: options.flags,
     };
     const params = {channelId, messageId};
@@ -3126,62 +3171,79 @@ export class Client extends EventSpewer {
       };
     }
     if (options.components && typeof(options.components) === 'object') {
-      body.components = options.components.map((component) => {
-        if ('toJSON' in component) {
-          return component;
-        }
-        return {
-          components: component.components && component.components.map((child) => {
-            if ('toJSON' in child) {
-              return child;
-            }
-            return {
-              custom_id: child.customId,
-              disabled: child.disabled,
-              emoji: child.emoji,
-              label: child.label,
-              max_values: child.maxValues,
-              min_values: child.minValues,
-              options: child.options,
-              placeholder: child.placeholder,
-              style: child.style,
-              type: child.type,
-              url: child.url,
-            };
-          }),
-          custom_id: component.customId,
-          disabled: component.disabled,
-          emoji: component.emoji,
-          label: component.label,
-          max_values: component.maxValues,
-          min_values: component.minValues,
-          options: component.options,
-          placeholder: component.placeholder,
-          style: component.style,
-          type: component.type,
-          url: component.url,
-        };
-      });
-    }
-    if (options.embed && typeof(options.embed) === 'object') {
-      if ('toJSON' in options.embed) {
-        body.embed = options.embed;
+      if ('toJSON' in options.components) {
+        body.components = options.components;
       } else {
-        body.embed = Object.assign({}, options.embed);
-        if (typeof(options.embed.author) === 'object') {
-          body.embed.author = {
-            name: options.embed.author.name,
-            url: options.embed.author.url,
-            icon_url: options.embed.author.iconUrl,
+        body.components = options.components.map((component) => {
+          if ('toJSON' in component) {
+            return component;
+          }
+          return {
+            components: component.components && component.components.map((child) => {
+              if ('toJSON' in child) {
+                return child;
+              }
+              return {
+                custom_id: child.customId,
+                disabled: child.disabled,
+                emoji: child.emoji,
+                label: child.label,
+                max_values: child.maxValues,
+                min_values: child.minValues,
+                options: child.options,
+                placeholder: child.placeholder,
+                style: child.style,
+                type: child.type,
+                url: child.url,
+              };
+            }),
+            custom_id: component.customId,
+            disabled: component.disabled,
+            emoji: component.emoji,
+            label: component.label,
+            max_values: component.maxValues,
+            min_values: component.minValues,
+            options: component.options,
+            placeholder: component.placeholder,
+            style: component.style,
+            type: component.type,
+            url: component.url,
           };
-        }
-        if (typeof(options.embed.footer) === 'object') {
-          body.embed.footer = {
-            text: options.embed.footer.text,
-            icon_url: options.embed.footer.iconUrl,
-          };
-        }
+        });
       }
+    }
+    if (options.embed !== undefined) {
+      if (options.embed) {
+        if (options.embeds) {
+          options.embeds = [options.embed, ...options.embeds];
+        } else {
+          options.embeds = [options.embed];
+        }
+      } else if (!options.embeds) {
+        options.embeds = [];
+      }
+    }
+    if (options.embeds && options.embeds.length) {
+      body.embeds = options.embeds.map((embed) => {
+        if ('toJSON' in embed) {
+          return embed;
+        }
+        const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;
+        if (typeof(embed.author) === 'object') {
+          raw.author = {
+            name: embed.author.name,
+            url: embed.author.url,
+            icon_url: embed.author.iconUrl,
+          };
+        }
+        if (typeof(embed.footer) === 'object') {
+          raw.footer = {
+            text: embed.footer.text,
+            icon_url: embed.footer.iconUrl,
+          };
+        }
+        return raw;
+      });
     }
 
     const files: Array<RequestTypes.File> = [];
@@ -3417,42 +3479,46 @@ export class Client extends EventSpewer {
       };
     }
     if (options.components && typeof(options.components) === 'object') {
-      body.components = options.components.map((component) => {
-        if ('toJSON' in component) {
-          return component;
-        }
-        return {
-          components: component.components && component.components.map((child) => {
-            if ('toJSON' in child) {
-              return child;
-            }
-            return {
-              custom_id: child.customId,
-              disabled: child.disabled,
-              emoji: child.emoji,
-              label: child.label,
-              max_values: child.maxValues,
-              min_values: child.minValues,
-              options: child.options,
-              placeholder: child.placeholder,
-              style: child.style,
-              type: child.type,
-              url: child.url,
-            };
-          }),
-          custom_id: component.customId,
-          disabled: component.disabled,
-          emoji: component.emoji,
-          label: component.label,
-          max_values: component.maxValues,
-          min_values: component.minValues,
-          options: component.options,
-          placeholder: component.placeholder,
-          style: component.style,
-          type: component.type,
-          url: component.url,
-        };
-      });
+      if ('toJSON' in options.components) {
+        body.components = options.components;
+      } else {
+        body.components = options.components.map((component) => {
+          if ('toJSON' in component) {
+            return component;
+          }
+          return {
+            components: component.components && component.components.map((child) => {
+              if ('toJSON' in child) {
+                return child;
+              }
+              return {
+                custom_id: child.customId,
+                disabled: child.disabled,
+                emoji: child.emoji,
+                label: child.label,
+                max_values: child.maxValues,
+                min_values: child.minValues,
+                options: child.options,
+                placeholder: child.placeholder,
+                style: child.style,
+                type: child.type,
+                url: child.url,
+              };
+            }),
+            custom_id: component.customId,
+            disabled: component.disabled,
+            emoji: component.emoji,
+            label: component.label,
+            max_values: component.maxValues,
+            min_values: component.minValues,
+            options: component.options,
+            placeholder: component.placeholder,
+            style: component.style,
+            type: component.type,
+            url: component.url,
+          };
+        });
+      }
     }
     if (options.embed !== undefined) {
       if (options.embed) {
@@ -3619,42 +3685,46 @@ export class Client extends EventSpewer {
       };
     }
     if (options.components && typeof(options.components) === 'object') {
-      body.components = options.components.map((component) => {
-        if ('toJSON' in component) {
-          return component;
-        }
-        return {
-          components: component.components && component.components.map((child) => {
-            if ('toJSON' in child) {
-              return child;
-            }
-            return {
-              custom_id: child.customId,
-              disabled: child.disabled,
-              emoji: child.emoji,
-              label: child.label,
-              max_values: child.maxValues,
-              min_values: child.minValues,
-              options: child.options,
-              placeholder: child.placeholder,
-              style: child.style,
-              type: child.type,
-              url: child.url,
-            };
-          }),
-          custom_id: component.customId,
-          disabled: component.disabled,
-          emoji: component.emoji,
-          label: component.label,
-          max_values: component.maxValues,
-          min_values: component.minValues,
-          options: component.options,
-          placeholder: component.placeholder,
-          style: component.style,
-          type: component.type,
-          url: component.url,
-        };
-      });
+      if ('toJSON' in options.components) {
+        body.components = options.components;
+      } else {
+        body.components = options.components.map((component) => {
+          if ('toJSON' in component) {
+            return component;
+          }
+          return {
+            components: component.components && component.components.map((child) => {
+              if ('toJSON' in child) {
+                return child;
+              }
+              return {
+                custom_id: child.customId,
+                disabled: child.disabled,
+                emoji: child.emoji,
+                label: child.label,
+                max_values: child.maxValues,
+                min_values: child.minValues,
+                options: child.options,
+                placeholder: child.placeholder,
+                style: child.style,
+                type: child.type,
+                url: child.url,
+              };
+            }),
+            custom_id: component.customId,
+            disabled: component.disabled,
+            emoji: component.emoji,
+            label: component.label,
+            max_values: component.maxValues,
+            min_values: component.minValues,
+            options: component.options,
+            placeholder: component.placeholder,
+            style: component.style,
+            type: component.type,
+            url: component.url,
+          };
+        });
+      }
     }
     if (options.embed !== undefined) {
       if (options.embed) {
@@ -5075,7 +5145,7 @@ export class Client extends EventSpewer {
     return this.request({
       route: {
         method: HTTPMethods.GET,
-        path: Api.OAUTH2_TOKEN,
+        path: Api.OAUTH2_TOKENS_SINGLE,
         params,
       },
     });

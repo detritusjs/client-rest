@@ -2,7 +2,7 @@ export { HTTPMethods } from 'detritus-rest/lib/constants';
 
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.10.3',
+  VERSION: '0.10.4',
 });
 
 
@@ -105,6 +105,8 @@ export enum DiscordAbortCodes {
   INVALID_FORM_BODY = 50035,
   INVALID_INVITE_ACCEPTED = 50036,
   INVALID_API_VERSION = 50041,
+  INVALID_FILE_SIZE = 50045,
+  INVALID_FILE = 50046,
   INVALID_GIFT_REDEMPTION_EXHAUSTED = 50050,
   INVALID_GIFT_REDEMPTION_OWNED = 50051,
   INVALID_GIFT_SELF_REDEMPTION = 50054,
@@ -137,6 +139,8 @@ export enum DiscordAbortCodes {
   LISTING_JOIN_BLOCKED = 120002,
 
   RESOURCE_OVERLOADED = 130000,
+
+  INVALID_LOTTIE = 170001,
 }
 
 export enum DiscordHeaders {
