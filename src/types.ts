@@ -1213,7 +1213,7 @@ export namespace RequestTypes {
   export interface RawEmojiPartial  {
     animated?: boolean,
     id?: string,
-    name: string,
+    name?: string,
   }
 
   /* Route Types */
