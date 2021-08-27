@@ -29,7 +29,7 @@ import { Api } from './endpoints';
 import { RestRequest } from './request';
 import { spoilerfy } from './utils';
 
-import { RequestTypes, ResponseTypes, RestClientEvents } from './types';
+import { RequestTypes, RestClientEvents } from './types';
 
 
 const defaultHeaders: Record<string, string> = {
