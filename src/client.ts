@@ -251,7 +251,7 @@ export class Client extends EventSpewer {
   async delete(
     info: string | URL | RequestTypes.Options,
     init?: RequestTypes.Options,
-  ): Promise<Response> {
+  ) {
     init = Object.assign({}, init, {method: HTTPMethods.DELETE});
     return this.request(info, init);
   }
@@ -259,7 +259,7 @@ export class Client extends EventSpewer {
   async get(
     info: string | URL | RequestTypes.Options,
     init?: RequestTypes.Options,
-  ): Promise<Response> {
+  ) {
     init = Object.assign({}, init, {method: HTTPMethods.GET});
     return this.request(info, init);
   }
@@ -267,7 +267,7 @@ export class Client extends EventSpewer {
   async head(
     info: string | URL | RequestTypes.Options,
     init?: RequestTypes.Options,
-  ): Promise<Response> {
+  ) {
     init = Object.assign({}, init, {method: HTTPMethods.HEAD});
     return this.request(info, init);
   }
@@ -275,7 +275,7 @@ export class Client extends EventSpewer {
   async options(
     info: string | URL | RequestTypes.Options,
     init?: RequestTypes.Options,
-  ): Promise<Response> {
+  ) {
     init = Object.assign({}, init, {method: HTTPMethods.OPTIONS});
     return this.request(info, init);
   }
@@ -283,7 +283,7 @@ export class Client extends EventSpewer {
   async patch(
     info: string | URL | RequestTypes.Options,
     init?: RequestTypes.Options,
-  ): Promise<Response> {
+  ) {
     init = Object.assign({}, init, {method: HTTPMethods.PATCH});
     return this.request(info, init);
   }
@@ -291,7 +291,7 @@ export class Client extends EventSpewer {
   async post(
     info: string | URL | RequestTypes.Options,
     init?: RequestTypes.Options,
-  ): Promise<Response> {
+  ) {
     init = Object.assign({}, init, {method: HTTPMethods.POST});
     return this.request(info, init);
   }
@@ -299,7 +299,7 @@ export class Client extends EventSpewer {
   async put(
     info: string | URL | RequestTypes.Options,
     init?: RequestTypes.Options,
-  ): Promise<Response> {
+  ) {
     init = Object.assign({}, init, {method: HTTPMethods.PUT});
     return this.request(info, init);
   }
