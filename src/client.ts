@@ -1253,6 +1253,7 @@ export class Client extends EventSpewer {
     if (options.data) {
       const { data } = options;
       body.data = {
+        choices: data.choices,
         content: data.content,
         flags: data.flags,
         tts: data.tts,
@@ -2885,6 +2886,7 @@ export class Client extends EventSpewer {
     const body = {
       color: options.color,
       hoist: options.hoist,
+      icon: bufferToBase64(options.icon),
       mentionable: options.mentionable,
       name: options.name,
       permissions: options.permissions,

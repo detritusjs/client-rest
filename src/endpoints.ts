@@ -70,6 +70,8 @@ export const CDN = Tools.URIEncodeWrap({
     `/splashes/${guildId}/${hash}.${format}`,
   GUILD_USER_AVATAR: (guildId: string, userId: string, hash: string, format: string = 'png') =>
     `/guilds/${guildId}/users/${userId}/avatars/${hash}.${format}`,
+  ROLE_ICON: (roleId: string, hash: string, format: string = 'png'): string =>
+    `/role-icons/${roleId}/${hash}.${format}`,
   STICKER: (stickerId: string, format: string = 'png'): string =>
     `/stickers/${stickerId}.${format}`,
   STICKER_HASH: (stickerId: string, hash: string, format: string = 'png'): string =>

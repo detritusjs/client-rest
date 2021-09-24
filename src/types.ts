@@ -320,6 +320,7 @@ export namespace RequestTypes {
       roles?: Array<string>,
       users?: Array<string>,
     },
+    choices?: Array<{name: string, value: number | string}>,
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
     embed?: CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed> | null,
@@ -338,6 +339,7 @@ export namespace RequestTypes {
         roles?: Array<string>,
         users?: Array<string>,
       },
+      choices?: Array<{name: string, value: number | string}>,
       components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
       content?: string,
       embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
@@ -396,7 +398,7 @@ export namespace RequestTypes {
     files?: Array<File>,
     hasSpoiler?: boolean,
     messageReference?: {
-      channelId: string,
+      channelId?: string,
       failIfNotExists?: boolean,
       guildId?: string,
       messageId: string,
@@ -673,6 +675,7 @@ export namespace RequestTypes {
   export interface EditGuildRole {
     color?: number,
     hoist?: boolean,
+    icon?: Buffer | null | string,
     mentionable?: boolean,
     name?: string,
     permissions?: number,
