@@ -396,7 +396,7 @@ export namespace RequestTypes {
     files?: Array<File>,
     hasSpoiler?: boolean,
     messageReference?: {
-      channelId: string,
+      channelId?: string,
       failIfNotExists?: boolean,
       guildId?: string,
       messageId: string,
