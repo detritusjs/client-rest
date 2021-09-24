@@ -2885,6 +2885,7 @@ export class Client extends EventSpewer {
     const body = {
       color: options.color,
       hoist: options.hoist,
+      icon: bufferToBase64(options.icon),
       mentionable: options.mentionable,
       name: options.name,
       permissions: options.permissions,

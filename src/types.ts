@@ -673,6 +673,7 @@ export namespace RequestTypes {
   export interface EditGuildRole {
     color?: number,
     hoist?: boolean,
+    icon?: Buffer | string,
     mentionable?: boolean,
     name?: string,
     permissions?: number,
