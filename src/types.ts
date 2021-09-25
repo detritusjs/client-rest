@@ -37,7 +37,7 @@ export namespace RequestTypes {
   /* Option Interfaces */
 
   export interface AcceptTemplate {
-    icon?: Buffer | string,
+    icon?: Buffer | string | null,
     name: string,
   }
 
@@ -106,7 +106,7 @@ export namespace RequestTypes {
     description: string,
     id?: string,
     name: string,
-    options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandData>>,
+    options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandOption>>,
     type?: number,
   }
 
@@ -115,11 +115,12 @@ export namespace RequestTypes {
     description?: string,
     id?: string,
     name: string,
-    options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandData>>
+    options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandOption>>
     type?: number,
   }
 
   export interface CreateApplicationCommandOption {
+    autocomplete?: boolean,
     choices?: Array<{name: string, value: string | number}>,
     description?: string,
     name: string,
@@ -246,7 +247,7 @@ export namespace RequestTypes {
     channels?: Array<CreateGuildChannel & {id?: string}>,
     defaultMessageNotifications?: number,
     explicitContentFilter?: number,
-    icon?: Buffer | string,
+    icon?: Buffer | string | null,
     name: string,
     region: string,
     roles?: Array<CreateGuildRole>,
@@ -290,10 +291,12 @@ export namespace RequestTypes {
   export interface CreateGuildRole {
     color?: number,
     hoist?: boolean,
+    icon?: Buffer | string | null,
     mentionable?: boolean,
     name?: string,
     permissions?: number,
     reason?: string,
+    unicodeEmoji?: string,
   }
 
   export interface CreateGuildSticker {
@@ -561,7 +564,7 @@ export namespace RequestTypes {
     archived?: boolean,
     autoArchiveDuration?: number,
     bitrate?: number,
-    icon?: Buffer | string,
+    icon?: Buffer | string | null,
     locked?: boolean,
     name?: string,
     nsfw?: boolean,
@@ -675,11 +678,12 @@ export namespace RequestTypes {
   export interface EditGuildRole {
     color?: number,
     hoist?: boolean,
-    icon?: Buffer | null | string,
+    icon?: Buffer | string | null,
     mentionable?: boolean,
     name?: string,
     permissions?: number,
     reason?: string,
+    unicodeEmoji?: string,
   }
 
   export interface EditGuildRolePosition {
@@ -794,7 +798,7 @@ export namespace RequestTypes {
 
   export interface EditOauth2Application {
     description?: string,
-    icon?: Buffer | string,
+    icon?: Buffer | string | null,
     name?: string,
     redirectUris?: Array<string>,
   }

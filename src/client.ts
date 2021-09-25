@@ -1020,7 +1020,11 @@ export class Client extends EventSpewer {
       icon: bufferToBase64(options.icon),
       name: options.name,
       region: options.region,
-      roles: options.roles,
+      roles: options.roles && options.roles.map((role) => {
+        const x = Object.assign({}, role);
+        x.icon = bufferToBase64(x.icon);
+        return x;
+      }),
       system_channel_flags: options.systemChannelFlags,
       system_channel_id: options.systemChannelId,
       verification_level: options.verificationLevel,
@@ -1153,9 +1157,11 @@ export class Client extends EventSpewer {
     const body = {
       color: options.color,
       hoist: options.hoist,
+      icon: bufferToBase64(options.icon),
       mentionable: options.mentionable,
       name: options.name,
       permissions: options.permissions,
+      unicode_emoji: options.unicodeEmoji,
     };
     const params = {guildId};
     if (this.clientsideChecks) {
@@ -2890,6 +2896,7 @@ export class Client extends EventSpewer {
       mentionable: options.mentionable,
       name: options.name,
       permissions: options.permissions,
+      unicode_emoji: options.unicodeEmoji,
     };
     const params = {guildId, roleId};
     if (this.clientsideChecks) {
