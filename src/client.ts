@@ -3157,9 +3157,10 @@ export class Client extends EventSpewer {
       options = {content: options};
     }
     const body: RequestTypes.EditMessageData = {
-      attachments: options.attachments,
+      attachments: options.attachments || [],
       content: options.content,
       flags: options.flags,
+      embeds: options.embeds || []
     };
     const params = {channelId, messageId};
 
