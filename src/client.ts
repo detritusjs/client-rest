@@ -3160,7 +3160,8 @@ export class Client extends EventSpewer {
       attachments: options.attachments || [],
       content: options.content,
       flags: options.flags,
-      embeds: options.embeds || []
+      embeds: options.embeds || [],
+      components: options.components || []
     };
     const params = {channelId, messageId};
 
