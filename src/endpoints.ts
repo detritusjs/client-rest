@@ -727,6 +727,8 @@ export const Api = Object.freeze({
     '/guilds/:guildId/templates',
   GUILD_TEMPLATE:
     '/guilds/:guildId/templates/:templateId',
+  GUILD_THREADS:
+    '/guilds/:guildId/threads/active',
   GUILD_VANITY_URL:
     '/guilds/:guildId/vanity-url',
   GUILD_VOICE_STATE:

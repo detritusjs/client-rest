@@ -4675,6 +4675,22 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchGuildThreads(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_THREADS,
+        params,
+      },
+    });
+  }
+
   async fetchGuildVanityUrl(
     guildId: string,
   ): Promise<any> {
