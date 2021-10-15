@@ -423,7 +423,7 @@ export namespace RequestTypes {
     content?: string,
     embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
     message_reference?: {
-      channel_id: string,
+      channel_id?: string,
       fail_if_not_exists?: boolean,
       guild_id?: string,
       message_id: string,
