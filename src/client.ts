@@ -3462,28 +3462,29 @@ export class Client extends EventSpewer {
     webhookId: string,
     webhookToken: string,
     messageId: string,
-    options: RequestTypes.EditWebhookTokenMessage | string = {},
+    content: RequestTypes.EditWebhookTokenMessage | string = {},
+    threadId?: string
   ): Promise<any> {
-    if (typeof(options) === 'string') {
-      options = {content: options};
+    if (typeof(content) === 'string') {
+      content = {content: content};
     }
     const body: RequestTypes.EditWebhookTokenMessageData = {
-      attachments: options.attachments,
-      content: options.content,
+      attachments: content.attachments,
+      content: content.content,
     };
     const params = {webhookId, webhookToken, messageId};
-    if (options.allowedMentions && typeof(options.allowedMentions) === 'object') {
+    if (content.allowedMentions && typeof(content.allowedMentions) === 'object') {
       body.allowed_mentions = {
-        parse: options.allowedMentions.parse,
-        roles: options.allowedMentions.roles,
-        users: options.allowedMentions.users,
+        parse: content.allowedMentions.parse,
+        roles: content.allowedMentions.roles,
+        users: content.allowedMentions.users,
       };
     }
-    if (options.components && typeof(options.components) === 'object') {
-      if ('toJSON' in options.components) {
-        body.components = options.components;
+    if (content.components && typeof(content.components) === 'object') {
+      if ('toJSON' in content.components) {
+        body.components = content.components;
       } else {
-        body.components = options.components.map((component) => {
+        body.components = content.components.map((component) => {
           if ('toJSON' in component) {
             return component;
           }
@@ -3521,19 +3522,19 @@ export class Client extends EventSpewer {
         });
       }
     }
-    if (options.embed !== undefined) {
-      if (options.embed) {
-        if (options.embeds) {
-          options.embeds = [options.embed, ...options.embeds];
+    if (content.embed !== undefined) {
+      if (content.embed) {
+        if (content.embeds) {
+          content.embeds = [content.embed, ...content.embeds];
         } else {
-          options.embeds = [options.embed];
+          content.embeds = [content.embed];
         }
-      } else if (!options.embeds) {
-        options.embeds = [];
+      } else if (!content.embeds) {
+        content.embeds = [];
       }
     }
-    if (options.embeds) {
-      body.embeds = options.embeds.map((embed) => {
+    if (content.embeds) {
+      body.embeds = content.embeds.map((embed) => {
         if ('toJSON' in embed) {
           return embed;
         }
@@ -3556,18 +3557,18 @@ export class Client extends EventSpewer {
     }
 
     const files: Array<RequestTypes.File> = [];
-    if (options.file) {
-      files.push(options.file);
+    if (content.file) {
+      files.push(content.file);
     }
-    if (options.files && options.files.length) {
-      for (let file of options.files) {
+    if (content.files && content.files.length) {
+      for (let file of content.files) {
         if (file.hasSpoiler) {
           spoilerfy(file);
         }
         files.push(file);
       }
     }
-    if (options.hasSpoiler) {
+    if (content.hasSpoiler) {
       for (let file of files) {
         spoilerfy(file);
       }
@@ -3592,6 +3593,9 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       files,
+      query: {
+        thread_id: threadId,
+      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.WEBHOOK_TOKEN_MESSAGE,
