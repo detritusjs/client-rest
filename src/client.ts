@@ -2804,6 +2804,7 @@ export class Client extends EventSpewer {
   ): Promise<any> {
     const body = {
       channel_id: options.channelId,
+      communication_disabled_until: options.communicationDisabledUntil,
       deaf: options.deaf,
       mute: options.mute,
       nick: options.nick,

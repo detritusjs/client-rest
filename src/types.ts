@@ -656,6 +656,7 @@ export namespace RequestTypes {
 
   export interface EditGuildMember {
     channelId?: string | null,
+    communicationDisabledUntil?: string | null,
     deaf?: boolean,
     mute?: boolean,
     nick?: string,
