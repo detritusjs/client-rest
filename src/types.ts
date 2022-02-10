@@ -326,12 +326,14 @@ export namespace RequestTypes {
     choices?: Array<{name: string, value: number | string}>,
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
+    customId?: string,
     embed?: CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed> | null,
     embeds?: Array<CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed>>,
     file?: File,
     files?: Array<File>,
     flags?: number,
     hasSpoiler?: boolean,
+    title?: string,
     tts?: boolean,
   }
 
@@ -345,8 +347,10 @@ export namespace RequestTypes {
       choices?: Array<{name: string, value: number | string}>,
       components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
       content?: string,
+      custom_id?: string,
       embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
       flags?: number,
+      title?: string,
       tts?: boolean,
     },
     type: number,
@@ -1164,13 +1168,17 @@ export namespace RequestTypes {
     disabled?: boolean,
     emoji?: RawEmojiPartial,
     label?: string,
+    max_length?: number,
     max_values?: number,
+    min_length?: number,
     min_values?: number,
     options?: Array<RawChannelMessageComponentSelectMenuOption>,
     placeholder?: string,
+    required?: boolean,
     style?: number,
     type: number,
     url?: string,
+    value?: string,
   }
 
   export interface RawChannelMessageComponentSelectMenuOption {
