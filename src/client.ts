@@ -1242,7 +1242,13 @@ export class Client extends EventSpewer {
       if (typeof(innerData) === 'string') {
         innerData = {content: innerData};
       }
-      options.data = (options.data) ? Object.assign(options.data, innerData) : innerData;
+      if ('toJSON' in innerData) {
+        options.data = innerData;
+      } else if (options.data && !('toJSON' in options.data)) {
+        Object.assign(options.data, innerData);
+      } else {
+        options.data = innerData;
+      }
     }
 
     const body: RequestTypes.CreateInteractionResponseData = {
@@ -1252,123 +1258,127 @@ export class Client extends EventSpewer {
 
     const files: Array<RequestTypes.File> = [];
     if (options.data) {
-      const { data } = options;
-      body.data = {
-        choices: data.choices,
-        content: data.content,
-        custom_id: data.customId,
-        flags: data.flags,
-        title: data.title,
-        tts: data.tts,
-      };
-
-      if (data.allowedMentions && typeof(data.allowedMentions) === 'object') {
-        body.data.allowed_mentions = {
-          parse: data.allowedMentions.parse,
-          roles: data.allowedMentions.roles,
-          users: data.allowedMentions.users,
+      if ('toJSON' in options.data) {
+        body.data = options.data;
+      } else {
+        const { data } = options;
+        body.data = {
+          choices: data.choices,
+          content: data.content,
+          custom_id: data.customId,
+          flags: data.flags,
+          title: data.title,
+          tts: data.tts,
         };
-      }
 
-      if (data.components && typeof(data.components) === 'object') {
-        if ('toJSON' in data.components) {
-          body.data.components = data.components;
-        } else {
-          body.data.components = data.components.map((component) => {
-            if ('toJSON' in component) {
-              return component;
+        if (data.allowedMentions && typeof(data.allowedMentions) === 'object') {
+          body.data.allowed_mentions = {
+            parse: data.allowedMentions.parse,
+            roles: data.allowedMentions.roles,
+            users: data.allowedMentions.users,
+          };
+        }
+
+        if (data.components && typeof(data.components) === 'object') {
+          if ('toJSON' in data.components) {
+            body.data.components = data.components;
+          } else {
+            body.data.components = data.components.map((component) => {
+              if ('toJSON' in component) {
+                return component;
+              }
+              return {
+                components: component.components && component.components.map((child) => {
+                  if ('toJSON' in child) {
+                    return child;
+                  }
+                  return {
+                    custom_id: child.customId,
+                    disabled: child.disabled,
+                    emoji: child.emoji,
+                    label: child.label,
+                    max_length: child.maxLength,
+                    max_values: child.maxValues,
+                    min_length: child.minLength,
+                    min_values: child.minValues,
+                    options: child.options,
+                    placeholder: child.placeholder,
+                    required: child.required,
+                    style: child.style,
+                    type: child.type,
+                    url: child.url,
+                    value: child.value,
+                  };
+                }),
+                custom_id: component.customId,
+                disabled: component.disabled,
+                emoji: component.emoji,
+                label: component.label,
+                max_length: component.maxLength,
+                max_values: component.maxValues,
+                min_length: component.minLength,
+                min_values: component.minValues,
+                options: component.options,
+                placeholder: component.placeholder,
+                required: component.required,
+                style: component.style,
+                type: component.type,
+                url: component.url,
+                value: component.value,
+              };
+            });
+          }
+        }
+
+        if (data.embed !== undefined) {
+          if (data.embed) {
+            if (data.embeds) {
+              data.embeds = [data.embed, ...data.embeds];
+            } else {
+              data.embeds = [data.embed];
             }
-            return {
-              components: component.components && component.components.map((child) => {
-                if ('toJSON' in child) {
-                  return child;
-                }
-                return {
-                  custom_id: child.customId,
-                  disabled: child.disabled,
-                  emoji: child.emoji,
-                  label: child.label,
-                  max_length: child.maxLength,
-                  max_values: child.maxValues,
-                  min_length: child.minLength,
-                  min_values: child.minValues,
-                  options: child.options,
-                  placeholder: child.placeholder,
-                  required: child.required,
-                  style: child.style,
-                  type: child.type,
-                  url: child.url,
-                  value: child.value,
-                };
-              }),
-              custom_id: component.customId,
-              disabled: component.disabled,
-              emoji: component.emoji,
-              label: component.label,
-              max_length: component.maxLength,
-              max_values: component.maxValues,
-              min_length: component.minLength,
-              min_values: component.minValues,
-              options: component.options,
-              placeholder: component.placeholder,
-              required: component.required,
-              style: component.style,
-              type: component.type,
-              url: component.url,
-              value: component.value,
-            };
+          } else if (!data.embeds) {
+            data.embeds = [];
+          }
+        }
+        if (data.embeds && data.embeds.length) {
+          body.data.embeds = data.embeds.map((embed) => {
+            if ('toJSON' in embed) {
+              return embed;
+            }
+            const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;
+            if (typeof(embed.author) === 'object') {
+              raw.author = {
+                name: embed.author.name,
+                url: embed.author.url,
+                icon_url: embed.author.iconUrl,
+              };
+            }
+            if (typeof(embed.footer) === 'object') {
+              raw.footer = {
+                text: embed.footer.text,
+                icon_url: embed.footer.iconUrl,
+              };
+            }
+            return raw;
           });
         }
-      }
 
-      if (data.embed !== undefined) {
-        if (data.embed) {
-          if (data.embeds) {
-            data.embeds = [data.embed, ...data.embeds];
-          } else {
-            data.embeds = [data.embed];
-          }
-        } else if (!data.embeds) {
-          data.embeds = [];
+        if (data.file) {
+          files.push(data.file);
         }
-      }
-      if (data.embeds && data.embeds.length) {
-        body.data.embeds = data.embeds.map((embed) => {
-          if ('toJSON' in embed) {
-            return embed;
+        if (data.files && data.files.length) {
+          for (let file of data.files) {
+            if (file.hasSpoiler) {
+              spoilerfy(file);
+            }
+            files.push(file);
           }
-          const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;
-          if (typeof(embed.author) === 'object') {
-            raw.author = {
-              name: embed.author.name,
-              url: embed.author.url,
-              icon_url: embed.author.iconUrl,
-            };
-          }
-          if (typeof(embed.footer) === 'object') {
-            raw.footer = {
-              text: embed.footer.text,
-              icon_url: embed.footer.iconUrl,
-            };
-          }
-          return raw;
-        });
-      }
-
-      if (data.file) {
-        files.push(data.file);
-      }
-      if (data.files && data.files.length) {
-        for (let file of data.files) {
-          if (file.hasSpoiler) {
+        }
+        if (data.hasSpoiler) {
+          for (let file of files) {
             spoilerfy(file);
           }
-          files.push(file);
-        }
-      }
-      if (data.hasSpoiler) {
-        for (let file of files) {
-          spoilerfy(file);
         }
       }
     }

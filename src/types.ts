@@ -163,13 +163,17 @@ export namespace RequestTypes {
     disabled?: boolean,
     emoji?: RawEmojiPartial,
     label?: string,
+    maxLength?: number,
     maxValues?: number,
+    minLength?: number,
     minValues?: number,
     options?: Array<CreateChannelMessageComponentSelectMenuOption>,
     placeholder?: string,
+    required?: boolean,
     style?: number,
     type: number,
     url?: string,
+    value?: string,
   }
 
   export interface CreateChannelMessageComponentSelectMenuOption {
@@ -313,7 +317,7 @@ export namespace RequestTypes {
   }
 
   export interface CreateInteractionResponse {
-    data?: CreateInteractionResponseInnerPayload,
+    data?: CreateInteractionResponseInnerPayload | toJSON<CreateInteractionResponseInnerPayloadData>,
     type: number,
   }
 
@@ -338,22 +342,24 @@ export namespace RequestTypes {
   }
 
   export interface CreateInteractionResponseData {
-    data?: {
-      allowed_mentions?: {
-        parse?: Array<string>,
-        roles?: Array<string>,
-        users?: Array<string>,
-      },
-      choices?: Array<{name: string, value: number | string}>,
-      components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
-      content?: string,
-      custom_id?: string,
-      embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
-      flags?: number,
-      title?: string,
-      tts?: boolean,
-    },
+    data?: CreateInteractionResponseInnerPayloadData | toJSON<CreateInteractionResponseInnerPayloadData>,
     type: number,
+  }
+
+  export interface CreateInteractionResponseInnerPayloadData {
+    allowed_mentions?: {
+      parse?: Array<string>,
+      roles?: Array<string>,
+      users?: Array<string>,
+    },
+    choices?: Array<{name: string, value: number | string}>,
+    components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
+    content?: string,
+    custom_id?: string,
+    embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
+    flags?: number,
+    title?: string,
+    tts?: boolean,
   }
 
   export interface CreateLobby {
