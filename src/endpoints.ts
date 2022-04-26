@@ -343,7 +343,7 @@ export const RoutesQuery = Object.freeze({
   },
 });
 
-export const Api = Object.freeze({
+export const Api = {
   URL_STABLE: Urls.STABLE.slice(0, -1),
   URL_CANARY: Urls.CANARY.slice(0, -1),
   PATH: `/api/v${ApiVersion}`,
@@ -717,6 +717,12 @@ export const Api = Object.freeze({
     '/guilds/:guildId/roles',
   GUILD_ROLE:
     '/guilds/:guildId/roles/:roleId',
+  GUILD_SCHEDULED_EVENTS:
+    '/guilds/:guildId/scheduled-events',
+  GUILD_SCHEDULED_EVENT:
+    '/guilds/:guildId/scheduled-events/:scheduledEventId',
+  GUILD_SCHEDULED_EVENT_USERS:
+    '/guilds/:guildId/scheduled-events/:scheduledEventId/users',
   GUILD_SEARCH:
     '/guilds/:guildId/messages/search',
   GUILD_SPLASH:
@@ -1167,4 +1173,4 @@ export const Api = Object.freeze({
     '/webhooks/:webhookId/:webhookToken/github',
   WEBHOOK_TOKEN_SLACK:
     '/webhooks/:webhookId/:webhookToken/slack',
-});
+};

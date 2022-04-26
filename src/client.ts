@@ -27,7 +27,7 @@ import {
 } from './constants';
 import { Api } from './endpoints';
 import { RestRequest } from './request';
-import { spoilerfy } from './utils';
+import { CamelCaseToSnakeCase, spoilerfy } from './utils';
 
 import { RequestTypes, RestClientEvents } from './types';
 
@@ -87,10 +87,11 @@ export class Client extends EventSpewer {
       errorOnRatelimit: false,
     }, options);
 
-    options.headers = createHeaders(options.headers);
-    if (!options.headers.has(HTTPHeaders.USER_AGENT)) {
-      options.headers.set(HTTPHeaders.USER_AGENT, defaultHeaders[HTTPHeaders.USER_AGENT]);
+    const headers = createHeaders(options.headers);
+    if (!headers.has(HTTPHeaders.USER_AGENT)) {
+      headers.set(HTTPHeaders.USER_AGENT, defaultHeaders[HTTPHeaders.USER_AGENT]);
     }
+    options.headers = headers;
     this.restClient = new RestClient(options);
 
     this.buckets = new BucketCollection({expire: options.bucketsExpireIn});
@@ -691,19 +692,7 @@ export class Client extends EventSpewer {
     commands: Array<RequestTypes.CreateApplicationCommand | RequestTypes.toJSON<RequestTypes.CreateApplicationCommandData>>,
   ): Promise<any> {
     const params = {applicationId};
-    const body = commands.map((options) => {
-      if ('toJSON' in options) {
-        return options;
-      }
-      return {
-        default_permission: options.defaultPermission,
-        description: options.description,
-        id: options.id,
-        name: options.name,
-        options: options.options,
-        type: options.type,
-      };
-    });
+    const body = commands.map((options) => CamelCaseToSnakeCase.ApplicationCommand(options));
     if (this.clientsideChecks) {
 
     }
@@ -1155,7 +1144,7 @@ export class Client extends EventSpewer {
       icon: bufferToBase64(options.icon),
       mentionable: options.mentionable,
       name: options.name,
-      permissions: options.permissions,
+      permissions: options.permissions && String(options.permissions),
       unicode_emoji: options.unicodeEmoji,
     };
     const params = {guildId};
@@ -1262,123 +1251,20 @@ export class Client extends EventSpewer {
         body.data = options.data;
       } else {
         const { data } = options;
-        body.data = {
+
+        const [ bodyMessageCreate, filesMessageCreate ] = CamelCaseToSnakeCase.MessageCreate(options.data);
+        Object.assign(body, bodyMessageCreate);
+        body.data = Object.assign({
           choices: data.choices,
           content: data.content,
           custom_id: data.customId,
           flags: data.flags,
           title: data.title,
           tts: data.tts,
-        };
+        }, bodyMessageCreate);
 
-        if (data.allowedMentions && typeof(data.allowedMentions) === 'object') {
-          body.data.allowed_mentions = {
-            parse: data.allowedMentions.parse,
-            roles: data.allowedMentions.roles,
-            users: data.allowedMentions.users,
-          };
-        }
-
-        if (data.components && typeof(data.components) === 'object') {
-          if ('toJSON' in data.components) {
-            body.data.components = data.components;
-          } else {
-            body.data.components = data.components.map((component) => {
-              if ('toJSON' in component) {
-                return component;
-              }
-              return {
-                components: component.components && component.components.map((child) => {
-                  if ('toJSON' in child) {
-                    return child;
-                  }
-                  return {
-                    custom_id: child.customId,
-                    disabled: child.disabled,
-                    emoji: child.emoji,
-                    label: child.label,
-                    max_length: child.maxLength,
-                    max_values: child.maxValues,
-                    min_length: child.minLength,
-                    min_values: child.minValues,
-                    options: child.options,
-                    placeholder: child.placeholder,
-                    required: child.required,
-                    style: child.style,
-                    type: child.type,
-                    url: child.url,
-                    value: child.value,
-                  };
-                }),
-                custom_id: component.customId,
-                disabled: component.disabled,
-                emoji: component.emoji,
-                label: component.label,
-                max_length: component.maxLength,
-                max_values: component.maxValues,
-                min_length: component.minLength,
-                min_values: component.minValues,
-                options: component.options,
-                placeholder: component.placeholder,
-                required: component.required,
-                style: component.style,
-                type: component.type,
-                url: component.url,
-                value: component.value,
-              };
-            });
-          }
-        }
-
-        if (data.embed !== undefined) {
-          if (data.embed) {
-            if (data.embeds) {
-              data.embeds = [data.embed, ...data.embeds];
-            } else {
-              data.embeds = [data.embed];
-            }
-          } else if (!data.embeds) {
-            data.embeds = [];
-          }
-        }
-        if (data.embeds && data.embeds.length) {
-          body.data.embeds = data.embeds.map((embed) => {
-            if ('toJSON' in embed) {
-              return embed;
-            }
-            const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;
-            if (typeof(embed.author) === 'object') {
-              raw.author = {
-                name: embed.author.name,
-                url: embed.author.url,
-                icon_url: embed.author.iconUrl,
-              };
-            }
-            if (typeof(embed.footer) === 'object') {
-              raw.footer = {
-                text: embed.footer.text,
-                icon_url: embed.footer.iconUrl,
-              };
-            }
-            return raw;
-          });
-        }
-
-        if (data.file) {
-          files.push(data.file);
-        }
-        if (data.files && data.files.length) {
-          for (let file of data.files) {
-            if (file.hasSpoiler) {
-              spoilerfy(file);
-            }
-            files.push(file);
-          }
-        }
-        if (data.hasSpoiler) {
-          for (let file of files) {
-            spoilerfy(file);
-          }
+        for (let file of filesMessageCreate) {
+          files.push(file);
         }
       }
     }
@@ -1471,140 +1357,8 @@ export class Client extends EventSpewer {
     if (typeof(options) === 'string') {
       options = {content: options};
     }
-    const body: RequestTypes.CreateMessageData = {
-      application_id: options.applicationId,
-      content: options.content,
-      nonce: options.nonce,
-      sticker_ids: options.stickerIds,
-      tts: options.tts,
-    };
-
-    if (options.activity && typeof(options.activity) === 'object') {
-      body.activity = {
-        party_id: options.activity.partyId,
-        session_id: options.activity.sessionId,
-        type: options.activity.type,
-      };
-    }
-    if (options.allowedMentions && typeof(options.allowedMentions) === 'object') {
-      body.allowed_mentions = {
-        parse: options.allowedMentions.parse,
-        replied_user: options.allowedMentions.repliedUser,
-        roles: options.allowedMentions.roles,
-        users: options.allowedMentions.users,
-      };
-    }
-    if (options.components && typeof(options.components) === 'object') {
-      if ('toJSON' in options.components) {
-        body.components = options.components;
-      } else {
-        body.components = options.components.map((component) => {
-          if ('toJSON' in component) {
-            return component;
-          }
-          return {
-            components: component.components && component.components.map((child) => {
-              if ('toJSON' in child) {
-                return child;
-              }
-              return {
-                custom_id: child.customId,
-                disabled: child.disabled,
-                emoji: child.emoji,
-                label: child.label,
-                max_length: child.maxLength,
-                max_values: child.maxValues,
-                min_length: child.minLength,
-                min_values: child.minValues,
-                options: child.options,
-                placeholder: child.placeholder,
-                required: child.required,
-                style: child.style,
-                type: child.type,
-                url: child.url,
-                value: child.value,
-              };
-            }),
-            custom_id: component.customId,
-            disabled: component.disabled,
-            emoji: component.emoji,
-            label: component.label,
-            max_length: component.maxLength,
-            max_values: component.maxValues,
-            min_length: component.minLength,
-            min_values: component.minValues,
-            options: component.options,
-            placeholder: component.placeholder,
-            required: component.required,
-            style: component.style,
-            type: component.type,
-            url: component.url,
-            value: component.value,
-          };
-        });
-      }
-    }
-    if (options.embed !== undefined) {
-      if (options.embed) {
-        if (options.embeds) {
-          options.embeds = [options.embed, ...options.embeds];
-        } else {
-          options.embeds = [options.embed];
-        }
-      } else if (!options.embeds) {
-        options.embeds = [];
-      }
-    }
-    if (options.embeds && options.embeds.length) {
-      body.embeds = options.embeds.map((embed) => {
-        if ('toJSON' in embed) {
-          return embed;
-        }
-        const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;
-        if (typeof(embed.author) === 'object') {
-          raw.author = {
-            name: embed.author.name,
-            url: embed.author.url,
-            icon_url: embed.author.iconUrl,
-          };
-        }
-        if (typeof(embed.footer) === 'object') {
-          raw.footer = {
-            text: embed.footer.text,
-            icon_url: embed.footer.iconUrl,
-          };
-        }
-        return raw;
-      });
-    }
-    if (options.messageReference && typeof(options.messageReference) === 'object') {
-      body.message_reference = {
-        channel_id: options.messageReference.channelId,
-        fail_if_not_exists: options.messageReference.failIfNotExists,
-        guild_id: options.messageReference.guildId,
-        message_id: options.messageReference.messageId,
-      };
-    }
-
-    const files: Array<RequestTypes.File> = [];
-    if (options.file) {
-      files.push(options.file);
-    }
-    if (options.files && options.files.length) {
-      for (let file of options.files) {
-        if (file.hasSpoiler) {
-          spoilerfy(file);
-        }
-        files.push(file);
-      }
-    }
-    if (options.hasSpoiler) {
-      for (let file of files) {
-        spoilerfy(file);
-      }
-    }
-
     const params = {channelId};
+    const [ body, files ] = CamelCaseToSnakeCase.MessageCreate(options);
     if (this.clientsideChecks) {
       verifyData(params, {
         channelId: {required: true, type: VerifyTypes.SNOWFLAKE},
@@ -1642,7 +1396,7 @@ export class Client extends EventSpewer {
       !('content' in body) &&
       !('embed' in body) &&
       !('sticker_ids' in body) &&
-      !files.length
+      !(files.length)
     ) {
       throw new Error('Cannot send an empty message.');
     }
@@ -2065,6 +1819,23 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.DELETE,
         path: Api.GUILD_ROLE,
+        params,
+      },
+    });
+  }
+
+  async deleteGuildScheduledEvent(
+    guildId: string,
+    scheduledEventId: string,
+  ): Promise<any> {
+    const params = {guildId, scheduledEventId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.GUILD_SCHEDULED_EVENT,
         params,
       },
     });
@@ -2571,7 +2342,9 @@ export class Client extends EventSpewer {
       archived: options.archived,
       auto_archive_duration: options.autoArchiveDuration,
       bitrate: options.bitrate,
+      default_auto_archive_duration: options.defaultAutoArchiveDuration,
       icon: bufferToBase64(options.icon),
+      invitable: options.invitable,
       locked: options.locked,
       name: options.name,
       nsfw: options.nsfw,
@@ -2919,7 +2692,7 @@ export class Client extends EventSpewer {
       icon: bufferToBase64(options.icon),
       mentionable: options.mentionable,
       name: options.name,
-      permissions: options.permissions,
+      permissions: options.permissions && String(options.permissions),
       unicode_emoji: options.unicodeEmoji,
     };
     const params = {guildId, roleId};
@@ -3188,122 +2961,8 @@ export class Client extends EventSpewer {
     if (typeof(options) === 'string') {
       options = {content: options};
     }
-    const body: RequestTypes.EditMessageData = {
-      attachments: options.attachments,
-      content: options.content,
-      flags: options.flags,
-    };
     const params = {channelId, messageId};
-
-    if (options.allowedMentions && typeof(options.allowedMentions) === 'object') {
-      body.allowed_mentions = {
-        parse: options.allowedMentions.parse,
-        replied_user: options.allowedMentions.repliedUser,
-        roles: options.allowedMentions.roles,
-        users: options.allowedMentions.users,
-      };
-    }
-    if (options.components && typeof(options.components) === 'object') {
-      if ('toJSON' in options.components) {
-        body.components = options.components;
-      } else {
-        body.components = options.components.map((component) => {
-          if ('toJSON' in component) {
-            return component;
-          }
-          return {
-            components: component.components && component.components.map((child) => {
-              if ('toJSON' in child) {
-                return child;
-              }
-              return {
-                custom_id: child.customId,
-                disabled: child.disabled,
-                emoji: child.emoji,
-                label: child.label,
-                max_length: child.maxLength,
-                max_values: child.maxValues,
-                min_length: child.minLength,
-                min_values: child.minValues,
-                options: child.options,
-                placeholder: child.placeholder,
-                required: child.required,
-                style: child.style,
-                type: child.type,
-                url: child.url,
-                value: child.value,
-              };
-            }),
-            custom_id: component.customId,
-            disabled: component.disabled,
-            emoji: component.emoji,
-            label: component.label,
-            max_length: component.maxLength,
-            max_values: component.maxValues,
-            min_length: component.minLength,
-            min_values: component.minValues,
-            options: component.options,
-            placeholder: component.placeholder,
-            required: component.required,
-            style: component.style,
-            type: component.type,
-            url: component.url,
-            value: component.value,
-          };
-        });
-      }
-    }
-    if (options.embed !== undefined) {
-      if (options.embed) {
-        if (options.embeds) {
-          options.embeds = [options.embed, ...options.embeds];
-        } else {
-          options.embeds = [options.embed];
-        }
-      } else if (!options.embeds) {
-        options.embeds = [];
-      }
-    }
-    if (options.embeds) {
-      body.embeds = options.embeds.map((embed) => {
-        if ('toJSON' in embed) {
-          return embed;
-        }
-        const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;
-        if (typeof(embed.author) === 'object') {
-          raw.author = {
-            name: embed.author.name,
-            url: embed.author.url,
-            icon_url: embed.author.iconUrl,
-          };
-        }
-        if (typeof(embed.footer) === 'object') {
-          raw.footer = {
-            text: embed.footer.text,
-            icon_url: embed.footer.iconUrl,
-          };
-        }
-        return raw;
-      });
-    }
-
-    const files: Array<RequestTypes.File> = [];
-    if (options.file) {
-      files.push(options.file);
-    }
-    if (options.files && options.files.length) {
-      for (let file of options.files) {
-        if (file.hasSpoiler) {
-          spoilerfy(file);
-        }
-        files.push(file);
-      }
-    }
-    if (options.hasSpoiler) {
-      for (let file of files) {
-        spoilerfy(file);
-      }
-    }
+    const [ body, files ] = CamelCaseToSnakeCase.MessageCreate(options);
 
     if (this.clientsideChecks) {
 
@@ -3473,11 +3132,10 @@ export class Client extends EventSpewer {
   async editWebhookToken(
     webhookId: string,
     webhookToken: string,
-    options: RequestTypes.EditWebhook = {},
+    options: RequestTypes.EditWebhookToken = {},
   ): Promise<any> {
     const body = {
       avatar: bufferToBase64(options.avatar),
-      channel_id: options.channelId,
       name: options.name,
     };
     const params = {webhookId, webhookToken};
@@ -3486,9 +3144,6 @@ export class Client extends EventSpewer {
     }
     return this.request({
       body,
-      headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
-      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.WEBHOOK_TOKEN,
@@ -3507,120 +3162,8 @@ export class Client extends EventSpewer {
     if (typeof(options) === 'string') {
       options = {content: options};
     }
-    const body: RequestTypes.EditWebhookTokenMessageData = {
-      attachments: options.attachments,
-      content: options.content,
-    };
     const params = {webhookId, webhookToken, messageId};
-    if (options.allowedMentions && typeof(options.allowedMentions) === 'object') {
-      body.allowed_mentions = {
-        parse: options.allowedMentions.parse,
-        roles: options.allowedMentions.roles,
-        users: options.allowedMentions.users,
-      };
-    }
-    if (options.components && typeof(options.components) === 'object') {
-      if ('toJSON' in options.components) {
-        body.components = options.components;
-      } else {
-        body.components = options.components.map((component) => {
-          if ('toJSON' in component) {
-            return component;
-          }
-          return {
-            components: component.components && component.components.map((child) => {
-              if ('toJSON' in child) {
-                return child;
-              }
-              return {
-                custom_id: child.customId,
-                disabled: child.disabled,
-                emoji: child.emoji,
-                label: child.label,
-                max_length: child.maxLength,
-                max_values: child.maxValues,
-                min_length: child.minLength,
-                min_values: child.minValues,
-                options: child.options,
-                placeholder: child.placeholder,
-                required: child.required,
-                style: child.style,
-                type: child.type,
-                url: child.url,
-                value: child.value,
-              };
-            }),
-            custom_id: component.customId,
-            disabled: component.disabled,
-            emoji: component.emoji,
-            label: component.label,
-            max_length: component.maxLength,
-            max_values: component.maxValues,
-            min_length: component.minLength,
-            min_values: component.minValues,
-            options: component.options,
-            placeholder: component.placeholder,
-            required: component.required,
-            style: component.style,
-            type: component.type,
-            url: component.url,
-            value: component.value,
-          };
-        });
-      }
-    }
-    if (options.embed !== undefined) {
-      if (options.embed) {
-        if (options.embeds) {
-          options.embeds = [options.embed, ...options.embeds];
-        } else {
-          options.embeds = [options.embed];
-        }
-      } else if (!options.embeds) {
-        options.embeds = [];
-      }
-    }
-    if (options.embeds) {
-      body.embeds = options.embeds.map((embed) => {
-        if ('toJSON' in embed) {
-          return embed;
-        }
-        const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;
-        if (typeof(embed.author) === 'object') {
-          raw.author = {
-            name: embed.author.name,
-            url: embed.author.url,
-            icon_url: embed.author.iconUrl,
-          };
-        }
-        if (typeof(embed.footer) === 'object') {
-          raw.footer = {
-            text: embed.footer.text,
-            icon_url: embed.footer.iconUrl,
-          };
-        }
-        return raw;
-      });
-    }
-
-    const files: Array<RequestTypes.File> = [];
-    if (options.file) {
-      files.push(options.file);
-    }
-    if (options.files && options.files.length) {
-      for (let file of options.files) {
-        if (file.hasSpoiler) {
-          spoilerfy(file);
-        }
-        files.push(file);
-      }
-    }
-    if (options.hasSpoiler) {
-      for (let file of files) {
-        spoilerfy(file);
-      }
-    }
-
+    const [ body, files ] = CamelCaseToSnakeCase.MessageCreate(options);
     if (this.clientsideChecks) {
       // verify body
       // verify files?
@@ -3631,7 +3174,9 @@ export class Client extends EventSpewer {
       });
       if (
         !('content' in body) &&
-        !('embeds' in body)
+        !('embed' in body) &&
+        !('sticker_ids' in body) &&
+        !(files.length)
       ) {
         throw new Error('Cannot send an empty message.');
       }
@@ -3700,7 +3245,6 @@ export class Client extends EventSpewer {
       tts: options.tts,
       username: options.username,
     };
-    const files: Array<RequestTypes.File> = [];
     const params = {webhookId, webhookToken};
     const query = {
       thread_id: options.threadId,
@@ -3726,117 +3270,8 @@ export class Client extends EventSpewer {
       }
     }
 
-    if (options.allowedMentions && typeof(options.allowedMentions) === 'object') {
-      body.allowed_mentions = {
-        parse: options.allowedMentions.parse,
-        roles: options.allowedMentions.roles,
-        users: options.allowedMentions.users,
-      };
-    }
-    if (options.components && typeof(options.components) === 'object') {
-      if ('toJSON' in options.components) {
-        body.components = options.components;
-      } else {
-        body.components = options.components.map((component) => {
-          if ('toJSON' in component) {
-            return component;
-          }
-          return {
-            components: component.components && component.components.map((child) => {
-              if ('toJSON' in child) {
-                return child;
-              }
-              return {
-                custom_id: child.customId,
-                disabled: child.disabled,
-                emoji: child.emoji,
-                label: child.label,
-                max_length: child.maxLength,
-                max_values: child.maxValues,
-                min_length: child.minLength,
-                min_values: child.minValues,
-                options: child.options,
-                placeholder: child.placeholder,
-                required: child.required,
-                style: child.style,
-                type: child.type,
-                url: child.url,
-                value: child.value,
-              };
-            }),
-            custom_id: component.customId,
-            disabled: component.disabled,
-            emoji: component.emoji,
-            label: component.label,
-            max_length: component.maxLength,
-            max_values: component.maxValues,
-            min_length: component.minLength,
-            min_values: component.minValues,
-            options: component.options,
-            placeholder: component.placeholder,
-            required: component.required,
-            style: component.style,
-            type: component.type,
-            url: component.url,
-            value: component.value,
-          };
-        });
-      }
-    }
-    if (options.embed !== undefined) {
-      if (options.embed) {
-        if (options.embeds) {
-          options.embeds = [options.embed, ...options.embeds];
-        } else {
-          options.embeds = [options.embed];
-        }
-      } else if (!options.embeds) {
-        options.embeds = [];
-      }
-    }
-    if (options.embeds) {
-      body.embeds = options.embeds.map((embed) => {
-        if ('toJSON' in embed) {
-          return embed;
-        }
-        const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;
-        if (typeof(embed.author) === 'object') {
-          raw.author = {
-            name: embed.author.name,
-            url: embed.author.url,
-            icon_url: embed.author.iconUrl,
-          };
-        }
-        if (typeof(embed.footer) === 'object') {
-          raw.footer = {
-            text: embed.footer.text,
-            icon_url: embed.footer.iconUrl,
-          };
-        }
-        return raw;
-      });
-    }
-
-    if (options.file) {
-      files.push(options.file);
-    }
-    if (options.files && options.files.length) {
-      for (let file of options.files) {
-        if (file.hasSpoiler && file.filename && !file.filename.startsWith(SPOILER_ATTACHMENT_PREFIX)) {
-          file.filename = `${SPOILER_ATTACHMENT_PREFIX}${file.filename}`;
-        }
-        files.push(file);
-      }
-    }
-
-    if (options.hasSpoiler) {
-      for (let file of files) {
-        if (file.filename && !file.filename.startsWith(SPOILER_ATTACHMENT_PREFIX)) {
-          file.filename = `${SPOILER_ATTACHMENT_PREFIX}${file.filename}`;
-        }
-      }
-    }
-
+    const [ bodyMessageCreate, files ] = CamelCaseToSnakeCase.MessageCreate(options);
+    Object.assign(body, bodyMessageCreate);
     if (this.clientsideChecks) {
       // verify body
       // verify files?
@@ -3846,7 +3281,8 @@ export class Client extends EventSpewer {
       });
       if (
         !('content' in body) &&
-        !('embeds' in body) &&
+        !('embed' in body) &&
+        !('sticker_ids' in body) &&
         !(files.length)
       ) {
         throw new Error('Cannot send an empty message.');
@@ -4424,12 +3860,34 @@ export class Client extends EventSpewer {
 
   async fetchGuildBans(
     guildId: string,
+    options: RequestTypes.FetchGuildBans = {},
   ): Promise<any> {
     const params = {guildId};
+    const query = {
+      after: options.after,
+      around: options.around,
+      before: options.before,
+      limit: options.limit,
+    };
+    if (this.clientsideChecks) {
+      if (query.limit !== undefined) {
+        if (query.limit < 1 || 1000 < query.limit) {
+          throw new Error('Limit has to be between 1 and 1000');
+        }
+      }
+      if (
+        (query.after && query.around) ||
+        (query.after && query.before) ||
+        (query.around && query.before)
+      ) {
+        throw new Error('Choose between around, before, or after, cannot have more than one.');
+      }
+    }
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      query,
       route: {
         method: HTTPMethods.GET,
         path: Api.GUILD_BANS,
@@ -4682,6 +4140,77 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchGuildScheduledEvent(
+    guildId: string,
+    scheduledEventId: string,
+  ): Promise<any> {
+    const params = {guildId, scheduledEventId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_SCHEDULED_EVENT,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildScheduledEventUsers(
+    guildId: string,
+    scheduledEventId: string,
+    options: RequestTypes.FetchGuildScheduledEventUsers = {},
+  ): Promise<any> {
+    const params = {guildId, scheduledEventId};
+    const query = {
+      after: options.after,
+      before: options.before,
+      limit: options.limit,
+      with_members: options.withMember,
+    };
+    if (this.clientsideChecks) {
+      if (this.clientsideChecks) {
+        if (query.limit !== undefined) {
+          if (query.limit < 1 || 100 < query.limit) {
+            throw new Error('Limit has to be between 1 and 100');
+          }
+        }
+        if (query.after && query.before) {
+          throw new Error('Choose between after or before, cannot have more than one.');
+        }
+      }
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_SCHEDULED_EVENT_USERS,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildScheduledEvents(
+    guildId: string,
+    options: RequestTypes.FetchGuildScheduledEvents = {},
+  ): Promise<any> {
+    const params = {guildId};
+    const query = {
+      with_user_counts: options.withUserCount,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_SCHEDULED_EVENTS,
+        params,
+      },
+    });
+  }
+
   async fetchGuildSticker(
     guildId: string,
     stickerId: string,
@@ -4822,6 +4351,7 @@ export class Client extends EventSpewer {
   ): Promise<any> {
     const params = {code};
     const query = {
+      guild_scheduled_event_id: options.guildScheduledEventId,
       with_counts: options.withCounts,
       with_expiration: options.withExpiration,
     };
@@ -5863,7 +5393,7 @@ export class Client extends EventSpewer {
       authorize: options.authorize,
       bot_guild_id: options.botGuildId,
       captcha_key: options.captchaKey,
-      permissions: options.permissions,
+      permissions: options.permissions && String(options.permissions),
       webhook_channel_id: options.webhookChannelId,
       webhook_guild_id: options.webhookGuildId,
     };

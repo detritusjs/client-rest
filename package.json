@@ -7,15 +7,13 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "detritus-rest": "^0.7.0",
+    "detritus-rest": "^0.9.0-beta.1",
     "detritus-utils": "^0.4.0"
   },
-  "description": "A minimalistic TypeScript library to interact with all, or most, of Discord's rest endpoints",
+  "description": "A minimalistic TypeScript library to interact with all, or most, of Discord's rest endpoints, requires 16.5 <= Node",
   "devDependencies": {
-    "@types/node": "^14.17.1",
-    "@types/node-fetch": "^2.5.10",
-    "typedoc": "^0.20.36",
-    "typescript": "^4.2.4"
+    "@types/node": "^17.0.27",
+    "typedoc": "^0.22.15"
   },
   "homepage": "https://github.com/detritusjs/client-rest#readme",
   "keywords": [
@@ -25,7 +23,6 @@
   "license": "MIT",
   "main": "lib/index.js",
   "name": "detritus-client-rest",
-  "peerDependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/detritusjs/client-rest.git"
@@ -37,5 +34,5 @@
     "typedoc": "typedoc"
   },
   "types": "lib/index.d.ts",
-  "version": "0.10.6-beta.2"
+  "version": "0.11.0-beta.0"
 }

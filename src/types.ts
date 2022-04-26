@@ -17,6 +17,7 @@ export namespace RestClientEvents {
 
 export namespace RequestTypes {
   export interface File extends RequestFile {
+    description?: string,
     hasSpoiler?: boolean,
   }
 
@@ -104,27 +105,51 @@ export namespace RequestTypes {
   export interface CreateApplicationCommand {
     defaultPermission?: boolean,
     description: string,
+    descriptionLocalizations?: Record<string, string | undefined>,
     id?: string,
     name: string,
-    options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandOption>>,
+    nameLocalizations?: Record<string, string | undefined>,
+    options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandOptionData>>,
     type?: number,
   }
 
   export interface CreateApplicationCommandData {
     default_permission?: boolean,
     description?: string,
+    description_localizations?: Record<string, string | undefined>,
     id?: string,
     name: string,
-    options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandOption>>
+    name_localizations?: Record<string, string | undefined>,
+    options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandOptionData>>
     type?: number,
   }
 
   export interface CreateApplicationCommandOption {
     autocomplete?: boolean,
-    choices?: Array<{name: string, value: string | number}>,
+    channelTypes?: Array<number>,
+    choices?: Array<{name: string, nameLocalizations?: Record<string, string | undefined>, value: string | number}>,
     description?: string,
+    descriptionLocalizations?: Record<string, string | undefined>,
+    maxValue?: number | bigint | string,
+    minValue?: number | bigint | string,
     name: string,
-    options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandOption>>,
+    nameLocalizations?: Record<string, string | undefined>,
+    options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandOptionData>>,
+    required?: boolean,
+    type: number,
+  }
+
+  export interface CreateApplicationCommandOptionData {
+    autocomplete?: boolean,
+    channel_types?: Array<number>,
+    choices?: Array<{name: string, name_localizations?: Record<string, string | undefined>, value: string | number}>,
+    description?: string,
+    description_localizations?: Record<string, string | undefined>,
+    max_value?: number | bigint | string,
+    min_value?: number | bigint | string,
+    name: string,
+    name_localizations?: Record<string, string | undefined>,
+    options?: Array<CreateApplicationCommandOptionData | toJSON<CreateApplicationCommandOptionData>>,
     required?: boolean,
     type: number,
   }
@@ -298,7 +323,7 @@ export namespace RequestTypes {
     icon?: Buffer | string | null,
     mentionable?: boolean,
     name?: string,
-    permissions?: number,
+    permissions?: bigint | number | string,
     reason?: string,
     unicodeEmoji?: string,
   }
@@ -327,6 +352,7 @@ export namespace RequestTypes {
       roles?: Array<string>,
       users?: Array<string>,
     },
+    attachments?: Array<{description?: string, filename?: string, id: number | string}>,
     choices?: Array<{name: string, value: number | string}>,
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
@@ -352,6 +378,7 @@ export namespace RequestTypes {
       roles?: Array<string>,
       users?: Array<string>,
     },
+    attachments?: Array<{description?: string, filename?: string, id: number | string}>,
     choices?: Array<{name: string, value: number | string}>,
     components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
@@ -403,6 +430,7 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     applicationId?: string,
+    attachments?: Array<{description?: string, filename?: string, id: number | string}>,
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
     embed?: CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed> | null,
@@ -434,6 +462,7 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     application_id?: string,
+    attachments?: Array<{description?: string, filename?: string, id: number | string}>,
     components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
     embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
@@ -574,7 +603,9 @@ export namespace RequestTypes {
     archived?: boolean,
     autoArchiveDuration?: number,
     bitrate?: number,
+    defaultAutoArchiveDuration?: number,
     icon?: Buffer | string | null,
+    invitable?: boolean,
     locked?: boolean,
     name?: string,
     nsfw?: boolean,
@@ -692,7 +723,7 @@ export namespace RequestTypes {
     icon?: Buffer | string | null,
     mentionable?: boolean,
     name?: string,
-    permissions?: number,
+    permissions?: bigint | number | string,
     reason?: string,
     unicodeEmoji?: string,
   }
@@ -782,7 +813,7 @@ export namespace RequestTypes {
       roles?: Array<string>,
       users?: Array<string>,
     },
-    attachments?: Array<{id: string}>,
+    attachments?: Array<{description?: string, filename?: string, id: number | string}>,
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
     embed?: CreateChannelMessageEmbed | toJSON<CreateChannelMessageEmbed> | null,
@@ -800,7 +831,7 @@ export namespace RequestTypes {
       roles?: Array<string>,
       users?: Array<string>,
     },
-    attachments?: Array<{id: string}>,
+    attachments?: Array<{description?: string, filename?: string, id: number | string}>,
     components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
     embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
@@ -836,13 +867,18 @@ export namespace RequestTypes {
     reason?: string,
   }
 
+  export interface EditWebhookToken {
+    avatar?: Buffer | string | null,
+    name?: string,
+  }
+
   export interface EditWebhookTokenMessage {
     allowedMentions?: {
       parse?: Array<string>,
       roles?: Array<string>,
       users?: Array<string>,
     },
-    attachments?: Array<{id: string}>,
+    attachments?: Array<{description?: string, filename?: string, id: number | string}>,
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
     embed?: CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed> | null,
@@ -858,7 +894,7 @@ export namespace RequestTypes {
       roles?: Array<string>,
       users?: Array<string>,
     },
-    attachments?: Array<{id: string}>,
+    attachments?: Array<{description?: string, filename?: string, id: number | string}>,
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
     embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
@@ -932,6 +968,13 @@ export namespace RequestTypes {
     userId?: string,
   }
 
+  export interface FetchGuildBans {
+    after?: string,
+    around?: string,
+    before?: string,
+    limit?: number,
+  }
+
   export interface FetchGuildMembers {
     after?: string,
     limit?: number,
@@ -947,11 +990,23 @@ export namespace RequestTypes {
     includeRoles?: Array<string>,
   }
 
+  export interface FetchGuildScheduledEvents {
+    withUserCount?: number,
+  }
+
+  export interface FetchGuildScheduledEventUsers {
+    after?: string,
+    before?: string,
+    limit?: number,
+    withMember?: number,
+  }
+
   export interface FetchGuildWidgetPng {
     style?: string,
   }
 
   export interface FetchInvite {
+    guildScheduledEventId?: string,
     withCounts?: boolean,
     withExpiration?: boolean,
   }
@@ -1067,7 +1122,7 @@ export namespace RequestTypes {
     botGuildId?: string,
     captchaKey?: string,
     clientId?: string,
-    permissions?: number,
+    permissions?: bigint | number | string,
     prompt?: string,
     redirectUri?: string,
     responseType?: string,
