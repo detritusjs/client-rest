@@ -712,19 +712,7 @@ export class Client extends EventSpewer {
     commands: Array<RequestTypes.CreateApplicationGuildCommand | RequestTypes.toJSON<RequestTypes.CreateApplicationGuildCommandData>>,
   ): Promise<any> {
     const params = {applicationId, guildId};
-    const body = commands.map((options) => {
-      if ('toJSON' in options) {
-        return options;
-      }
-      return {
-        default_permission: options.defaultPermission,
-        description: options.description,
-        id: options.id,
-        name: options.name,
-        options: options.options,
-        type: options.type,
-      };
-    });
+    const body = commands.map((options) => CamelCaseToSnakeCase.ApplicationCommand(options));
     if (this.clientsideChecks) {
 
     }
@@ -747,13 +735,7 @@ export class Client extends EventSpewer {
     const body = permissions.map((command) => {
       return {
         id: command.id,
-        permissions: command.permissions.map((permission) => {
-          return {
-            id: permission.id,
-            permission: permission.permission,
-            type: permission.type,
-          };
-        }),
+        permissions: command.permissions.map((permission) => CamelCaseToSnakeCase.ApplicationCommandPermission(permission)),
       };
     });
     if (this.clientsideChecks) {
@@ -798,18 +780,7 @@ export class Client extends EventSpewer {
     options: RequestTypes.CreateApplicationCommand | RequestTypes.toJSON<RequestTypes.CreateApplicationCommandData>,
   ): Promise<any> {
     const params = {applicationId};
-    let body: RequestTypes.CreateApplicationCommandData | RequestTypes.toJSON<RequestTypes.CreateApplicationCommandData>;
-    if ('toJSON' in options) {
-      body = options;
-    } else {
-      body = {
-        default_permission: options.defaultPermission,
-        description: options.description,
-        name: options.name,
-        options: options.options,
-        type: options.type,
-      };
-    }
+    const body = CamelCaseToSnakeCase.ApplicationCommand(options);
     if (this.clientsideChecks) {
 
     }
@@ -829,18 +800,7 @@ export class Client extends EventSpewer {
     options: RequestTypes.CreateApplicationGuildCommand | RequestTypes.toJSON<RequestTypes.CreateApplicationGuildCommandData>,
   ): Promise<any> {
     const params = {applicationId, guildId};
-    let body: RequestTypes.CreateApplicationGuildCommandData | RequestTypes.toJSON<RequestTypes.CreateApplicationGuildCommandData>;
-    if ('toJSON' in options) {
-      body = options;
-    } else {
-      body = {
-        default_permission: options.defaultPermission,
-        description: options.description,
-        name: options.name,
-        options: options.options,
-        type: options.type,
-      };
-    }
+    const body = CamelCaseToSnakeCase.ApplicationCommand(options);
     if (this.clientsideChecks) {
 
     }
@@ -2230,18 +2190,8 @@ export class Client extends EventSpewer {
     commandId: string,
     options: RequestTypes.EditApplicationCommand | RequestTypes.toJSON<RequestTypes.EditApplicationCommandData> = {},
   ): Promise<any> {
-    let body: RequestTypes.EditApplicationCommandData | RequestTypes.toJSON<RequestTypes.EditApplicationCommandData>;
-    if ('toJSON' in options) {
-      body = options;
-    } else {
-      body = {
-        default_permission: options.defaultPermission,
-        description: options.description,
-        name: options.name,
-        options: options.options,
-      };
-    }
     const params = {applicationId, commandId};
+    const body = CamelCaseToSnakeCase.ApplicationCommand(options as any);
     if (this.clientsideChecks) {
 
     }
@@ -2261,18 +2211,8 @@ export class Client extends EventSpewer {
     commandId: string,
     options: RequestTypes.EditApplicationGuildCommand | RequestTypes.toJSON<RequestTypes.EditApplicationGuildCommandData> = {},
   ): Promise<any> {
-    let body: RequestTypes.EditApplicationGuildCommandData | RequestTypes.toJSON<RequestTypes.EditApplicationCommandData>;
-    if ('toJSON' in options) {
-      body = options;
-    } else {
-      body = {
-        default_permission: options.defaultPermission,
-        description: options.description,
-        name: options.name,
-        options: options.options,
-      };
-    }
     const params = {applicationId, guildId, commandId};
+    const body = CamelCaseToSnakeCase.ApplicationCommand(options as any);
     if (this.clientsideChecks) {
 
     }
@@ -2294,7 +2234,7 @@ export class Client extends EventSpewer {
   ): Promise<any> {
     const params = {applicationId, commandId, guildId};
     const body = {
-      permissions: options.permissions,
+      permissions: options.permissions.map((permission) => CamelCaseToSnakeCase.ApplicationCommandPermission(permission)),
     };
     if (this.clientsideChecks) {
 
@@ -3865,32 +3805,42 @@ export class Client extends EventSpewer {
     const params = {guildId};
     const query = {
       after: options.after,
-      around: options.around,
       before: options.before,
       limit: options.limit,
     };
     if (this.clientsideChecks) {
+      // add snowflake checks
       if (query.limit !== undefined) {
         if (query.limit < 1 || 1000 < query.limit) {
           throw new Error('Limit has to be between 1 and 1000');
         }
       }
-      if (
-        (query.after && query.around) ||
-        (query.after && query.before) ||
-        (query.around && query.before)
-      ) {
-        throw new Error('Choose between around, before, or after, cannot have more than one.');
+      if (query.after && query.before) {
+        throw new Error('Choose between after or before, cannot have more than one.');
       }
-    }
-    if (this.clientsideChecks) {
-
     }
     return this.request({
       query,
       route: {
         method: HTTPMethods.GET,
         path: Api.GUILD_BANS,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildBan(
+    guildId: string,
+    userId: string,
+  ): Promise<any> {
+    const params = {guildId, userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_BAN,
         params,
       },
     });

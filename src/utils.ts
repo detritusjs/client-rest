@@ -18,9 +18,11 @@ export const CamelCaseToSnakeCase = Object.freeze({
       return options;
     }
     return {
+      default_member_permissions: options.defaultMemberPermissions && String(options.defaultMemberPermissions),
       default_permission: options.defaultPermission,
       description: options.description,
       description_localizations: options.descriptionLocalizations,
+      dm_permission: options.dmPermission,
       id: options.id,
       name: options.name,
       name_localizations: options.nameLocalizations,
@@ -42,12 +44,24 @@ export const CamelCaseToSnakeCase = Object.freeze({
       }),
       description: options.description,
       description_localizations: options.descriptionLocalizations,
-      max_value: String(options.maxValue),
-      min_value: String(options.minValue),
+      max_value: options.maxValue && String(options.maxValue),
+      min_value: options.maxValue && String(options.minValue),
       name: options.name,
       name_localizations: options.nameLocalizations,
       options: options.options && options.options.map((x) => CamelCaseToSnakeCase.ApplicationCommandOption(x)),
       required: options.required,
+      type: options.type,
+    };
+  },
+  ApplicationCommandPermission: (
+    options: RequestTypes.EditApplicationGuildCommandPermission | RequestTypes.toJSON<RequestTypes.EditApplicationGuildCommandPermissionData>,
+  ): RequestTypes.EditApplicationGuildCommandPermissionData | RequestTypes.toJSON<RequestTypes.EditApplicationGuildCommandPermissionData> => {
+    if ('toJSON' in options) {
+      return options;
+    }
+    return {
+      id: String(options.id),
+      permission: options.permission,
       type: options.type,
     };
   },

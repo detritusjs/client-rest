@@ -16,6 +16,8 @@ export namespace RestClientEvents {
 }
 
 export namespace RequestTypes {
+  export type Snowflake = bigint | string;
+
   export interface File extends RequestFile {
     description?: string,
     hasSpoiler?: boolean,
@@ -103,9 +105,11 @@ export namespace RequestTypes {
   }
 
   export interface CreateApplicationCommand {
+    defaultMemberPermissions?: bigint | number | string,
     defaultPermission?: boolean,
     description: string,
     descriptionLocalizations?: Record<string, string | undefined>,
+    dmPermission?: boolean,
     id?: string,
     name: string,
     nameLocalizations?: Record<string, string | undefined>,
@@ -114,9 +118,11 @@ export namespace RequestTypes {
   }
 
   export interface CreateApplicationCommandData {
+    default_member_permissions?: number | bigint | string,
     default_permission?: boolean,
     description?: string,
     description_localizations?: Record<string, string | undefined>,
+    dm_permission?: boolean,
     id?: string,
     name: string,
     name_localizations?: Record<string, string | undefined>,
@@ -582,6 +588,12 @@ export namespace RequestTypes {
   export type EditApplicationGuildCommandData = Partial<CreateApplicationCommandData>;
 
   export interface EditApplicationGuildCommandPermission {
+    id: Snowflake,
+    permission: boolean,
+    type: string,
+  }
+
+  export interface EditApplicationGuildCommandPermissionData {
     id: string,
     permission: boolean,
     type: string,

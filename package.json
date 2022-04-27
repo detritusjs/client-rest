@@ -7,7 +7,7 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "detritus-rest": "^0.9.0-beta.1",
+    "detritus-rest": "^0.9.0-beta.3",
     "detritus-utils": "^0.4.0"
   },
   "description": "A minimalistic TypeScript library to interact with all, or most, of Discord's rest endpoints, requires 16.5 <= Node",
@@ -34,5 +34,5 @@
     "typedoc": "typedoc"
   },
   "types": "lib/index.d.ts",
-  "version": "0.11.0-beta.0"
+  "version": "0.11.0-beta.1"
 }
