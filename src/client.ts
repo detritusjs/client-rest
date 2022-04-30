@@ -1212,17 +1212,8 @@ export class Client extends EventSpewer {
       } else {
         const { data } = options;
 
-        const [ bodyMessageCreate, filesMessageCreate ] = CamelCaseToSnakeCase.MessageCreate(options.data);
-        Object.assign(body, bodyMessageCreate);
-        body.data = Object.assign({
-          choices: data.choices,
-          content: data.content,
-          custom_id: data.customId,
-          flags: data.flags,
-          title: data.title,
-          tts: data.tts,
-        }, bodyMessageCreate);
-
+        const [ bodyData, filesMessageCreate ] = CamelCaseToSnakeCase.InteractionResponseInnerPayload(data);
+        body.data = bodyData;
         for (let file of filesMessageCreate) {
           files.push(file);
         }
@@ -2902,7 +2893,7 @@ export class Client extends EventSpewer {
       options = {content: options};
     }
     const params = {channelId, messageId};
-    const [ body, files ] = CamelCaseToSnakeCase.MessageCreate(options);
+    const [ body, files ] = CamelCaseToSnakeCase.MessageEdit(options);
 
     if (this.clientsideChecks) {
 
@@ -3103,7 +3094,7 @@ export class Client extends EventSpewer {
       options = {content: options};
     }
     const params = {webhookId, webhookToken, messageId};
-    const [ body, files ] = CamelCaseToSnakeCase.MessageCreate(options);
+    const [ body, files ] = CamelCaseToSnakeCase.MessageEdit(options);
     if (this.clientsideChecks) {
       // verify body
       // verify files?
@@ -3210,7 +3201,7 @@ export class Client extends EventSpewer {
       }
     }
 
-    const [ bodyMessageCreate, files ] = CamelCaseToSnakeCase.MessageCreate(options);
+    const [ bodyMessageCreate, files ] = CamelCaseToSnakeCase.MessageEdit(options);
     Object.assign(body, bodyMessageCreate);
     if (this.clientsideChecks) {
       // verify body

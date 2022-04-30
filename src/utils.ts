@@ -65,6 +65,25 @@ export const CamelCaseToSnakeCase = Object.freeze({
       type: options.type,
     };
   },
+  InteractionResponseInnerPayload: (
+    options: RequestTypes.CreateInteractionResponseInnerPayload,
+  ): [RequestTypes.CreateInteractionResponseInnerPayloadData, Array<RequestTypes.File>] => {
+    const [ body, files ] = CamelCaseToSnakeCase.MessageEdit(options) as [RequestTypes.CreateInteractionResponseInnerPayloadData, Array<RequestTypes.File>];
+
+    if (options.choices && typeof(options.choices) === 'object') {
+      body.choices = options.choices.map((x) => {
+        return {name: x.name, name_localizations: x.nameLocalizations, value: x.value};
+      });
+    }
+
+    body.custom_id = options.customId;
+    body.title = options.title;
+
+    return [
+      body as RequestTypes.CreateInteractionResponseInnerPayloadData,
+      files,
+    ];
+  },
   MessageCreate: (
     options: RequestTypes.CreateMessage,
   ): [RequestTypes.CreateMessageData, Array<RequestTypes.File>] => {
@@ -214,5 +233,12 @@ export const CamelCaseToSnakeCase = Object.freeze({
       }
     }
     return [body, files];
+  },
+  MessageEdit: (
+    options: RequestTypes.EditMessage,
+  ): [RequestTypes.EditMessageData, Array<RequestTypes.File>] => {
+    const response = CamelCaseToSnakeCase.MessageCreate(options) as [RequestTypes.EditMessageData, Array<RequestTypes.File>];
+    response[0].flags = options.flags;
+    return response;
   },
 });
