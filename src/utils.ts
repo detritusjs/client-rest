@@ -172,7 +172,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
         options.embeds = [];
       }
     }
-    if (options.embeds && options.embeds.length) {
+    if (options.embeds) {
       body.embeds = options.embeds.map((embed) => {
         if ('toJSON' in embed) {
           return embed;
