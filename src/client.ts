@@ -1124,6 +1124,38 @@ export class Client extends EventSpewer {
     });
   }
 
+  async createGuildScheduledEvent(
+    guildId: string,
+    options: RequestTypes.CreateGuildScheduledEvent,
+  ): Promise<any> {
+    const body = {
+      channel_id: options.channelId,
+      description: options.description,
+      entity_metadata: options.entityMetadata,
+      entity_type: options.entityType,
+      image: bufferToBase64(options.image),
+      name: options.name,
+      privacy_level: options.privacyLevel,
+      scheduled_end_time: options.scheduledEndTime,
+      scheduled_start_time: options.scheduledStartTime,
+    };
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+      },
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.GUILD_SCHEDULED_EVENTS,
+        params,
+      },
+    });
+  }
+
   async createGuildSticker(
     guildId: string,
     options: RequestTypes.CreateGuildSticker,
@@ -2433,31 +2465,6 @@ export class Client extends EventSpewer {
     });
   }
 
-  async editGuildEmbed(
-    guildId: string,
-    options: RequestTypes.EditGuildEmbed,
-  ): Promise<any> {
-    const body = {
-      channel_id: options.channelId,
-      enabled: options.enabled,
-    };
-    const params = {guildId};
-    if (this.clientsideChecks) {
-
-    }
-    return this.request({
-      body,
-      headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
-      },
-      route: {
-        method: HTTPMethods.PATCH,
-        path: Api.GUILD_EMBED,
-        params,
-      },
-    });
-  }
-
   async editGuildEmoji(
     guildId: string,
     emojiId: string,
@@ -2676,6 +2683,40 @@ export class Client extends EventSpewer {
     });
   }
 
+  async editGuildScheduledEvent(
+    guildId: string,
+    scheduledEventId: string,
+    options: RequestTypes.EditGuildScheduledEvent,
+  ): Promise<any> {
+    const body = {
+      channel_id: options.channelId,
+      description: options.description,
+      entity_metadata: options.entityMetadata,
+      entity_type: options.entityType,
+      image: bufferToBase64(options.image),
+      name: options.name,
+      privacy_level: options.privacyLevel,
+      scheduled_end_time: options.scheduledEndTime,
+      scheduled_start_time: options.scheduledStartTime,
+      status: options.status,
+    };
+    const params = {guildId, scheduledEventId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+      },
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.GUILD_SCHEDULED_EVENT,
+        params,
+      },
+    });
+  }
+
   async editGuildSticker(
     guildId: string,
     stickerId: string,
@@ -2745,6 +2786,31 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.PATCH,
         path: Api.GUILD_VOICE_STATE,
+        params,
+      },
+    });
+  }
+
+  async editGuildWidget(
+    guildId: string,
+    options: RequestTypes.EditGuildWidget,
+  ): Promise<any> {
+    const body = {
+      channel_id: options.channelId,
+      enabled: options.enabled,
+    };
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.GUILD_WIDGET,
         params,
       },
     });
@@ -3848,22 +3914,6 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.GUILD_CHANNELS,
-        params,
-      },
-    });
-  }
-
-  async fetchGuildEmbed(
-    guildId: string,
-  ): Promise<any> {
-    const params = {guildId};
-    if (this.clientsideChecks) {
-
-    }
-    return this.request({
-      route: {
-        method: HTTPMethods.GET,
-        path: Api.GUILD_EMBED,
         params,
       },
     });

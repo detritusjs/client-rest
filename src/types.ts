@@ -334,6 +334,20 @@ export namespace RequestTypes {
     unicodeEmoji?: string,
   }
 
+  export interface CreateGuildScheduledEvent {
+    channelId?: string,
+    description?: string,
+    entityMetadata?: Record<string, any>,
+    entityType: number,
+    image?: Buffer | string | null,
+    name: string,
+    privacyLevel: number,
+    reason?: string,
+    scheduledEndTime?: Date | string,
+    scheduledStartTime: Date | string,
+    status?: number,
+  }
+
   export interface CreateGuildSticker {
     description: string,
     file: File,
@@ -684,12 +698,6 @@ export namespace RequestTypes {
     reason?: string,
   }
 
-  export interface EditGuildEmbed {
-    channelId?: string,
-    enabled: boolean,
-    reason?: string,
-  }
-
   export interface EditGuildEmoji {
     name?: string,
     reason?: string,
@@ -753,6 +761,20 @@ export namespace RequestTypes {
     reason?: string,
   }
 
+  export interface EditGuildScheduledEvent {
+    channelId?: string | null,
+    description?: string | null,
+    entityMetadata?: Record<string, any> | null,
+    entityType?: number,
+    image?: Buffer | string | null,
+    name?: string,
+    privacyLevel?: number,
+    reason?: string,
+    scheduledEndTime?: Date | string,
+    scheduledStartTime?: Date | string,
+    status?: number,
+  }
+
   export interface EditGuildSticker {
     description?: string,
     name?: string,
@@ -768,6 +790,12 @@ export namespace RequestTypes {
     channelId: string,
     requestToSpeakTimestamp?: null | Date | string,
     suppress?: boolean,
+  }
+
+  export interface EditGuildWidget {
+    channelId?: string,
+    enabled: boolean,
+    reason?: string,
   }
 
   export interface EditLobby {

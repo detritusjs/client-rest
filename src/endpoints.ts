@@ -667,12 +667,6 @@ export const Api = {
     '/guilds/:guildId/discovery-metadata',
   GUILD_DISCOVERY_VALID_TERM:
     '/guilds/:guildId/valid-term',
-  GUILD_EMBED:
-    '/guilds/:guildId/embed',
-  GUILD_EMBED_JSON:
-    '/guilds/:guildId/embed.json',
-  GUILD_EMBED_PNG:
-    '/guilds/:guildId/embed.png',
   GUILD_EMOJIS:
     '/guilds/:guildId/emojis',
   GUILD_EMOJI:

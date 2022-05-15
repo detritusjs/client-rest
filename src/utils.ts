@@ -11,6 +11,25 @@ export function spoilerfy(file: RequestTypes.File): RequestTypes.File {
 
 
 export const CamelCaseToSnakeCase = Object.freeze({
+  _File: (
+    file: RequestTypes.File,
+    fileId: number,
+    hasSpoiler?: boolean,
+  ): [RequestTypes.File, {description?: string, filename?: string, id: number | string} | null]=> {
+    let attachment: {description?: string, filename?: string, id: number | string} | null = null;
+
+    if (file.hasSpoiler || hasSpoiler) {
+      spoilerfy(file);
+    }
+    if (file.description) {
+      attachment = {
+        description: file.description,
+        filename: file.filename,
+        id: fileId,
+      };
+    }
+    return [file, attachment];
+  },
   ApplicationCommand: (
     options: RequestTypes.CreateApplicationCommand | RequestTypes.toJSON<RequestTypes.CreateApplicationCommandData>,
   ): RequestTypes.CreateApplicationCommandData | RequestTypes.toJSON<RequestTypes.CreateApplicationCommandData> => {
@@ -205,33 +224,31 @@ export const CamelCaseToSnakeCase = Object.freeze({
 
     const files: Array<RequestTypes.File> = [];
     if (options.file) {
-      files.push(options.file);
+      const [ file, attachment ] = CamelCaseToSnakeCase._File(options.file, 0, options.hasSpoiler);
+      files.push(file);
+      if (attachment) {
+        if (body.attachments) {
+          body.attachments.push(attachment);
+        } else {
+          body.attachments = [attachment];
+        }
+      }
     }
+
     if (options.files && options.files.length) {
       for (let i = 0; i < options.files.length; i++) {
-        const file = options.files[i];
-        if (file.hasSpoiler) {
-          spoilerfy(file);
-        }
-        if (file.description) {
-          if (!body.attachments) {
-            body.attachments = [];
-          }
-          const id = file.key || i;
-          body.attachments.push({
-            description: file.description,
-            filename: file.filename,
-            id,
-          });
-        }
+        const [ file, attachment ] = CamelCaseToSnakeCase._File(options.files[i], i + files.length, options.hasSpoiler);
         files.push(file);
+        if (attachment) {
+          if (body.attachments) {
+            body.attachments.push(attachment);
+          } else {
+            body.attachments = [attachment];
+          }
+        }
       }
     }
-    if (options.hasSpoiler) {
-      for (let file of files) {
-        spoilerfy(file);
-      }
-    }
+
     return [body, files];
   },
   MessageEdit: (
