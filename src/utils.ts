@@ -84,6 +84,21 @@ export const CamelCaseToSnakeCase = Object.freeze({
       type: options.type,
     };
   },
+  ApplicationRoleConnectionsMetadataRecord: (
+    options: RequestTypes.EditApplicationRoleConnectionsMetadataRecord | RequestTypes.toJSON<RequestTypes.EditApplicationRoleConnectionsMetadataRecordData>,
+  ): RequestTypes.EditApplicationRoleConnectionsMetadataRecordData | RequestTypes.toJSON<RequestTypes.EditApplicationRoleConnectionsMetadataRecordData> => {
+    if ('toJSON' in options) {
+      return options;
+    }
+    return {
+      description: options.description,
+      description_localizations: options.descriptionLocalizations,
+      key: options.key,
+      name: options.name,
+      name_localizations: options.nameLocalizations,
+      type: options.type,
+    };
+  },
   InteractionResponseInnerPayload: (
     options: RequestTypes.CreateInteractionResponseInnerPayload,
   ): [RequestTypes.CreateInteractionResponseInnerPayloadData, Array<RequestTypes.File>] => {

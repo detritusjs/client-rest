@@ -160,6 +160,12 @@ export namespace RequestTypes {
     type: number,
   }
 
+  export interface CreateApplicationEntitlement {
+    ownerId?: string,
+    ownerType?: number,
+    skuId?: string,
+  }
+
   export interface CreateApplicationGuildCommand extends CreateApplicationCommand {
 
   }
@@ -598,6 +604,24 @@ export namespace RequestTypes {
   export type EditApplicationCommand = Partial<CreateApplicationCommand>;
   export type EditApplicationCommandData = Partial<CreateApplicationCommandData>;
 
+  export interface EditApplicationRoleConnectionsMetadataRecord {
+    description: string,
+    descriptionLocalizations?: Record<string, string>,
+    key: string,
+    name: string,
+    nameLocalizations?: Record<string, string>,
+    type: number,
+  }
+
+  export interface EditApplicationRoleConnectionsMetadataRecordData {
+    description: string,
+    description_localizations?: Record<string, string>,
+    key: string,
+    name: string,
+    name_localizations?: Record<string, string>,
+    type: number,
+  }
+
   export type EditApplicationGuildCommand = Partial<CreateApplicationCommand>;
   export type EditApplicationGuildCommandData = Partial<CreateApplicationCommandData>;
 
@@ -827,6 +851,12 @@ export namespace RequestTypes {
     username?: string,
   }
 
+  export interface EditMeApplicationRoleConnection {
+    metadata?: Record<string, any>,
+    platformName?: string,
+    platformUsername?: string,
+  }
+
   export interface EditMeBillingPaymentSource {
     billingAddress?: {
       city: string,
@@ -974,6 +1004,16 @@ export namespace RequestTypes {
     flags?: number,
     tts?: boolean,
     username?: string,
+  }
+
+  export interface FetchApplicationEntitlements {
+    after?: string,
+    before?: string,
+    excludeEnded?: boolean,
+    guildId?: string,
+    limit?: number,
+    skuIds?: Array<string> | string,
+    userId?: string,
   }
 
   export interface FetchChannelThreadsArchivedPrivate {

@@ -51,7 +51,7 @@ export function verifyData(data: {
       }; break;
       case Types.NUMBER: {
         value = parseInt(value);
-        if (value === NaN) {
+        if (Number.isNaN(value)) {
           throw new Error(`${key} has to be an integer.`);
         }
       }; break;

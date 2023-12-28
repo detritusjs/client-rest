@@ -794,6 +794,29 @@ export class Client extends EventSpewer {
     });
   }
 
+  async createApplicationEntitlement(
+    applicationId: string,
+    options: RequestTypes.CreateApplicationEntitlement,
+  ): Promise<any> {
+    const params = {applicationId};
+    const body = {
+      owner_id: options.ownerId,
+      owner_type: options.ownerType,
+      sku_id: options.skuId,
+    };
+    if (this.clientsideChecks) {
+  
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.APPLICATION_ENTITLEMENTS,
+        params,
+      },
+    });
+  }
+
   async createApplicationGuildCommand(
     applicationId: string,
     guildId: string,
@@ -1632,6 +1655,20 @@ export class Client extends EventSpewer {
     });
   }
 
+  async deleteApplicationEntitlement(
+    applicationId: string,
+    entitlementId: string,
+  ): Promise<any> {
+    const params = {applicationId, entitlementId};
+    return this.request({
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.APPLICATION_ENTITLEMENT,
+        params,
+      },
+    });
+  }
+
   async deleteApplicationGuildCommand(
     applicationId: string,
     guildId: string,
@@ -2223,6 +2260,28 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.PATCH,
         path: Api.APPLICATION_COMMAND,
+        params,
+      },
+    });
+  }
+
+  async editApplicationRoleConnectionsMetadata(
+    applicationId: string,
+    metadata: Array<
+      RequestTypes.EditApplicationRoleConnectionsMetadataRecord |
+      RequestTypes.toJSON<RequestTypes.EditApplicationRoleConnectionsMetadataRecordData>
+    >,
+  ): Promise<any> {
+    const params = {applicationId};
+    const body = metadata.map((options) => CamelCaseToSnakeCase.ApplicationRoleConnectionsMetadataRecord(options));
+    if (this.clientsideChecks) {
+  
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.PUT,
+        path: Api.APPLICATION_ROLE_CONNECTIONS_METADATA,
         params,
       },
     });
@@ -2897,6 +2956,26 @@ export class Client extends EventSpewer {
     });
   }
 
+  async editMeApplicationRoleConnection(
+    options: RequestTypes.EditMeApplicationRoleConnection = {},
+  ): Promise<any> {
+    const body: any = {
+      metadata: options.metadata,
+      platform_name: options.platformName,
+      platform_username: options.platformUsername,
+    };
+    if (this.clientsideChecks) {
+  
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.ME,
+      },
+    });
+  }
+
   async editMeBillingPaymentSource(
     paymentSourceId: string,
     options: RequestTypes.EditMeBillingPaymentSource = {},
@@ -3337,6 +3416,40 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchApplicationEntitlements(
+    applicationId: string,
+    options: RequestTypes.FetchApplicationEntitlements = {},
+  ): Promise<any> {
+    let skuIds: Array<string> | undefined;
+    if (typeof(options.skuIds) === 'string') {
+      skuIds = [options.skuIds];
+    } else if (Array.isArray(options.skuIds)) {
+      skuIds = options.skuIds;
+    }
+
+    const params = {applicationId};
+    const query = {
+      after: options.after,
+      before: options.before,
+      exclude_ended: options.excludeEnded,
+      guild_id: options.guildId,
+      limit: options.limit,
+      sku_ids: skuIds,
+      user_id: options.userId,
+    };
+    if (this.clientsideChecks) {
+  
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.APPLICATION_ENTITLEMENTS,
+        params,
+      },
+    });
+  }
+
   async fetchApplicationGuildCommands(
     applicationId: string,
     guildId: string,
@@ -3437,6 +3550,38 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.APPLICATION_NEWS_ID,
+        params,
+      },
+    });
+  }
+
+  async fetchApplicationRoleConnectionsMetadata(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+  
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.APPLICATION_ROLE_CONNECTIONS_METADATA,
+        params,
+      },
+    });
+  }
+
+  async fetchApplicationSkus(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+  
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.APPLICATION_SKUS,
         params,
       },
     });
@@ -4375,6 +4520,15 @@ export class Client extends EventSpewer {
         path: Api.ME,
       },
     });
+  }
+
+  fetchMeApplicationRoleConnection(): Promise<any> {
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.ME_APPLICATION_ROLE_CONNECTION,
+      }
+    })
   }
 
   fetchMeBillingPaymentSources(): Promise<any> {

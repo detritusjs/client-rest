@@ -141,6 +141,10 @@ export const Routes = Tools.URIEncodeWrap({
     '/acknowledgements',
   ACTIVITY:
     '/activity',
+  APPLICATION_DIRECTORY: (applicationId: string) =>
+    `/application-directory/${applicationId}`,
+  APPLICATION_DIRECTORY_PREMIUM: (applicationId: string) =>
+    `/application-directory/${applicationId}/premium`,
   APPLICATION_LIBRARY:
     '/library',
   APPLICATION_LIBRARY_INVENTORY:
@@ -389,6 +393,10 @@ export const Api = {
     '/applications/:applicationId/commands',
   APPLICATION_COMMAND:
     '/applications/:applicationId/commands/:commandId',
+  APPLICATION_ENTITLEMENTS:
+    '/applications/:applicationId/entitlements',
+  APPLICATION_ENTITLEMENT:
+    '/applications/:applicationId/entitlements/:entitlementId',
   APPLICATION_GIFT_CODE_BATCHES:
     '/applications/:applicationId/gift-code-batches',
   APPLICATION_GIFT_CODE_BATCHES_CSV_DOWNLOAD:
@@ -407,6 +415,8 @@ export const Api = {
     '/applications/:applicationId/manifest-labels',
   APPLICATION_PURCHASE:
     '/applications/:applicationId/purchase',
+  APPLICATION_ROLE_CONNECTIONS_METADATA:
+    '/applications/:applicationId/role-connections/metadata',
   APPLICATION_SKUS:
     '/applications/:applicationId/skus',
 
@@ -796,6 +806,8 @@ export const Api = {
     '/users/@me/applications/:applicationId/entitlements',
   ME_APPLICATION_ENTITLEMENT_TICKET:
     '/users/@me/applications/:applicationId/entitlement-ticket',
+  ME_APPLICATION_ROLE_CONNECTION:
+    '/users/@me/applications/:applicationId/role-connection',
   ME_APPLICATION_TICKET:
     '/users/@me/applications/:applicationId/ticket',
   ME_BILLING_INVOICES_PREVIEW:
