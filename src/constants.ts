@@ -2,7 +2,7 @@ export { HTTPMethods } from 'detritus-rest/lib/constants';
 
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.11.0-beta.6',
+  VERSION: '0.11.0-beta.8',
 });
 
 
@@ -20,6 +20,30 @@ export enum ActivityActionTypes {
   LISTEN = 3,
   WATCH = 4,
   JOIN_REQUEST = 5,
+}
+
+export enum AutoModerationRuleActionTypes {
+  BLOCK_MESSAGE = 1,
+  SEND_ALERT_MESSAGE = 2,
+  TIMEOUT = 3,
+}
+
+export enum AutoModerationRuleEventTypes {
+  MESSAGE_SEND = 1,
+}
+
+export enum AutoModerationRuleKeywordPresetTypes {
+  PROFANITY = 1,
+  SEXUAL_CONTENT = 2,
+  SLURS = 3,
+}
+
+export enum AutoModerationRuleTriggerTypes {
+  KEYWORD = 1,
+  SPAM = 2,
+
+  KEYWORD_PRESET = 4,
+  MENTION_SPAM = 5,
 }
 
 export enum DiscordAbortCodes {

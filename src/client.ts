@@ -687,6 +687,37 @@ export class Client extends EventSpewer {
     });
   }
 
+  async bulkGuildBan(
+    guildId: string,
+    options: RequestTypes.BulkGuildBan,
+  ): Promise<any> {
+    const body = {
+      delete_message_seconds: options.deleteMessageSeconds,
+      user_ids: options.userIds,
+    };
+    const params = {guildId};
+    if (this.clientsideChecks) {
+      if (200 < body.user_ids.length) {
+        throw new Error('User Ids amount needs to be at most 200');
+      }
+      verifyData(params, {
+        delete_message_seconds: {type: VerifyTypes.NUMBER},
+        guildId: {required: true, type: VerifyTypes.SNOWFLAKE},
+      });
+    }
+    return this.request({
+      body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.GUILD_BULK_BAN,
+        params,
+      },
+    });
+  }
+
   async bulkOverwriteApplicationCommands(
     applicationId: string,
     commands: Array<RequestTypes.CreateApplicationCommand | RequestTypes.toJSON<RequestTypes.CreateApplicationCommandData>>,
@@ -751,6 +782,28 @@ export class Client extends EventSpewer {
     });
   }
 
+  async bulkOverwriteApplicationRoleConnectionsMetadata(
+    applicationId: string,
+    metadata: Array<
+      RequestTypes.BulkOverwriteApplicationRoleConnectionsMetadataRecord |
+      RequestTypes.toJSON<RequestTypes.BulkOverwriteApplicationRoleConnectionsMetadataRecordData>
+    >,
+  ): Promise<any> {
+    const params = {applicationId};
+    const body = metadata.map((options) => CamelCaseToSnakeCase.ApplicationRoleConnectionsMetadataRecord(options));
+    if (this.clientsideChecks) {
+  
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.PUT,
+        path: Api.APPLICATION_ROLE_CONNECTIONS_METADATA,
+        params,
+      },
+    });
+  }
+
   async connectionCallback(
     platform: string,
     options: RequestTypes.ConnectionCallback,
@@ -769,6 +822,23 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.POST,
         path: Api.CONNECTION_CALLBACK,
+        params,
+      },
+    });
+  }
+
+  async consumeApplicationEntitlement(
+    applicationId: string,
+    entitlementId: string,
+  ): Promise<any> {
+    const params = {applicationId, entitlementId};
+    if (this.clientsideChecks) {
+    
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.APPLICATION_ENTITLEMENT_CONSUME,
         params,
       },
     });
@@ -904,7 +974,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.POST,
@@ -946,7 +1016,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.POST,
@@ -1009,6 +1079,53 @@ export class Client extends EventSpewer {
     });
   }
 
+  async createGuildAutoModerationRule(
+    guildId: string,
+    options: RequestTypes.CreateGuildAutoModerationRule,
+  ): Promise<any> {
+    const body = {
+      actions: options.actions && options.actions.map((action) => {
+        return {
+          metadata: action.metadata && {
+            channel_id: action.metadata.channelId,
+            custom_message: action.metadata.customMessage,
+            duration_seconds: action.metadata.durationSeconds,
+          },
+          type: action.type,
+        };
+      }),
+      enabled: options.enabled,
+      event_type: options.eventType,
+      exempt_channels: options.exemptChannels,
+      exempt_roles: options.exemptRoles,
+      name: options.name,
+      trigger_metadata: options.triggerMetadata && {
+        allow_list: options.triggerMetadata.allowList,
+        keyword_filter: options.triggerMetadata.keywordFilter,
+        mention_raid_protection_enabled: options.triggerMetadata.mentionRaidProtectionEnabled,
+        mention_total_limit: options.triggerMetadata.mentionTotalLimit,
+        presets: options.triggerMetadata.presets,
+        regex_patterns: options.triggerMetadata.regexPatterns,
+      },
+      trigger_type: options.triggerType,
+    };
+    const params = {guildId};
+    if (this.clientsideChecks) {
+  
+    }
+    return this.request({
+      body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.GUILD_AUTO_MODERATION_RULES,
+        params,
+      },
+    });
+  }
+
   async createGuildBan(
     guildId: string,
     userId: string,
@@ -1055,7 +1172,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.POST,
@@ -1082,7 +1199,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.POST,
@@ -1107,7 +1224,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.POST,
@@ -1137,7 +1254,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.POST,
@@ -1169,7 +1286,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.POST,
@@ -1198,7 +1315,7 @@ export class Client extends EventSpewer {
       body,
       files: [file],
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.POST,
@@ -1395,13 +1512,18 @@ export class Client extends EventSpewer {
           message_id: {type: VerifyTypes.STRING},
         });
       }
+      if ('poll' in body) {
+        
+      }
     }
 
     if (
       !('activity' in body) &&
       !('content' in body) &&
       !('embed' in body) &&
+      !('embeds' in body) &&
       !('sticker_ids' in body) &&
+      !('poll' in body) &&
       !(files.length)
     ) {
       throw new Error('Cannot send an empty message.');
@@ -1697,7 +1819,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.DELETE,
@@ -1718,7 +1840,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.DELETE,
@@ -1764,6 +1886,27 @@ export class Client extends EventSpewer {
     });
   }
 
+  async deleteGuildAutoModerationRule(
+    guildId: string,
+    autoModerationId: string,
+    options: RequestTypes.DeleteGuildAutoModerationRule = {},
+  ): Promise<any> {
+    const params = {guildId, autoModerationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.GUILD_AUTO_MODERATION_RULE,
+        params,
+      },
+    });
+  }
+
   async deleteGuildEmoji(
     guildId: string,
     emojiId: string,
@@ -1775,7 +1918,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.DELETE,
@@ -1847,12 +1990,16 @@ export class Client extends EventSpewer {
   async deleteGuildScheduledEvent(
     guildId: string,
     scheduledEventId: string,
+    options: RequestTypes.DeleteGuildScheduledEvent = {},
   ): Promise<any> {
     const params = {guildId, scheduledEventId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
       route: {
         method: HTTPMethods.DELETE,
         path: Api.GUILD_SCHEDULED_EVENT,
@@ -1872,7 +2019,7 @@ export class Client extends EventSpewer {
     }
     return this.request({
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.DELETE,
@@ -2265,28 +2412,6 @@ export class Client extends EventSpewer {
     });
   }
 
-  async editApplicationRoleConnectionsMetadata(
-    applicationId: string,
-    metadata: Array<
-      RequestTypes.EditApplicationRoleConnectionsMetadataRecord |
-      RequestTypes.toJSON<RequestTypes.EditApplicationRoleConnectionsMetadataRecordData>
-    >,
-  ): Promise<any> {
-    const params = {applicationId};
-    const body = metadata.map((options) => CamelCaseToSnakeCase.ApplicationRoleConnectionsMetadataRecord(options));
-    if (this.clientsideChecks) {
-  
-    }
-    return this.request({
-      body,
-      route: {
-        method: HTTPMethods.PUT,
-        path: Api.APPLICATION_ROLE_CONNECTIONS_METADATA,
-        params,
-      },
-    });
-  }
-
   async editApplicationGuildCommand(
     applicationId: string,
     guildId: string,
@@ -2482,6 +2607,54 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.PATCH,
         path: Api.GUILD,
+        params,
+      },
+    });
+  }
+
+  async editGuildAutoModerationRule(
+    guildId: string,
+    autoModerationRuleId: string,
+    options: RequestTypes.EditGuildAutoModerationRule = {},
+  ): Promise<any> {
+    const body = {
+      actions: options.actions && options.actions.map((action) => {
+        return {
+          metadata: action.metadata && {
+            channel_id: action.metadata.channelId,
+            custom_message: action.metadata.customMessage,
+            duration_seconds: action.metadata.durationSeconds,
+          },
+          type: action.type,
+        };
+      }),
+      enabled: options.enabled,
+      event_type: options.eventType,
+      exempt_channels: options.exemptChannels,
+      exempt_roles: options.exemptRoles,
+      name: options.name,
+      trigger_metadata: options.triggerMetadata && {
+        allow_list: options.triggerMetadata.allowList,
+        keyword_filter: options.triggerMetadata.keywordFilter,
+        mention_raid_protection_enabled: options.triggerMetadata.mentionRaidProtectionEnabled,
+        mention_total_limit: options.triggerMetadata.mentionTotalLimit,
+        presets: options.triggerMetadata.presets,
+        regex_patterns: options.triggerMetadata.regexPatterns,
+      },
+      trigger_type: options.triggerType,
+    };
+    const params = {guildId, autoModerationRuleId};
+    if (this.clientsideChecks) {
+  
+    }
+    return this.request({
+      body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.GUILD_AUTO_MODERATION_RULE,
         params,
       },
     });
@@ -2766,7 +2939,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       headers: {
-        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
       route: {
         method: HTTPMethods.PATCH,
@@ -3374,6 +3547,23 @@ export class Client extends EventSpewer {
     });
   }
 
+  async endChannelPoll(
+    channelId: string,
+    messageId: string,
+  ): Promise<any> {
+    const params = {channelId, messageId};
+    if (this.clientsideChecks) {
+  
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.CHANNEL_POLL_EXPIRE,
+        params,
+      },
+    });
+  }
+
   async fetchActivities(): Promise<any> {
     return this.request({
       route: {
@@ -3704,6 +3894,30 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchChannelPollAnswerVoters(
+    channelId: string,
+    messageId: string,
+    answerId: string,
+    options: RequestTypes.FetchChannelPollAnswerVoters = {},
+  ): Promise<any> {
+    const params = {channelId, messageId, answerId};
+    const query = {
+      after: options.after,
+      limit: options.limit,
+    };
+    if (this.clientsideChecks) {
+  
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.CHANNEL_POLL_ANSWER,
+        params,
+      },
+    });
+  }
+
   async fetchChannelStoreListing(
     channelId: string,
   ): Promise<any> {
@@ -3995,6 +4209,39 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.GUILD_AUDIT_LOGS,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildAutoModerationRules(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+  
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_AUTO_MODERATION_RULES,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildAutoModerationRule(
+    guildId: string,
+    autoModerationRuleId: string,
+  ): Promise<any> {
+    const params = {guildId, autoModerationRuleId};
+    if (this.clientsideChecks) {
+  
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_AUTO_MODERATION_RULE,
         params,
       },
     });

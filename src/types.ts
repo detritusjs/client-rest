@@ -88,12 +88,36 @@ export namespace RequestTypes {
     reason?: string,
   }
 
+  export interface BulkGuildBan {
+    deleteMessageSeconds?: number,
+    reason?: string,
+    userIds: Array<string>,
+  }
+
   export interface BulkOverwriteApplicationGuildCommandsPermission {
     id: string,
     permissions: Array<EditApplicationGuildCommandPermission>,
   }
 
   export type BulkOverwriteApplicationGuildCommandsPermissions = Array<BulkOverwriteApplicationGuildCommandsPermission>;
+
+  export interface BulkOverwriteApplicationRoleConnectionsMetadataRecord {
+    description: string,
+    descriptionLocalizations?: Record<string, string>,
+    key: string,
+    name: string,
+    nameLocalizations?: Record<string, string>,
+    type: number,
+  }
+
+  export interface BulkOverwriteApplicationRoleConnectionsMetadataRecordData {
+    description: string,
+    description_localizations?: Record<string, string>,
+    key: string,
+    name: string,
+    name_localizations?: Record<string, string>,
+    type: number,
+  }
 
   export interface ConnectionCallback {
     code: string,
@@ -105,27 +129,33 @@ export namespace RequestTypes {
   }
 
   export interface CreateApplicationCommand {
+    contexts?: Array<number>,
     defaultMemberPermissions?: bigint | number | string,
     defaultPermission?: boolean,
     description: string,
     descriptionLocalizations?: Record<string, string | undefined>,
     dmPermission?: boolean,
     id?: string,
+    integrationTypes?: Array<number>,
     name: string,
     nameLocalizations?: Record<string, string | undefined>,
+    nsfw?: boolean,
     options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandOptionData>>,
     type?: number,
   }
 
   export interface CreateApplicationCommandData {
+    contexts?: Array<number>,
     default_member_permissions?: number | bigint | string,
     default_permission?: boolean,
     description?: string,
     description_localizations?: Record<string, string | undefined>,
     dm_permission?: boolean,
     id?: string,
+    integration_types?: Array<number>,
     name: string,
     name_localizations?: Record<string, string | undefined>,
+    nsfw?: boolean,
     options?: Array<CreateApplicationCommandOption | toJSON<CreateApplicationCommandOptionData>>
     type?: number,
   }
@@ -295,6 +325,32 @@ export namespace RequestTypes {
     systemChannelFlags?: number,
     systemChannelId?: string,
     verificationLevel?: number,
+  }
+
+  export interface CreateGuildAutoModerationRule {
+    actions: Array<{
+      metadata?: {
+        channelId: string,
+        customMessage?: string,
+        durationSeconds: number,
+      },
+      type: number,
+    }>,
+    enabled?: boolean,
+    eventType: number,
+    exemptChannels?: Array<string>,
+    exemptRoles?: Array<string>,
+    name: string,
+    reason?: string,
+    triggerMetadata?: {
+      allowList?: Array<string>,
+      keywordFilter?: Array<string>,
+      mentionRaidProtectionEnabled?: boolean,
+      mentionTotalLimit?: number,
+      presets?: Array<number>,
+      regexPatterns?: Array<string>,
+    },
+    triggerType: number,
   }
 
   export interface CreateGuildBan {
@@ -471,6 +527,21 @@ export namespace RequestTypes {
       messageId: string,
     },
     nonce?: string,
+    poll?: {
+      allowMultiselect: boolean,
+      answers: Array<{
+        pollMedia: {
+          emoji?: RawEmojiPartial,
+          text?: string,
+        },
+      }>,
+      duration: number,
+      layoutType?: number,
+      question: {
+        emoji?: RawEmojiPartial,
+        text?: string,
+      },
+    },
     stickerIds?: Array<string>,
     tts?: boolean,
   }
@@ -499,6 +570,21 @@ export namespace RequestTypes {
       message_id: string,
     },
     nonce?: string,
+    poll?: {
+      allow_multiselect: boolean,
+      answers: Array<{
+        poll_media: {
+          emoji?: RawEmojiPartial,
+          text?: string,
+        },
+      }>,
+      duration: number,
+      layout_type?: number,
+      question: {
+        emoji?: RawEmojiPartial,
+        text?: string,
+      },
+    },
     sticker_ids?: Array<string>,
     tts?: boolean,
   }
@@ -560,6 +646,10 @@ export namespace RequestTypes {
     code?: string,
   }
 
+  export interface DeleteGuildAutoModerationRule{
+    reason?: string,
+  }
+
   export interface DeleteGuildEmoji {
     reason?: string,
   }
@@ -569,6 +659,10 @@ export namespace RequestTypes {
   }
 
   export interface DeleteGuildRole {
+    reason?: string,
+  }
+
+  export interface DeleteGuildScheduledEvent {
     reason?: string,
   }
 
@@ -603,24 +697,6 @@ export namespace RequestTypes {
 
   export type EditApplicationCommand = Partial<CreateApplicationCommand>;
   export type EditApplicationCommandData = Partial<CreateApplicationCommandData>;
-
-  export interface EditApplicationRoleConnectionsMetadataRecord {
-    description: string,
-    descriptionLocalizations?: Record<string, string>,
-    key: string,
-    name: string,
-    nameLocalizations?: Record<string, string>,
-    type: number,
-  }
-
-  export interface EditApplicationRoleConnectionsMetadataRecordData {
-    description: string,
-    description_localizations?: Record<string, string>,
-    key: string,
-    name: string,
-    name_localizations?: Record<string, string>,
-    type: number,
-  }
 
   export type EditApplicationGuildCommand = Partial<CreateApplicationCommand>;
   export type EditApplicationGuildCommandData = Partial<CreateApplicationCommandData>;
@@ -705,6 +781,32 @@ export namespace RequestTypes {
     systemChannelFlags?: number,
     systemChannelId?: null | string,
     verificationLevel?: number,
+  }
+
+  export interface EditGuildAutoModerationRule {
+    actions?: Array<{
+      metadata?: {
+        channelId: string,
+        customMessage?: string,
+        durationSeconds: number,
+      },
+      type: number,
+    }>,
+    enabled?: boolean,
+    eventType?: number,
+    exemptChannels?: Array<string>,
+    exemptRoles?: Array<string>,
+    name?: string,
+    reason?: string,
+    triggerMetadata?: {
+      allowList?: Array<string>,
+      keywordFilter?: Array<string>,
+      mentionRaidProtectionEnabled?: boolean,
+      mentionTotalLimit?: number,
+      presets?: Array<number>,
+      regexPatterns?: Array<string>,
+    },
+    triggerType?: number,
   }
 
   export interface EditGuildChannel {
@@ -1014,6 +1116,11 @@ export namespace RequestTypes {
     limit?: number,
     skuIds?: Array<string> | string,
     userId?: string,
+  }
+
+  export interface FetchChannelPollAnswerVoters {
+    after?: string,
+    limit?: number,
   }
 
   export interface FetchChannelThreadsArchivedPrivate {

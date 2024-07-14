@@ -397,6 +397,8 @@ export const Api = {
     '/applications/:applicationId/entitlements',
   APPLICATION_ENTITLEMENT:
     '/applications/:applicationId/entitlements/:entitlementId',
+  APPLICATION_ENTITLEMENT_CONSUME:
+    '/applications/:applicationId/entitlements/:entitlementId/consume',
   APPLICATION_GIFT_CODE_BATCHES:
     '/applications/:applicationId/gift-code-batches',
   APPLICATION_GIFT_CODE_BATCHES_CSV_DOWNLOAD:
@@ -545,6 +547,10 @@ export const Api = {
     '/channels/:channelId/pins/ack',
   CHANNEL_PIN:
     '/channels/:channelId/pins/:messageId',
+  CHANNEL_POLL_ANSWER:
+    '/channels/:channelId/polls/:messageId/answers/:answerId',
+  CHANNEL_POLL_EXPIRE:
+    '/channels/:channelId/polls/:messageId/expire',
   CHANNEL_RECIPIENTS:
     '/channels/:channelId/recipients',
   CHANNEL_RECIPIENT:
@@ -659,12 +665,18 @@ export const Api = {
     '/guilds/:guildId/applications',
   GUILD_AUDIT_LOGS:
     '/guilds/:guildId/audit-logs',
+  GUILD_AUTO_MODERATION_RULES:
+    '/guilds/:guildId/auto-moderation/rules',
+  GUILD_AUTO_MODERATION_RULE:
+    '/guilds/:guildId/auto-moderation/rules/:autoModerationRuleId',
   GUILD_BANS:
     '/guilds/:guildId/bans',
   GUILD_BAN:
     '/guilds/:guildId/bans/:userId',
   GUILD_BANNER:
     '/guilds/:guildId/banners/:hash.jpg',
+  GUILD_BULK_BAN:
+    '/guilds/:guildId/bulk-ban',
   GUILD_CHANNELS:
     '/guilds/:guildId/channels',
   GUILD_DELETE:

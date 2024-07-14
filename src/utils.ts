@@ -37,14 +37,17 @@ export const CamelCaseToSnakeCase = Object.freeze({
       return options;
     }
     return {
+      contexts: options.contexts,
       default_member_permissions: options.defaultMemberPermissions && String(options.defaultMemberPermissions),
       default_permission: options.defaultPermission,
       description: options.description,
       description_localizations: options.descriptionLocalizations,
       dm_permission: options.dmPermission,
       id: options.id,
+      integration_types: options.integrationTypes,
       name: options.name,
       name_localizations: options.nameLocalizations,
+      nsfw: options.nsfw,
       options: options.options && options.options.map((option) => CamelCaseToSnakeCase.ApplicationCommandOption(option)),
       type: options.type,
     };
@@ -85,8 +88,8 @@ export const CamelCaseToSnakeCase = Object.freeze({
     };
   },
   ApplicationRoleConnectionsMetadataRecord: (
-    options: RequestTypes.EditApplicationRoleConnectionsMetadataRecord | RequestTypes.toJSON<RequestTypes.EditApplicationRoleConnectionsMetadataRecordData>,
-  ): RequestTypes.EditApplicationRoleConnectionsMetadataRecordData | RequestTypes.toJSON<RequestTypes.EditApplicationRoleConnectionsMetadataRecordData> => {
+    options: RequestTypes.BulkOverwriteApplicationRoleConnectionsMetadataRecord | RequestTypes.toJSON<RequestTypes.BulkOverwriteApplicationRoleConnectionsMetadataRecordData>,
+  ): RequestTypes.BulkOverwriteApplicationRoleConnectionsMetadataRecordData | RequestTypes.toJSON<RequestTypes.BulkOverwriteApplicationRoleConnectionsMetadataRecordData> => {
     if ('toJSON' in options) {
       return options;
     }
@@ -234,6 +237,25 @@ export const CamelCaseToSnakeCase = Object.freeze({
         fail_if_not_exists: options.messageReference.failIfNotExists,
         guild_id: options.messageReference.guildId,
         message_id: options.messageReference.messageId,
+      };
+    }
+    if (options.poll && typeof(options.poll) === 'object') {
+      body.poll = {
+        allow_multiselect: options.poll.allowMultiselect,
+        answers: options.poll.answers && options.poll.answers.map((answer) => {
+          return {
+            poll_media: answer.pollMedia && {
+              emoji: answer.pollMedia.emoji,
+              text: answer.pollMedia.text,
+            },
+          };
+        }),
+        duration: options.poll.duration,
+        layout_type: options.poll.layoutType,
+        question: options.poll.question && {
+          emoji: options.poll.question.emoji,
+          text: options.poll.question.text,
+        },
       };
     }
 
