@@ -48,6 +48,8 @@ export const CDN = Tools.URIEncodeWrap({
     `/app-assets/${applicationId}/achievements/${achievementId}/icons/${hash}`,
   APP_ASSET_STORE: (applicationId: string, assetId: string, format: string = 'png'): string =>
     `/app-assets/${applicationId}/store/${assetId}.${format}`,
+  APP_COVER: (applicationId: string, hash: string, format: string = 'png'): string =>
+    `/app-icons/${applicationId}/${hash}.${format}`,
   APP_ICON: (applicationId: string, hash: string, format: string = 'png'): string =>
     `/app-icons/${applicationId}/${hash}.${format}`,
   APPLICATION_BACKGROUND: (applicationId: string): string =>
@@ -56,6 +58,8 @@ export const CDN = Tools.URIEncodeWrap({
     `/store-directory-assets/applications/${applicationId}/trailer.mp4`,
   AVATAR: (userId: string, hash: string, format: string = 'png'): string =>
     `/avatars/${userId}/${hash}.${format}`,
+  AVATAR_DECORATION: (hash: string, format: string = 'png'): string =>
+    `/avatar-decoration-presets/${hash}.${format}`,
   AVATAR_DEFAULT: (discriminator: number | string): string =>
     `/embed/avatars/${+(discriminator) % 5}.png`,
   AVATAR_DEFAULT_ID: (userId: bigint | string): string =>
@@ -66,12 +70,18 @@ export const CDN = Tools.URIEncodeWrap({
     `/channel-icons/${channelId}/${hash}.${format}`,
   EMOJI: (emojiId: string, format: string = 'png'): string =>
     `/emojis/${emojiId}.${format}`,
+  GUILD_DISCOVERY_SPLASH: (guildId: string, hash: string, format: string = 'png'): string =>
+    `/discovery-splashes/${guildId}/${hash}.${format}`,
   GUILD_ICON: (guildId: string, hash: string, format: string = 'png'): string =>
     `/icons/${guildId}/${hash}.${format}`,
+  GUILD_SCHEDULED_EVENT_COVER: (scheduledEventId: string, hash: string, format: string = 'png'): string =>
+    `/guild-events/${scheduledEventId}/${hash}.${format}`,
   GUILD_SPLASH: (guildId: string, hash: string, format: string = 'png'): string =>
     `/splashes/${guildId}/${hash}.${format}`,
   GUILD_USER_AVATAR: (guildId: string, userId: string, hash: string, format: string = 'png') =>
     `/guilds/${guildId}/users/${userId}/avatars/${hash}.${format}`,
+  GUILD_USER_BANNER: (guildId: string, userId: string, hash: string, format: string = 'png') =>
+    `/guilds/${guildId}/users/${userId}/banners/${hash}.${format}`,
   ROLE_ICON: (roleId: string, hash: string, format: string = 'png'): string =>
     `/role-icons/${roleId}/${hash}.${format}`,
   STICKER: (stickerId: string, format: string = 'png'): string =>
