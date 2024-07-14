@@ -58,6 +58,8 @@ export const CDN = Tools.URIEncodeWrap({
     `/avatars/${userId}/${hash}.${format}`,
   AVATAR_DEFAULT: (discriminator: number | string): string =>
     `/embed/avatars/${+(discriminator) % 5}.png`,
+  AVATAR_DEFAULT_ID: (userId: bigint | string): string =>
+    `/embed/avatars/${(BigInt(userId) >> 22n) % 6n}.png`,
   BANNER: (id: string, hash: string, format: string = 'png'): string =>
     `/banners/${id}/${hash}.${format}`,
   CHANNEL_ICON: (channelId: string, hash: string, format: string = 'png'): string =>
