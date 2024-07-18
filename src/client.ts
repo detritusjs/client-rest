@@ -5233,31 +5233,32 @@ export class Client extends EventSpewer {
   async fetchStorePublishedListingsSku(
     skuId: string,
   ): Promise<any> {
-    const query = {skuId};
+    const params = {skuId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
-      query,
       route: {
         method: HTTPMethods.GET,
         path: Api.STORE_PUBLISHED_LISTINGS_SKU,
+        params,
       },
+      useAuth: false,
     });
   }
 
   async fetchStorePublishedListingsSkuSubscriptionPlans(
     skuId: string,
   ): Promise<any> {
-    const query = {skuId};
+    const params = {skuId};
     if (this.clientsideChecks) {
       
     }
     return this.request({
-      query,
       route: {
         method: HTTPMethods.GET,
         path: Api.STORE_PUBLISHED_LISTINGS_SKU_SUBSCRIPTION_PLANS,
+        params,
       },
     });
   }

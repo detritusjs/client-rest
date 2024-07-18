@@ -225,8 +225,10 @@ export namespace RequestTypes {
   }
 
   export interface CreateChannelMessageComponent {
+    channelTypes?: Array<number>,
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
     customId?: string,
+    defaultValues?: Array<{id: string, type: string}>,
     disabled?: boolean,
     emoji?: RawEmojiPartial,
     label?: string,
@@ -1412,8 +1414,10 @@ export namespace RequestTypes {
 
   /* Raw Types */
   export interface RawChannelMessageComponent {
+    channel_types?: Array<number>,
     components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
     custom_id?: string,
+    default_values?: Array<{id: string, type: string}>,
     disabled?: boolean,
     emoji?: RawEmojiPartial,
     label?: string,

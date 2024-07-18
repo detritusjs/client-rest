@@ -162,7 +162,9 @@ export const CamelCaseToSnakeCase = Object.freeze({
                 return child;
               }
               return {
+                channel_types: component.channelTypes,
                 custom_id: child.customId,
+                default_values: component.defaultValues,
                 disabled: child.disabled,
                 emoji: child.emoji,
                 label: child.label,
@@ -179,7 +181,9 @@ export const CamelCaseToSnakeCase = Object.freeze({
                 value: child.value,
               };
             }),
+            channel_types: component.channelTypes,
             custom_id: component.customId,
+            default_values: component.defaultValues,
             disabled: component.disabled,
             emoji: component.emoji,
             label: component.label,
