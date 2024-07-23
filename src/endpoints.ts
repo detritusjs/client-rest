@@ -405,6 +405,10 @@ export const Api = {
     '/applications/:applicationId/commands',
   APPLICATION_COMMAND:
     '/applications/:applicationId/commands/:commandId',
+  APPLICATION_EMOJIS:
+    '/applications/:applicationId/emojis',
+  APPLICATION_EMOJI:
+    '/applications/:applicationId/emojis/:emojiId',
   APPLICATION_ENTITLEMENTS:
     '/applications/:applicationId/entitlements',
   APPLICATION_ENTITLEMENT:

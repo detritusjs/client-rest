@@ -190,6 +190,11 @@ export namespace RequestTypes {
     type: number,
   }
 
+  export interface CreateApplicationEmoji {
+    name: string,
+    image: Buffer | string,
+  }
+
   export interface CreateApplicationEntitlement {
     ownerId?: string,
     ownerType?: number,
@@ -699,6 +704,10 @@ export namespace RequestTypes {
 
   export type EditApplicationCommand = Partial<CreateApplicationCommand>;
   export type EditApplicationCommandData = Partial<CreateApplicationCommandData>;
+
+  export interface EditApplicationEmoji {
+    name?: string,
+  }
 
   export type EditApplicationGuildCommand = Partial<CreateApplicationCommand>;
   export type EditApplicationGuildCommandData = Partial<CreateApplicationCommandData>;

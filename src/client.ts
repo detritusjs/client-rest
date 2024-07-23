@@ -864,6 +864,29 @@ export class Client extends EventSpewer {
     });
   }
 
+  async createApplicationEmoji(
+    applicationId: string,
+    options: RequestTypes.CreateApplicationEmoji,
+  ): Promise<any> {
+    const body = {
+      name: options.name,
+      image: bufferToBase64(options.image),
+    };
+    const params = {applicationId};
+  
+    if (this.clientsideChecks) {
+      // 256kb limit
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.APPLICATION_EMOJIS,
+        params,
+      },
+    });
+  }
+
   async createApplicationEntitlement(
     applicationId: string,
     options: RequestTypes.CreateApplicationEntitlement,
@@ -1777,6 +1800,20 @@ export class Client extends EventSpewer {
     });
   }
 
+  async deleteApplicationEmoji(
+    applicationId: string,
+    emojiId: string,
+  ): Promise<any> {
+    const params = {applicationId, emojiId};
+    return this.request({
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.APPLICATION_EMOJI,
+        params,
+      },
+    });
+  }
+
   async deleteApplicationEntitlement(
     applicationId: string,
     entitlementId: string,
@@ -2407,6 +2444,28 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.PATCH,
         path: Api.APPLICATION_COMMAND,
+        params,
+      },
+    });
+  }
+
+  async editApplicationEmoji(
+    applicationId: string,
+    emojiId: string,
+    options: RequestTypes.EditApplicationEmoji = {},
+  ): Promise<any> {
+    const body = {
+      name: options.name,
+    };
+    const params = {applicationId, emojiId};
+    if (this.clientsideChecks) {
+  
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.APPLICATION_EMOJI,
         params,
       },
     });
@@ -3601,6 +3660,33 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.APPLICATION_COMMAND,
+        params,
+      },
+    });
+  }
+
+  async fetchApplicationEmojis(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.APPLICATION_EMOJIS,
+        params,
+      },
+    });
+  }
+
+  async fetchApplicationEmoji(
+    applicationId: string,
+    emojiId: string,
+  ): Promise<any> {
+    const params = {applicationId, emojiId};
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.APPLICATION_EMOJI,
         params,
       },
     });
