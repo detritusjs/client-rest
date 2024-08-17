@@ -5329,7 +5329,6 @@ export class Client extends EventSpewer {
         path: Api.STORE_PUBLISHED_LISTINGS_SKU,
         params,
       },
-      useAuth: false,
     });
   }
 
