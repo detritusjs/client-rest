@@ -128,6 +128,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
       application_id: options.applicationId,
       attachments: options.attachments,
       content: options.content,
+      enforce_nonce: options.enforceNonce,
       nonce: options.nonce,
       sticker_ids: options.stickerIds,
       tts: options.tts,
@@ -241,6 +242,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
         fail_if_not_exists: options.messageReference.failIfNotExists,
         guild_id: options.messageReference.guildId,
         message_id: options.messageReference.messageId,
+        type: options.messageReference.type,
       };
     }
     if (options.poll && typeof(options.poll) === 'object') {

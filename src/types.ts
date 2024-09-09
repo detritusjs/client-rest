@@ -433,6 +433,7 @@ export namespace RequestTypes {
   export interface CreateInteractionResponse {
     data?: CreateInteractionResponseInnerPayload | toJSON<CreateInteractionResponseInnerPayloadData>,
     type: number,
+    withResponse?: boolean,
   }
 
   export interface CreateInteractionResponseInnerPayload {
@@ -454,6 +455,7 @@ export namespace RequestTypes {
     hasSpoiler?: boolean,
     title?: string,
     tts?: boolean,
+    withResponse?: boolean,
   }
 
   export interface CreateInteractionResponseData {
@@ -524,6 +526,7 @@ export namespace RequestTypes {
     content?: string,
     embed?: CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed> | null,
     embeds?: Array<CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
+    enforceNonce?: boolean,
     file?: File,
     files?: Array<File>,
     hasSpoiler?: boolean,
@@ -531,7 +534,8 @@ export namespace RequestTypes {
       channelId?: string,
       failIfNotExists?: boolean,
       guildId?: string,
-      messageId: string,
+      messageId?: string,
+      type?: number,
     },
     nonce?: string,
     poll?: {
@@ -570,11 +574,13 @@ export namespace RequestTypes {
     components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
     embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
+    enforce_nonce?: boolean,
     message_reference?: {
       channel_id?: string,
       fail_if_not_exists?: boolean,
       guild_id?: string,
-      message_id: string,
+      message_id?: string,
+      type?: number,
     },
     nonce?: string,
     poll?: {

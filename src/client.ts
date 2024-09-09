@@ -1375,12 +1375,16 @@ export class Client extends EventSpewer {
     token: string,
     optionsOrType: RequestTypes.CreateInteractionResponse | number,
     innerData?: RequestTypes.CreateInteractionResponseInnerPayload | string,
+    withResponse?: boolean,
   ): Promise<any> {
     let options: RequestTypes.CreateInteractionResponse;
     if (typeof(optionsOrType) === 'number') {
       options = {type: optionsOrType};
     } else {
       options = optionsOrType;
+      if (withResponse === undefined) {
+        withResponse = options.withResponse;
+      }
     }
     if (innerData) {
       if (typeof(innerData) === 'string') {
@@ -1393,12 +1397,16 @@ export class Client extends EventSpewer {
       } else {
         options.data = innerData;
       }
+      if (withResponse === undefined) {
+        withResponse = innerData.withResponse;
+      }
     }
 
     const body: RequestTypes.CreateInteractionResponseData = {
       type: options.type,
     };
     const params = {interactionId, token};
+    const query = {with_response: withResponse};
 
     const files: Array<RequestTypes.File> = [];
     if (options.data) {
@@ -1418,6 +1426,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       files,
+      query,
       route: {
         method: HTTPMethods.POST,
         path: Api.INTERACTION_CALLBACK,
