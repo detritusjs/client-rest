@@ -155,6 +155,8 @@ export const Routes = Tools.URIEncodeWrap({
     '/activity',
   APPLICATION_DIRECTORY: (applicationId: string) =>
     `/application-directory/${applicationId}`,
+  APPLICATION_DIRECTORY_STORE: (applicationId: string, skuId?: string) =>
+    `/application-directory/${applicationId}/store` + ((skuId) ? `/${skuId}` : ''),
   APPLICATION_DIRECTORY_PREMIUM: (applicationId: string) =>
     `/application-directory/${applicationId}/premium`,
   APPLICATION_LIBRARY:

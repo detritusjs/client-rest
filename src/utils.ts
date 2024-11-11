@@ -15,17 +15,31 @@ export const CamelCaseToSnakeCase = Object.freeze({
     file: RequestTypes.File,
     fileId: number,
     hasSpoiler?: boolean,
-  ): [RequestTypes.File, {description?: string, filename?: string, id: number | string} | null]=> {
-    let attachment: {description?: string, filename?: string, id: number | string} | null = null;
+  ): [RequestTypes.File, {
+    description?: string,
+    duration_secs?: number,
+    filename?: string,
+    id: number | string,
+    waveform?: string,
+  } | null]=> {
+    let attachment: {
+      description?: string,
+      duration_secs?: number,
+      filename?: string,
+      id: number | string,
+      waveform?: string,
+    } | null = null;
 
     if (file.hasSpoiler || hasSpoiler) {
       spoilerfy(file);
     }
-    if (file.description) {
+    if (file.description || file.durationSecs || file.waveform) {
       attachment = {
         description: file.description,
+        duration_secs: file.durationSecs,
         filename: file.filename,
         id: fileId,
+        waveform: file.waveform,
       };
     }
     return [file, attachment];
@@ -126,7 +140,6 @@ export const CamelCaseToSnakeCase = Object.freeze({
   ): [RequestTypes.CreateMessageData, Array<RequestTypes.File>] => {
     const body: RequestTypes.CreateMessageData = {
       application_id: options.applicationId,
-      attachments: options.attachments,
       content: options.content,
       enforce_nonce: options.enforceNonce,
       nonce: options.nonce,
@@ -148,6 +161,20 @@ export const CamelCaseToSnakeCase = Object.freeze({
         roles: options.allowedMentions.roles,
         users: options.allowedMentions.users,
       };
+    }
+    if (options.attachments) {
+      body.attachments = options.attachments.map((attachment) => {
+        if ('toJSON' in attachment) {
+          return attachment;
+        }
+        return {
+          description: attachment.description,
+          duration_secs: attachment.durationSecs,
+          filename: attachment.filename,
+          id: attachment.id,
+          waveform: attachment.waveform,
+        };
+      });
     }
     if (options.components && typeof(options.components) === 'object') {
       if ('toJSON' in options.components) {
