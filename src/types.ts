@@ -550,6 +550,7 @@ export namespace RequestTypes {
     enforceNonce?: boolean,
     file?: File,
     files?: Array<File>,
+    flags?: number,
     hasSpoiler?: boolean,
     messageReference?: {
       channelId?: string,
@@ -602,6 +603,7 @@ export namespace RequestTypes {
     content?: string,
     embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
     enforce_nonce?: boolean,
+    flags?: number,
     message_reference?: {
       channel_id?: string,
       fail_if_not_exists?: boolean,

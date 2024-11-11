@@ -142,6 +142,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
       application_id: options.applicationId,
       content: options.content,
       enforce_nonce: options.enforceNonce,
+      flags: options.flags,
       nonce: options.nonce,
       sticker_ids: options.stickerIds,
       tts: options.tts,
@@ -308,8 +309,9 @@ export const CamelCaseToSnakeCase = Object.freeze({
     }
 
     if (options.files && options.files.length) {
+      const fileIdStart = files.length;
       for (let i = 0; i < options.files.length; i++) {
-        const [ file, attachment ] = CamelCaseToSnakeCase._File(options.files[i], i + files.length, options.hasSpoiler);
+        const [ file, attachment ] = CamelCaseToSnakeCase._File(options.files[i], i + fileIdStart, options.hasSpoiler);
         files.push(file);
         if (attachment) {
           if (body.attachments) {
@@ -326,8 +328,6 @@ export const CamelCaseToSnakeCase = Object.freeze({
   MessageEdit: (
     options: RequestTypes.EditMessage,
   ): [RequestTypes.EditMessageData, Array<RequestTypes.File>] => {
-    const response = CamelCaseToSnakeCase.MessageCreate(options) as [RequestTypes.EditMessageData, Array<RequestTypes.File>];
-    response[0].flags = options.flags;
-    return response;
+    return CamelCaseToSnakeCase.MessageCreate(options) as [RequestTypes.EditMessageData, Array<RequestTypes.File>];
   },
 });
