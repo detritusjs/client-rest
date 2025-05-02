@@ -1551,6 +1551,7 @@ export class Client extends EventSpewer {
 
     if (
       !('activity' in body) &&
+      !('components' in body) &&
       !('content' in body) &&
       !('embed' in body) &&
       !('embeds' in body) &&
@@ -3490,6 +3491,7 @@ export class Client extends EventSpewer {
         webhookToken: {required: true, type: VerifyTypes.STRING},
       });
       if (
+        !('components' in body) &&
         !('content' in body) &&
         !('embed' in body) &&
         !('sticker_ids' in body) &&
@@ -3597,6 +3599,7 @@ export class Client extends EventSpewer {
         webhookToken: {required: true, type: VerifyTypes.STRING},
       });
       if (
+        !('components' in body) &&
         !('content' in body) &&
         !('embed' in body) &&
         !('sticker_ids' in body) &&

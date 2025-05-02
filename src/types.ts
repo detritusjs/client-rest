@@ -1121,6 +1121,7 @@ export namespace RequestTypes {
     embeds?: Array<CreateChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
     file?: File,
     files?: Array<File>,
+    flags?: number,
     hasSpoiler?: boolean,
   }
 
@@ -1140,6 +1141,7 @@ export namespace RequestTypes {
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
     embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
+    flags?: number,
   }
 
   export interface ExecuteWebhook {
