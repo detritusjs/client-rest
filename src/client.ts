@@ -2825,6 +2825,9 @@ export class Client extends EventSpewer {
     options: RequestTypes.EditGuildMember = {},
   ): Promise<any> {
     const body = {
+      avatar: bufferToBase64(options.avatar),
+      banner: bufferToBase64(options.banner),
+      bio: options.bio,
       channel_id: options.channelId,
       communication_disabled_until: options.communicationDisabledUntil,
       deaf: options.deaf,

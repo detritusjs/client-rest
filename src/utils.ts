@@ -186,24 +186,137 @@ export const CamelCaseToSnakeCase = Object.freeze({
             return component;
           }
           return {
+            accent_color: component.accentColor,
+            accessory: (!component.accessory || 'toJSON' in component.accessory) ? component.accessory : {
+              accent_color: component.accessory.accentColor,
+              //accessory: component.accessory.accessory,
+              channel_types: component.accessory.channelTypes,
+              content: component.accessory.content,
+              custom_id: component.accessory.customId,
+              default_values: component.accessory.defaultValues,
+              description: component.accessory.description,
+              disabled: component.accessory.disabled,
+              divider: component.accessory.divider,
+              emoji: component.accessory.emoji,
+              file: component.accessory.file && {
+                url: component.accessory.file.url,
+              },
+              items: component.accessory.items && component.accessory.items.map((item) => {
+                if ('toJSON' in item) {
+                  return item;
+                }
+                return {
+                  description: item.description,
+                  media: item.media && {
+                    url: item.media.url,
+                  },
+                  spoiler: item.spoiler,
+                };
+              }),
+              label: component.accessory.label,
+              max_length: component.accessory.maxLength,
+              max_values: component.accessory.maxValues,
+              media: component.accessory.media && {
+                url: component.accessory.media.url,
+              },
+              min_length: component.accessory.minLength,
+              min_values: component.accessory.minValues,
+              options: component.accessory.options,
+              placeholder: component.accessory.placeholder,
+              required: component.accessory.required,
+              sku_id: component.accessory.skuId,
+              spoiler: component.accessory.spoiler,
+              style: component.accessory.style,
+              type: component.accessory.type,
+              url: component.accessory.url,
+              value: component.accessory.value,
+            },
             components: component.components && component.components.map((child) => {
               if ('toJSON' in child) {
                 return child;
               }
               return {
-                channel_types: component.channelTypes,
+                accent_color: child.accentColor,
+                accessory: (!child.accessory || 'toJSON' in child.accessory) ? child.accessory : {
+                  accent_color: child.accessory.accentColor,
+                  //accessory: child.accessory.accessory,
+                  channel_types: child.accessory.channelTypes,
+                  content: child.accessory.content,
+                  custom_id: child.accessory.customId,
+                  default_values: child.accessory.defaultValues,
+                  description: child.accessory.description,
+                  disabled: child.accessory.disabled,
+                  divider: child.accessory.divider,
+                  emoji: child.accessory.emoji,
+                  file: child.accessory.file && {
+                    url: child.accessory.file.url,
+                  },
+                  items: child.accessory.items && child.accessory.items.map((item) => {
+                    if ('toJSON' in item) {
+                      return item;
+                    }
+                    return {
+                      description: item.description,
+                      media: item.media && {
+                        url: item.media.url,
+                      },
+                      spoiler: item.spoiler,
+                    };
+                  }),
+                  label: child.accessory.label,
+                  max_length: child.accessory.maxLength,
+                  max_values: child.accessory.maxValues,
+                  media: child.accessory.media && {
+                    url: child.accessory.media.url,
+                  },
+                  min_length: child.accessory.minLength,
+                  min_values: child.accessory.minValues,
+                  options: child.accessory.options,
+                  placeholder: child.accessory.placeholder,
+                  required: child.accessory.required,
+                  sku_id: child.accessory.skuId,
+                  spoiler: child.accessory.spoiler,
+                  style: child.accessory.style,
+                  type: child.accessory.type,
+                  url: child.accessory.url,
+                  value: child.accessory.value,
+                },
+                channel_types: child.channelTypes,
+                content: child.content,
                 custom_id: child.customId,
-                default_values: component.defaultValues,
+                default_values: child.defaultValues,
+                description: child.description,
                 disabled: child.disabled,
+                divider: child.divider,
                 emoji: child.emoji,
+                file: child.file && {
+                  url: child.file.url,
+                },
+                items: child.items && child.items.map((item) => {
+                  if ('toJSON' in item) {
+                    return item;
+                  }
+                  return {
+                    description: item.description,
+                    media: item.media && {
+                      url: item.media.url,
+                    },
+                    spoiler: item.spoiler,
+                  };
+                }),
                 label: child.label,
                 max_length: child.maxLength,
                 max_values: child.maxValues,
+                media: child.media && {
+                  url: child.media.url,
+                },
                 min_length: child.minLength,
                 min_values: child.minValues,
                 options: child.options,
                 placeholder: child.placeholder,
                 required: child.required,
+                spacing: child.spacing,
+                spoiler: child.spoiler,
                 sku_id: child.skuId,
                 style: child.style,
                 type: child.type,
@@ -212,18 +325,41 @@ export const CamelCaseToSnakeCase = Object.freeze({
               };
             }),
             channel_types: component.channelTypes,
+            content: component.content,
             custom_id: component.customId,
             default_values: component.defaultValues,
+            description: component.description,
             disabled: component.disabled,
+            divider: component.divider,
             emoji: component.emoji,
+            file: component.file && {
+              url: component.file.url,
+            },
+            items: component.items && component.items.map((item) => {
+              if ('toJSON' in item) {
+                return item;
+              }
+              return {
+                description: item.description,
+                media: item.media && {
+                  url: item.media.url,
+                },
+                spoiler: item.spoiler,
+              };
+            }),
             label: component.label,
             max_length: component.maxLength,
             max_values: component.maxValues,
+            media: component.media && {
+              url: component.media.url,
+            },
             min_length: component.minLength,
             min_values: component.minValues,
             options: component.options,
             placeholder: component.placeholder,
             required: component.required,
+            spacing: component.spacing,
+            spoiler: component.spoiler,
             sku_id: component.skuId,
             style: component.style,
             type: component.type,
