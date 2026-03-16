@@ -173,6 +173,8 @@ export const CamelCaseToSnakeCase = Object.freeze({
           duration_secs: attachment.durationSecs,
           filename: attachment.filename,
           id: attachment.id,
+          original_content_type: attachment.originalContentType,
+          uploaded_filename: attachment.uploadedFilename,
           waveform: attachment.waveform,
         };
       });

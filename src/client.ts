@@ -954,6 +954,35 @@ export class Client extends EventSpewer {
     });
   }
 
+  async createChannelAttachments(
+    channelId: string,
+    options: RequestTypes.CreateChannelAttachments,
+  ): Promise<any> {
+    const body = {
+      files: options.files.map((x) => {
+        return {
+          file_size: x.fileSize,
+          filename: x.filename,
+          id: x.id,
+          is_clip: x.isClip,
+          original_content_type: x.originalContentType,
+        };
+      }),
+    };
+    const params = {channelId};
+    if (this.clientsideChecks) {
+  
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.CHANNEL_ATTACHMENTS,
+        params,
+      },
+    });
+  }
+
   async createChannelInvite(
     channelId: string,
     options: RequestTypes.CreateChannelInvite = {},
@@ -1157,12 +1186,15 @@ export class Client extends EventSpewer {
     const params = {guildId, userId};
     const query = {
       delete_message_days: options.deleteMessageDays,
-      reason: options.reason,
+      delete_message_seconds: options.deleteMessageSeconds,
     };
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
       query,
       route: {
         method: HTTPMethods.PUT,

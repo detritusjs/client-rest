@@ -517,6 +517,8 @@ export const Api = {
     '/channels',
   CHANNEL:
     '/channels/:channelId',
+  CHANNEL_ATTACHMENTS:
+    '/channels/:channelId/attachments',
   CHANNEL_CALL:
     '/channels/:channelId/call',
   CHANNEL_CALL_RING:

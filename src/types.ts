@@ -91,7 +91,7 @@ export namespace RequestTypes {
   }
 
   export interface BulkGuildBan {
-    deleteMessageSeconds?: number,
+    deleteMessageSeconds?: number | string,
     reason?: string,
     userIds: Array<string>,
   }
@@ -219,6 +219,16 @@ export namespace RequestTypes {
     thumbnailOverride?: Buffer | string,
     title?: string,
     url?: string,
+  }
+
+  export interface CreateChannelAttachments {
+    files: Array<{
+      fileSize: number,
+      filename: string,
+      id: number | string,
+      isClip?: boolean,
+      originalContentType?: string,
+    }>,
   }
 
   export interface CreateChannelInvite {
@@ -378,7 +388,8 @@ export namespace RequestTypes {
   }
 
   export interface CreateGuildBan {
-    deleteMessageDays?: string,
+    deleteMessageDays?: number | string,
+    deleteMessageSeconds?: number | string,
     reason?: string,
   }
 
@@ -464,6 +475,8 @@ export namespace RequestTypes {
       durationSecs?: number,
       filename?: string,
       id: number | string,
+      originalContentType?: string,
+      uploadedFilename?: string,
       waveform?: string,
     }>,
     choices?: Array<{name: string, nameLocalizations?: Record<string, string | undefined>, value: number | string}>,
@@ -497,6 +510,8 @@ export namespace RequestTypes {
       duration_secs?: number,
       filename?: string,
       id: number | string,
+      original_content_type?: string,
+      uploaded_filename?: string,
       waveform?: string,
     }>,
     choices?: Array<{name: string, name_localizations?: Record<string, string | undefined>, value: number | string}>,
@@ -555,6 +570,8 @@ export namespace RequestTypes {
       durationSecs?: number,
       filename?: string,
       id: number | string,
+      originalContentType?: string,
+      uploadedFilename?: string,
       waveform?: string,
     }>,
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
@@ -611,6 +628,8 @@ export namespace RequestTypes {
       duration_secs?: number,
       filename?: string,
       id: number | string,
+      original_content_type?: string,
+      uploaded_filename?: string,
       waveform?: string,
     }>,
     components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
@@ -1053,6 +1072,8 @@ export namespace RequestTypes {
       durationSecs?: number,
       filename?: string,
       id: number | string,
+      originalContentType?: string,
+      uploadedFilename?: string,
       waveform?: string,
     }>,
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
@@ -1077,6 +1098,8 @@ export namespace RequestTypes {
       duration_secs?: number,
       filename?: string,
       id: number | string,
+      original_content_type?: string,
+      uploaded_filename?: string,
       waveform?: string,
     }>,
     components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
@@ -1130,6 +1153,8 @@ export namespace RequestTypes {
       durationSecs?: number,
       filename?: string,
       id: number | string,
+      originalContentType?: string,
+      uploadedFilename?: string,
       waveform?: string,
     }>,
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
@@ -1153,6 +1178,8 @@ export namespace RequestTypes {
       duration_secs?: number,
       filename?: string,
       id: number | string,
+      original_content_type?: string,
+      uploaded_filename?: string,
       waveform?: string,
     }>,
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
