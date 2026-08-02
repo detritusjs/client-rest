@@ -11,16 +11,18 @@ export const Regexes = {
   [Types.SNOWFLAKE]: /^\d+|@me$/,
 };
 
+
 export function bufferToBase64(
   buffer?: Buffer | string | null,
 ): string | null | undefined {
-  if (buffer instanceof Buffer) {
-    const mimetype = 'image/png';
-    // just put image/png for now, discord checks the file for the mimetype anyways
-    return `data:${mimetype};base64,${buffer.toString('base64')}`;
+  if (typeof buffer === 'string' || buffer == null) {
+    return buffer;
   }
-  return buffer;
+  const mimetype = 'image/png';
+  // just put image/png for now, discord checks the file for the mimetype anyways
+  return `data:${mimetype};base64,${buffer.toString('base64')}`;
 }
+
 
 export function verifyData(data: {
   [key: string]: any,
