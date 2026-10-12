@@ -1,11 +1,14 @@
 import { Response } from 'detritus-rest';
 
+import { RatelimitHeaders } from './constants';
+
 class BaseError extends Error {
 
 }
 
 export class HTTPError extends BaseError {
   code: any;
+  ratelimitScope?: string;
   response: Response;
 
   constructor(response: Response, message?: string, code?: any) {
@@ -16,6 +19,7 @@ export class HTTPError extends BaseError {
 
     super(httpMessage);
     this.code = code;
+    this.ratelimitScope = response.headers.get(RatelimitHeaders.SCOPE) || undefined;
     this.response = response;
   }
 }

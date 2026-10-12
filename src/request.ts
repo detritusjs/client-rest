@@ -9,6 +9,7 @@ import { Client } from './client';
 import {
   RatelimitHeaders,
   RatelimitPrecisionTypes,
+  RatelimitScopes,
   RestEvents,
   MESSAGE_DELETE_RATELIMIT_CHECK,
   MESSAGE_DELETE_RATELIMIT_CHECK_OLDER,
@@ -122,6 +123,10 @@ export class RestRequest {
     return null;
   }
 
+  get isUsingClientToken(): boolean {
+    return !!this.client.token && this.request.headers.get('authorization') === this.client.tokenFormatted;
+  }
+
   get shouldRatelimitCheck(): boolean {
     return (
       (this.client.restClient.baseUrl instanceof URL) &&
@@ -131,6 +136,12 @@ export class RestRequest {
 
   sendRequest(): Promise<Response> {
     return new Promise((resolve, reject) => {
+      if (this.client.tokenUnauthorized && this.shouldRatelimitCheck && this.isUsingClientToken) {
+        // https://docs.discord.com/developers/topics/rate-limits#invalid-request-limit-aka-cloudflare-bans
+        // a previous request returned a 401, keep sending with this token and we will get the ip banned
+        return reject(new Error('Refusing to send request, the token was previously rejected with a 401'));
+      }
+
       if (this.shouldRatelimitCheck && !this.errorOnRatelimit) {
         if (this.client.globalBucket.locked) {
           return this.client.globalBucket.add({request: this, resolve, reject});
@@ -160,6 +171,24 @@ export class RestRequest {
 
     if (this.shouldRatelimitCheck) {
       let bucket: Bucket | null = null;
+
+      // https://docs.discord.com/developers/topics/rate-limits#invalid-request-limit-aka-cloudflare-bans
+      switch (response.statusCode) {
+        case 401: {
+          if (this.client.haltOnUnauthorized && this.isUsingClientToken) {
+            this.client.tokenUnauthorized = true;
+          }
+          this.client.addInvalidRequest();
+        }; break;
+        case 403: {
+          this.client.addInvalidRequest();
+        }; break;
+        case 429: {
+          if (response.headers.get(RatelimitHeaders.SCOPE) !== RatelimitScopes.SHARED) {
+            this.client.addInvalidRequest();
+          }
+        }; break;
+      }
 
       if (this.request.route) {
         // reason for this check is just incase the request doesnt have one and we will still check the global ratelimit
@@ -207,40 +236,50 @@ export class RestRequest {
 
       if (response.statusCode === 429 && !this.errorOnRatelimit) {
         // ratelimited, retry
+        // https://docs.discord.com/developers/topics/rate-limits#exceeding-a-rate-limit
+        // the body's `retry_after` (float seconds) is the source of truth, the `Retry-After` header is the fallback
+        // we can't read the body yet since it can only be consumed once, so use the header for the `errorOnRatelimitIfMoreThan` check
         let retryAfter = 0;
-        if (response.headers.has(RatelimitHeaders.RESET_AFTER)) {
+        if (response.headers.has(RatelimitHeaders.RETRY_AFTER)) {
+          retryAfter = (parseFloat(response.headers.get(RatelimitHeaders.RETRY_AFTER) || '') || 0) * 1000;
+        } else if (response.headers.has(RatelimitHeaders.RESET_AFTER)) {
           retryAfter = (parseFloat(response.headers.get(RatelimitHeaders.RESET_AFTER) || '') || 0) * 1000;
-        } else {
-          retryAfter = (parseInt(response.headers.get(RatelimitHeaders.RETRY_AFTER) || '') || 0) * 1000;
         }
 
         if (!this.errorOnRatelimitIfMoreThan || retryAfter <= this.errorOnRatelimitIfMoreThan) {
           const isDiscordRatelimit = response.headers.has('via');
+          const scope = response.headers.get(RatelimitHeaders.SCOPE) || null;
           return new Promise(async (resolve, reject) => {
             const delayed = {request: this, resolve, reject};
 
-            const data = await response.json() as {global: boolean, retry_after: number};
-            if (this.client.isBot) {
-              if (response.headers.get(RatelimitHeaders.GLOBAL) === 'true') {
-                this.client.globalBucket.lock(retryAfter);
-                this.client.globalBucket.add(delayed);
-                return;
-              }
+            let data: {global?: boolean, message?: string, retry_after?: number} | null = null;
+            try {
+              data = await response.json() as {global?: boolean, message?: string, retry_after?: number} | null;
+            } catch(error) {
+              // cloudflare can send us a non-json body
+            }
 
-              // incase they, for some reason, send us a differing body from the headers (happened cuz of channel edits with name/topic)
-              // just error out since this is a fluke
-              if ((data.retry_after * 1000) !== retryAfter) {
-                return reject(new HTTPError(response));
-              }
-            } else {
-              if (isDiscordRatelimit) {
-                // check json body since users dont get the above header
-                if (data.global) {
-                  this.client.globalBucket.lock(retryAfter);
-                  this.client.globalBucket.add(delayed);
-                  return;
-                }
-              }
+            if (data && typeof(data.retry_after) === 'number') {
+              retryAfter = data.retry_after * 1000;
+            }
+
+            const isGlobal = (
+              (response.headers.get(RatelimitHeaders.GLOBAL) === 'true') ||
+              (scope === RatelimitScopes.GLOBAL) ||
+              (isDiscordRatelimit && !!data && !!data.global)
+            );
+            this.client.emit(RestEvents.RATELIMITED, {
+              global: isGlobal,
+              response,
+              restRequest: this,
+              retryAfter,
+              scope,
+            });
+
+            if (isGlobal) {
+              this.client.globalBucket.lock(retryAfter);
+              this.client.globalBucket.add(delayed);
+              return;
             }
 
             if (bucket) {
@@ -252,7 +291,7 @@ export class RestRequest {
             }
 
             // unsure of what to do since we should've gotten global ratelimited
-            return reject(new HTTPError(response));
+            return reject(new HTTPError(response, (data) ? data.message : undefined));
           });
         }
 
@@ -262,10 +301,10 @@ export class RestRequest {
       }
     }
 
-    if (response.statusCode === 502 && this.maxRetries <= this.retries++) {
+    if (response.statusCode === 502 && this.retries++ < this.maxRetries) {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          this.request.send().then(resolve).catch(reject);
+          this.send().then(resolve).catch(reject);
         }, this.retryDelay);
         return;
       });

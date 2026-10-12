@@ -24,6 +24,9 @@ import {
   HTTPMethods,
   Package,
   RestEvents,
+  INVALID_REQUEST_LIMIT,
+  INVALID_REQUEST_LIMIT_INTERVAL,
+  INVALID_REQUEST_LIMIT_WARNING,
   SPOILER_ATTACHMENT_PREFIX,
 } from './constants';
 import { Api } from './endpoints';
@@ -63,6 +66,7 @@ export interface ClientOptions extends RestClientOptions {
   errorOnRatelimitIfMoreThan?: number,
   fingerprint?: string,
   globalBucket?: Bucket,
+  haltOnUnauthorized?: boolean,
   routesCollection?: BaseCollection<string, string>,
 }
 
@@ -76,8 +80,12 @@ export class Client extends EventSpewer {
   errorOnRatelimitIfMoreThan: number = 0;
   fingerprint?: string;
   globalBucket: Bucket;
+  haltOnUnauthorized: boolean = false;
+  invalidRequests: Array<number> = [];
+  invalidRequestsWarned: boolean = false;
   restClient: RestClient;
   token?: string;
+  tokenUnauthorized: boolean = false;
 
   constructor(token?: string, options?: ClientOptions) {
     super();
@@ -101,10 +109,12 @@ export class Client extends EventSpewer {
     this.errorOnRatelimitIfMoreThan = options.errorOnRatelimitIfMoreThan || this.errorOnRatelimitIfMoreThan;
     this.fingerprint = options.fingerprint,
     this.globalBucket = options.globalBucket || new Bucket('global');
+    this.haltOnUnauthorized = !!options.haltOnUnauthorized;
     this.routes = options.routesCollection || new BaseCollection<string, string>();
     this.token = token;
 
     Object.defineProperties(this, {
+      invalidRequests: {enumerable: false},
       restClient: {enumerable: false, writable: false},
       token: {enumerable: false, writable: false},
     });
@@ -120,6 +130,11 @@ export class Client extends EventSpewer {
       case AuthTypes.BOT: return 'Bot';
     }
     return '';
+  }
+
+  get invalidRequestCount(): number {
+    this.pruneInvalidRequests();
+    return this.invalidRequests.length;
   }
 
   get isBearer(): boolean {
@@ -143,6 +158,34 @@ export class Client extends EventSpewer {
       return this.token;
     }
     return '';
+  }
+
+  addInvalidRequest(): void {
+    this.invalidRequests.push(Date.now());
+    const count = this.invalidRequestCount;
+    if (INVALID_REQUEST_LIMIT_WARNING <= count) {
+      if (!this.invalidRequestsWarned) {
+        this.invalidRequestsWarned = true;
+        this.emit(RestEvents.INVALID_REQUEST_WARNING, {
+          count,
+          interval: INVALID_REQUEST_LIMIT_INTERVAL,
+          limit: INVALID_REQUEST_LIMIT,
+        });
+      }
+    } else {
+      this.invalidRequestsWarned = false;
+    }
+  }
+
+  pruneInvalidRequests(): void {
+    const expired = Date.now() - INVALID_REQUEST_LIMIT_INTERVAL;
+    let index = 0;
+    while (index < this.invalidRequests.length && this.invalidRequests[index] <= expired) {
+      index++;
+    }
+    if (index) {
+      this.invalidRequests.splice(0, index);
+    }
   }
 
   setAuthType(type: AuthTypes | string): void {

@@ -184,6 +184,13 @@ export enum RatelimitHeaders {
   RESET = 'x-ratelimit-reset',
   RESET_AFTER = 'x-ratelimit-reset-after',
   RETRY_AFTER = 'retry-after',
+  SCOPE = 'x-ratelimit-scope',
+}
+
+export enum RatelimitScopes {
+  GLOBAL = 'global',
+  SHARED = 'shared',
+  USER = 'user',
 }
 
 export enum RatelimitPrecisionTypes {
@@ -192,9 +199,17 @@ export enum RatelimitPrecisionTypes {
 }
 
 export enum RestEvents {
+  INVALID_REQUEST_WARNING = 'invalidRequestWarning',
+  RATELIMITED = 'ratelimited',
   REQUEST = 'request',
   RESPONSE = 'response',
 }
+
+// https://docs.discord.com/developers/topics/rate-limits#invalid-request-limit-aka-cloudflare-bans
+// 10,000 invalid requests (401, 403, 429 excluding shared-scope 429s) per 10 minutes gets the ip temporarily banned
+export const INVALID_REQUEST_LIMIT = 10000;
+export const INVALID_REQUEST_LIMIT_INTERVAL = (10 * 60) * 1000; // 10 minutes
+export const INVALID_REQUEST_LIMIT_WARNING = 9000;
 
 
 export const RATELIMIT_BUCKET_MAJOR_PARAMS = Object.freeze(['channelId', 'guildId', 'webhookId', 'webhookToken']);

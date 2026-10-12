@@ -4,6 +4,20 @@ import { RestRequest } from './request';
 
 
 export namespace RestClientEvents {
+  export interface InvalidRequestWarningPayload {
+    count: number,
+    interval: number,
+    limit: number,
+  }
+
+  export interface RatelimitedPayload {
+    global: boolean,
+    response: Response,
+    restRequest: RestRequest,
+    retryAfter: number,
+    scope: null | string,
+  }
+
   export interface RequestPayload {
     request: Request,
     restRequest: RestRequest,
@@ -145,6 +159,8 @@ export namespace RequestTypes {
     description: string,
     descriptionLocalizations?: Record<string, string | undefined>,
     dmPermission?: boolean,
+    // only for `PRIMARY_ENTRY_POINT` commands
+    handler?: number,
     id?: string,
     integrationTypes?: Array<number>,
     name: string,
@@ -161,6 +177,8 @@ export namespace RequestTypes {
     description?: string,
     description_localizations?: Record<string, string | undefined>,
     dm_permission?: boolean,
+    // only for `PRIMARY_ENTRY_POINT` commands
+    handler?: number,
     id?: string,
     integration_types?: Array<number>,
     name: string,
@@ -177,7 +195,9 @@ export namespace RequestTypes {
     description?: string,
     descriptionLocalizations?: Record<string, string | undefined>,
     fileTypes?: Array<string>,
+    maxLength?: number,
     maxValue?: number | bigint | string,
+    minLength?: number,
     minValue?: number | bigint | string,
     name: string,
     nameLocalizations?: Record<string, string | undefined>,
@@ -193,7 +213,9 @@ export namespace RequestTypes {
     description?: string,
     description_localizations?: Record<string, string | undefined>,
     file_types?: Array<string>,
+    max_length?: number,
     max_value?: number | bigint | string,
+    min_length?: number,
     min_value?: number | bigint | string,
     name: string,
     name_localizations?: Record<string, string | undefined>,
