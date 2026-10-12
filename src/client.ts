@@ -540,6 +540,26 @@ export class Client extends EventSpewer {
     });
   }
 
+  async addInviteTargetUser(
+    code: string,
+    userId: string,
+  ): Promise<any> {
+    const params = {code, userId};
+    if (this.clientsideChecks) {
+      verifyData(params, {
+        code: {required: true, type: VerifyTypes.STRING},
+        userId: {required: true, type: VerifyTypes.SNOWFLAKE},
+      });
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.PUT,
+        path: Api.INVITE_TARGET_USER,
+        params,
+      },
+    });
+  }
+
   async addPinnedMessage(
     channelId: string,
     messageId: string,
@@ -658,6 +678,58 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.POST,
         path: Api.GUILD_PRUNE,
+        params,
+      },
+    });
+  }
+
+  async bulkAddInviteTargetUsers(
+    code: string,
+    options: RequestTypes.BulkAddInviteTargetUsers,
+  ): Promise<any> {
+    const body = {
+      user_ids: options.userIds,
+    };
+    const params = {code};
+    if (this.clientsideChecks) {
+      if (1000 < body.user_ids.length) {
+        throw new Error('User Ids amount needs to be at most 1000');
+      }
+      verifyData(params, {
+        code: {required: true, type: VerifyTypes.STRING},
+      });
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.INVITE_TARGET_USERS_BULK_ADD,
+        params,
+      },
+    });
+  }
+
+  async bulkDeleteInviteTargetUsers(
+    code: string,
+    options: RequestTypes.BulkDeleteInviteTargetUsers,
+  ): Promise<any> {
+    const body = {
+      user_ids: options.userIds,
+    };
+    const params = {code};
+    if (this.clientsideChecks) {
+      if (1000 < body.user_ids.length) {
+        throw new Error('User Ids amount needs to be at most 1000');
+      }
+      verifyData(params, {
+        code: {required: true, type: VerifyTypes.STRING},
+      });
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.INVITE_TARGET_USERS_BULK_DELETE,
         params,
       },
     });
@@ -993,6 +1065,7 @@ export class Client extends EventSpewer {
       target_application_id: options.targetApplicationId,
       target_type: options.targetType,
       target_user_id: options.targetUserId,
+      target_user_ids: options.targetUserIds,
       temporary: options.temporary,
       unique: options.unique,
     };
@@ -2440,12 +2513,17 @@ export class Client extends EventSpewer {
     webhookId: string,
     webhookToken: string,
     messageId: string,
+    options: RequestTypes.DeleteWebhookTokenMessage = {},
   ): Promise<any> {
     const params = {webhookId, webhookToken, messageId};
+    const query = {
+      thread_id: options.threadId,
+    };
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      query,
       route: {
         method: HTTPMethods.DELETE,
         path: Api.WEBHOOK_TOKEN_MESSAGE,
@@ -3516,6 +3594,10 @@ export class Client extends EventSpewer {
       options = {content: options};
     }
     const params = {webhookId, webhookToken, messageId};
+    const query = {
+      thread_id: options.threadId,
+      with_components: options.withComponents,
+    };
     const [ body, files ] = CamelCaseToSnakeCase.MessageEdit(options);
     if (this.clientsideChecks) {
       // verify body
@@ -3539,6 +3621,7 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       files,
+      query,
       route: {
         method: HTTPMethods.PATCH,
         path: Api.WEBHOOK_TOKEN_MESSAGE,
@@ -3603,6 +3686,7 @@ export class Client extends EventSpewer {
     const query = {
       thread_id: options.threadId,
       wait: options.wait,
+      with_components: options.withComponents,
     }
     const route = {
       method: HTTPMethods.POST,
@@ -3681,12 +3765,17 @@ export class Client extends EventSpewer {
 
   async fetchApplicationCommands(
     applicationId: string,
+    options: RequestTypes.FetchApplicationCommands = {},
   ): Promise<any> {
     const params = {applicationId};
+    const query = {
+      with_localizations: options.withLocalizations,
+    };
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      query,
       route: {
         method: HTTPMethods.GET,
         path: Api.APPLICATION_COMMANDS,
@@ -3776,12 +3865,17 @@ export class Client extends EventSpewer {
   async fetchApplicationGuildCommands(
     applicationId: string,
     guildId: string,
+    options: RequestTypes.FetchApplicationGuildCommands = {},
   ): Promise<any> {
     const params = {applicationId, guildId};
+    const query = {
+      with_localizations: options.withLocalizations,
+    };
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      query,
       route: {
         method: HTTPMethods.GET,
         path: Api.APPLICATION_GUILD_COMMANDS,
@@ -5022,6 +5116,7 @@ export class Client extends EventSpewer {
       after: options.after,
       before: options.before,
       limit: options.limit,
+      shard: options.shard,
     };
     if (this.clientsideChecks) {
 
@@ -5673,12 +5768,17 @@ export class Client extends EventSpewer {
     webhookId: string,
     webhookToken: string,
     messageId: string,
+    options: RequestTypes.FetchWebhookTokenMessage = {},
   ): Promise<any> {
     const params = {webhookId, webhookToken, messageId};
+    const query = {
+      thread_id: options.threadId,
+    };
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      query,
       route: {
         method: HTTPMethods.GET,
         path: Api.WEBHOOK_TOKEN_MESSAGE,
@@ -6047,6 +6147,26 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.DELETE,
         path: Api.GUILD_MEMBER_ROLE,
+        params,
+      },
+    });
+  }
+
+  async removeInviteTargetUser(
+    code: string,
+    userId: string,
+  ): Promise<any> {
+    const params = {code, userId};
+    if (this.clientsideChecks) {
+      verifyData(params, {
+        code: {required: true, type: VerifyTypes.STRING},
+        userId: {required: true, type: VerifyTypes.SNOWFLAKE},
+      });
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.INVITE_TARGET_USER,
         params,
       },
     });

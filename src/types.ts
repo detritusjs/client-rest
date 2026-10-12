@@ -90,6 +90,14 @@ export namespace RequestTypes {
     reason?: string,
   }
 
+  export interface BulkAddInviteTargetUsers {
+    userIds: Array<string>,
+  }
+
+  export interface BulkDeleteInviteTargetUsers {
+    userIds: Array<string>,
+  }
+
   export interface BulkGuildBan {
     deleteMessageSeconds?: number | string,
     reason?: string,
@@ -168,6 +176,7 @@ export namespace RequestTypes {
     choices?: Array<{name: string, nameLocalizations?: Record<string, string | undefined>, value: string | number}>,
     description?: string,
     descriptionLocalizations?: Record<string, string | undefined>,
+    fileTypes?: Array<string>,
     maxValue?: number | bigint | string,
     minValue?: number | bigint | string,
     name: string,
@@ -183,6 +192,7 @@ export namespace RequestTypes {
     choices?: Array<{name: string, name_localizations?: Record<string, string | undefined>, value: string | number}>,
     description?: string,
     description_localizations?: Record<string, string | undefined>,
+    file_types?: Array<string>,
     max_value?: number | bigint | string,
     min_value?: number | bigint | string,
     name: string,
@@ -237,6 +247,7 @@ export namespace RequestTypes {
     targetApplicationId?: string,
     targetType?: number,
     targetUserId?: string,
+    targetUserIds?: Array<string>,
     temporary?: boolean,
     unique?: boolean,
   }
@@ -245,15 +256,18 @@ export namespace RequestTypes {
     accentColor?: number,
     accessory?: CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>,
     channelTypes?: Array<number>,
+    component?: CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>,
     components?: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
     content?: string,
     customId?: string,
+    default?: boolean,
     defaultValues?: Array<{id: string, type: string}>,
     description?: string,
     disabled?: boolean,
     divider?: boolean,
     emoji?: RawEmojiPartial,
     file?: {url: string},
+    fileTypes?: Array<string>,
     items?: Array<{
       description?: string,
       media: {url: string},
@@ -765,6 +779,10 @@ export namespace RequestTypes {
     reason?: string,
   }
 
+  export interface DeleteWebhookTokenMessage {
+    threadId?: string,
+  }
+
   export interface DisableAccount {
     code?: string,
     password: string,
@@ -1165,6 +1183,8 @@ export namespace RequestTypes {
     files?: Array<File>,
     flags?: number,
     hasSpoiler?: boolean,
+    threadId?: string,
+    withComponents?: boolean,
   }
 
   export interface EditWebhookTokenMessageData {
@@ -1207,6 +1227,7 @@ export namespace RequestTypes {
     tts?: boolean,
     username?: string,
     wait?: boolean,
+    withComponents?: boolean,
   }
 
   export interface ExecuteWebhookData {
@@ -1224,6 +1245,10 @@ export namespace RequestTypes {
     username?: string,
   }
 
+  export interface FetchApplicationCommands {
+    withLocalizations?: boolean,
+  }
+
   export interface FetchApplicationEntitlements {
     after?: string,
     before?: string,
@@ -1232,6 +1257,10 @@ export namespace RequestTypes {
     limit?: number,
     skuIds?: Array<string> | string,
     userId?: string,
+  }
+
+  export interface FetchApplicationGuildCommands {
+    withLocalizations?: boolean,
   }
 
   export interface FetchChannelPollAnswerVoters {
@@ -1331,6 +1360,7 @@ export namespace RequestTypes {
     after?: string,
     before?: string,
     limit?: number,
+    shard?: number,
   }
 
   export interface FetchMentions {
@@ -1367,6 +1397,10 @@ export namespace RequestTypes {
 
   export interface FetchTeamPayouts {
     limit?: number,
+  }
+
+  export interface FetchWebhookTokenMessage {
+    threadId?: string,
   }
 
   export interface FollowChannel {
@@ -1531,15 +1565,18 @@ export namespace RequestTypes {
     accent_color?: number,
     accessory?: RawChannelMessageComponent | toJSON<RawChannelMessageComponent>,
     channel_types?: Array<number>,
+    component?: RawChannelMessageComponent | toJSON<RawChannelMessageComponent>,
     components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
     content?: string,
     custom_id?: string,
+    default?: boolean,
     default_values?: Array<{id: string, type: string}>,
     description?: string,
     disabled?: boolean,
     divider?: boolean,
     emoji?: RawEmojiPartial,
     file?: {url: string},
+    file_types?: Array<string>,
     items?: Array<{
       description?: string,
       media: {url: string},

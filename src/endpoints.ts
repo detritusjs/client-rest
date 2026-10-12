@@ -805,6 +805,12 @@ export const Api = {
 
   INVITE:
     '/invites/:code',
+  INVITE_TARGET_USER:
+    '/invites/:code/target-users/:userId',
+  INVITE_TARGET_USERS_BULK_ADD:
+    '/invites/:code/target-users/bulk-add',
+  INVITE_TARGET_USERS_BULK_DELETE:
+    '/invites/:code/target-users/bulk-delete',
 
   JOBS:
     '/jobs/:jobId',
