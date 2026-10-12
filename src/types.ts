@@ -208,9 +208,10 @@ export namespace RequestTypes {
   }
 
   export interface CreateApplicationEntitlement {
-    ownerId?: string,
-    ownerType?: number,
-    skuId?: string,
+    ownerId: string,
+    // 1 for a guild, 2 for a user
+    ownerType: number,
+    skuId: string,
   }
 
   export interface CreateApplicationGuildCommand extends CreateApplicationCommand {
@@ -241,13 +242,21 @@ export namespace RequestTypes {
     }>,
   }
 
+  export interface AddRecipient {
+    accessToken?: string,
+    nick?: string,
+  }
+
   export interface CreateChannelInvite {
     maxAge?: number,
     maxUses?: number,
+    roleIds?: Array<string>,
     targetApplicationId?: string,
     targetType?: number,
     targetUserId?: string,
     targetUserIds?: Array<string>,
+    // csv of user ids allowed to accept the invite, an array of user ids gets turned into one
+    targetUsersFile?: Array<string> | Buffer | string,
     temporary?: boolean,
     unique?: boolean,
   }
@@ -336,8 +345,9 @@ export namespace RequestTypes {
   }
 
   export interface CreateChannelMessageThread {
-    autoArchiveDuration: number,
+    autoArchiveDuration?: number,
     name: string,
+    rateLimitPerUser?: number,
     reason?: string,
   }
 
@@ -349,13 +359,22 @@ export namespace RequestTypes {
   }
 
   export interface CreateChannelThread {
-    autoArchiveDuration: number,
+    appliedTags?: Array<string>,
+    autoArchiveDuration?: number,
+    invitable?: boolean,
+    // for forum and media channels, the thread's starter message
+    message?: CreateMessage,
     name: string,
+    rateLimitPerUser?: number,
     reason?: string,
     type?: number,
   }
 
   export interface CreateDm {
+    // group dms, oauth2 access tokens of the users to add (with the `gdm.join` scope)
+    accessTokens?: Array<string>,
+    // group dms, user id to nickname
+    nicks?: Record<string, string>,
     recipientId?: string,
     recipients?: Array<string>,
   }
@@ -378,9 +397,9 @@ export namespace RequestTypes {
   export interface CreateGuildAutoModerationRule {
     actions: Array<{
       metadata?: {
-        channelId: string,
+        channelId?: string,
         customMessage?: string,
-        durationSeconds: number,
+        durationSeconds?: number,
       },
       type: number,
     }>,
@@ -408,17 +427,28 @@ export namespace RequestTypes {
   }
 
   export interface CreateGuildChannel {
+    availableTags?: EditChannel['availableTags'],
     branchId?: string,
     bitrate?: number,
+    defaultAutoArchiveDuration?: number,
+    defaultForumLayout?: number,
+    defaultReactionEmoji?: EditChannel['defaultReactionEmoji'],
+    defaultSortOrder?: null | number,
+    defaultThreadRateLimitPerUser?: number,
+    flags?: number,
     name: string,
     nsfw?: boolean,
     parentId?: string,
     permissionOverwrites?: Array<CreateChannelOverwrite>,
+    position?: number,
+    rateLimitPerUser?: number,
     reason?: string,
+    rtcRegion?: null | string,
     skuId?: string,
     topic?: string,
     type: number,
     userLimit?: number,
+    videoQualityMode?: number,
   }
 
   export interface CreateGuildEmoji {
@@ -436,6 +466,12 @@ export namespace RequestTypes {
 
   export interface CreateGuildRole {
     color?: number,
+    // role gradients, `color` still works for a single color
+    colors?: {
+      primaryColor: number,
+      secondaryColor?: null | number,
+      tertiaryColor?: null | number,
+    },
     hoist?: boolean,
     icon?: Buffer | string | null,
     mentionable?: boolean,
@@ -454,9 +490,21 @@ export namespace RequestTypes {
     name: string,
     privacyLevel: number,
     reason?: string,
+    recurrenceRule?: GuildScheduledEventRecurrenceRule,
     scheduledEndTime?: Date | string,
     scheduledStartTime: Date | string,
+    // not supported on create, events always start as scheduled
     status?: number,
+  }
+
+  export interface CreateGuildSoundboardSound {
+    emojiId?: null | string,
+    emojiName?: null | string,
+    name: string,
+    reason?: string,
+    // mp3 or ogg, max 512kb and 5.2 seconds
+    sound: Buffer | string,
+    volume?: number,
   }
 
   export interface CreateGuildSticker {
@@ -468,7 +516,7 @@ export namespace RequestTypes {
   }
 
   export interface CreateGuildTemplate {
-    description?: string,
+    description?: null | string,
     name: string,
   }
 
@@ -503,6 +551,7 @@ export namespace RequestTypes {
     files?: Array<File>,
     flags?: number,
     hasSpoiler?: boolean,
+    poll?: CreateMessage['poll'],
     title?: string,
     tts?: boolean,
     withResponse?: boolean,
@@ -534,16 +583,36 @@ export namespace RequestTypes {
     custom_id?: string,
     embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
     flags?: number,
+    poll?: CreateMessageData['poll'],
     title?: string,
     tts?: boolean,
   }
 
   export interface CreateLobby {
+    idleTimeoutSeconds?: number,
+    members?: Array<LobbyMember>,
+    metadata?: Record<string, string> | null,
+    /** @deprecated old GameSDK lobbies, not sent anymore */
     capacity?: number,
+    /** @deprecated old GameSDK lobbies, not sent anymore */
     locked?: boolean,
-    metadata?: any,
+    /** @deprecated old GameSDK lobbies, not sent anymore */
     ownerId?: string,
+    /** @deprecated old GameSDK lobbies, not sent anymore */
     type?: number,
+  }
+
+  export interface CreateLobbyMessage {
+    content: string,
+    flags?: number,
+    metadata?: Record<string, string>,
+  }
+
+  export interface CreateOrJoinLobby {
+    idleTimeoutSeconds?: number,
+    lobbyMetadata?: Record<string, string> | null,
+    memberMetadata?: Record<string, string> | null,
+    secret: string,
   }
 
   export interface CreateMeBillingPaymentSource {
@@ -700,7 +769,16 @@ export namespace RequestTypes {
 
   export interface CreateStageInstance {
     channelId: string,
+    guildScheduledEventId?: string,
+    privacyLevel?: number,
+    reason?: string,
+    // needs MENTION_EVERYONE to notify @everyone
+    sendStartNotification?: boolean,
     topic: string,
+  }
+
+  export interface DeleteStageInstance {
+    reason?: string,
   }
 
   export interface CreateStoreApplicationAsset {
@@ -714,8 +792,9 @@ export namespace RequestTypes {
   }
 
   export interface CreateWebhook {
-    avatar?: string,
+    avatar?: Buffer | string | null,
     name: string,
+    reason?: string,
   }
 
   export interface DeleteAccount {
@@ -791,6 +870,54 @@ export namespace RequestTypes {
   export type EditApplicationCommand = Partial<CreateApplicationCommand>;
   export type EditApplicationCommandData = Partial<CreateApplicationCommandData>;
 
+  export interface EditApplication {
+    coverImage?: Buffer | string | null,
+    customInstallUrl?: string,
+    description?: string,
+    eventWebhooksStatus?: number,
+    eventWebhooksTypes?: Array<string>,
+    eventWebhooksUrl?: string,
+    flags?: number,
+    icon?: Buffer | string | null,
+    installParams?: {
+      permissions: string,
+      scopes: Array<string>,
+    },
+    integrationTypesConfig?: Record<string, {
+      oauth2InstallParams?: {
+        permissions: string,
+        scopes: Array<string>,
+      },
+    }>,
+    interactionsEndpointUrl?: string,
+    roleConnectionsVerificationUrl?: string,
+    tags?: Array<string>,
+  }
+
+  export interface EditApplicationData {
+    cover_image?: string | null,
+    custom_install_url?: string,
+    description?: string,
+    event_webhooks_status?: number,
+    event_webhooks_types?: Array<string>,
+    event_webhooks_url?: string,
+    flags?: number,
+    icon?: string | null,
+    install_params?: {
+      permissions: string,
+      scopes: Array<string>,
+    },
+    integration_types_config?: Record<string, {
+      oauth2_install_params?: {
+        permissions: string,
+        scopes: Array<string>,
+      },
+    }>,
+    interactions_endpoint_url?: string,
+    role_connections_verification_url?: string,
+    tags?: Array<string>,
+  }
+
   export interface EditApplicationEmoji {
     name?: string,
   }
@@ -823,18 +950,34 @@ export namespace RequestTypes {
   }
 
   export interface EditChannel {
+    appliedTags?: Array<string>,
     archived?: boolean,
     autoArchiveDuration?: number,
+    availableTags?: Array<{
+      emojiId?: null | string,
+      emojiName?: null | string,
+      id?: string,
+      moderated?: boolean,
+      name: string,
+    }>,
     bitrate?: number,
     defaultAutoArchiveDuration?: number,
+    defaultForumLayout?: number,
+    defaultReactionEmoji?: {
+      emojiId?: null | string,
+      emojiName?: null | string,
+    } | null,
+    defaultSortOrder?: null | number,
+    defaultThreadRateLimitPerUser?: number,
+    flags?: number,
     icon?: Buffer | string | null,
     invitable?: boolean,
     locked?: boolean,
     name?: string,
     nsfw?: boolean,
-    parentId?: string,
+    parentId?: null | string,
     permissionOverwrites?: Array<CreateChannelOverwrite>,
-    position?: string,
+    position?: number | string,
     rateLimitPerUser?: number,
     reason?: string,
     rtcRegion?: string,
@@ -842,6 +985,10 @@ export namespace RequestTypes {
     type?: number,
     userLimit?: number,
     videoQualityMode?: number,
+  }
+
+  export interface EditChannelVoiceStatus {
+    status: null | string,
   }
 
   export interface EditChannelOverwrite {
@@ -861,8 +1008,8 @@ export namespace RequestTypes {
     afkTimeout?: number,
     banner?: Buffer | string,
     code?: string,
-    defaultMessageNotifications?: string,
-    description?: string,
+    defaultMessageNotifications?: number,
+    description?: null | string,
     discoverySplash?: Buffer | string | null,
     explicitContentFilter?: number,
     features?: Array<string>,
@@ -870,10 +1017,12 @@ export namespace RequestTypes {
     name?: string,
     ownerId?: string,
     preferredLocale?: string,
-    publicUpdatesChannelId?: string,
+    premiumProgressBarEnabled?: boolean,
+    publicUpdatesChannelId?: null | string,
     reason?: string,
     region?: string,
     rulesChannelId?: null | string,
+    safetyAlertsChannelId?: null | string,
     splash?: Buffer | string | null,
     systemChannelFlags?: number,
     systemChannelId?: null | string,
@@ -883,9 +1032,9 @@ export namespace RequestTypes {
   export interface EditGuildAutoModerationRule {
     actions?: Array<{
       metadata?: {
-        channelId: string,
+        channelId?: string,
         customMessage?: string,
-        durationSeconds: number,
+        durationSeconds?: number,
       },
       type: number,
     }>,
@@ -924,7 +1073,8 @@ export namespace RequestTypes {
   export interface EditGuildEmoji {
     name?: string,
     reason?: string,
-    roles?: Array<string>,
+    // null clears the role restriction
+    roles?: Array<string> | null,
   }
 
   export interface EditGuildIntegration {
@@ -939,12 +1089,58 @@ export namespace RequestTypes {
     banner?: Buffer | null | string,
     bio?: string | null,
     channelId?: string | null,
-    communicationDisabledUntil?: string | null,
+    communicationDisabledUntil?: Date | string | null,
     deaf?: boolean,
+    flags?: number,
     mute?: boolean,
     nick?: string | null,
     reason?: string,
     roles?: Array<string>,
+  }
+
+  export interface EditGuildIncidentActions {
+    // null to turn back on, max 24 hours in the future
+    dmsDisabledUntil?: Date | string | null,
+    invitesDisabledUntil?: Date | string | null,
+  }
+
+  export interface EditGuildOnboarding {
+    defaultChannelIds?: Array<string>,
+    enabled?: boolean,
+    mode?: number,
+    prompts?: Array<GuildOnboardingPrompt>,
+    reason?: string,
+  }
+
+  export interface EditGuildWelcomeScreen {
+    description?: null | string,
+    enabled?: boolean,
+    reason?: string,
+    welcomeChannels?: Array<{
+      channelId: string,
+      description: string,
+      emojiId?: null | string,
+      emojiName?: null | string,
+    }> | null,
+  }
+
+  export interface GuildOnboardingPrompt {
+    id?: string,
+    inOnboarding: boolean,
+    options: Array<{
+      channelIds?: Array<string>,
+      description?: null | string,
+      emojiAnimated?: boolean,
+      emojiId?: string,
+      emojiName?: string,
+      id?: string,
+      roleIds?: Array<string>,
+      title: string,
+    }>,
+    required: boolean,
+    singleSelect: boolean,
+    title: string,
+    type: number,
   }
 
   export interface EditGuildMemberVerification {
@@ -965,6 +1161,12 @@ export namespace RequestTypes {
 
   export interface EditGuildRole {
     color?: number,
+    // role gradients, `color` still works for a single color
+    colors?: {
+      primaryColor: number,
+      secondaryColor?: null | number,
+      tertiaryColor?: null | number,
+    },
     hoist?: boolean,
     icon?: Buffer | string | null,
     mentionable?: boolean,
@@ -987,6 +1189,16 @@ export namespace RequestTypes {
     reason?: string,
   }
 
+  export interface EditGuildTemplate {
+    description?: null | string,
+    name?: string,
+  }
+
+  export interface EditInviteTargetUsers {
+    // csv of user ids, an array of user ids gets turned into one
+    targetUsersFile: Array<string> | Buffer | string,
+  }
+
   export interface EditGuildScheduledEvent {
     channelId?: string | null,
     description?: string | null,
@@ -996,9 +1208,28 @@ export namespace RequestTypes {
     name?: string,
     privacyLevel?: number,
     reason?: string,
+    recurrenceRule?: GuildScheduledEventRecurrenceRule | null,
     scheduledEndTime?: Date | string,
     scheduledStartTime?: Date | string,
     status?: number,
+  }
+
+  export interface EditGuildSoundboardSound {
+    emojiId?: null | string,
+    emojiName?: null | string,
+    name?: string,
+    reason?: string,
+    volume?: null | number,
+  }
+
+  export interface DeleteGuildSoundboardSound {
+    reason?: string,
+  }
+
+  export interface SendSoundboardSound {
+    soundId: string,
+    // required when playing a sound from another guild
+    sourceGuildId?: string,
   }
 
   export interface EditGuildSticker {
@@ -1013,7 +1244,7 @@ export namespace RequestTypes {
   }
 
   export interface EditGuildVoiceState {
-    channelId: string,
+    channelId?: string,
     requestToSpeakTimestamp?: null | Date | string,
     suppress?: boolean,
   }
@@ -1025,19 +1256,47 @@ export namespace RequestTypes {
   }
 
   export interface EditLobby {
+    idleTimeoutSeconds?: number,
+    // replaces the member list, members not included are removed
+    members?: Array<LobbyMember>,
+    metadata?: Record<string, string> | null,
+    /** @deprecated old GameSDK lobbies, not sent anymore */
     capacity?: number,
+    /** @deprecated old GameSDK lobbies, not sent anymore */
     locked?: boolean,
-    metadata?: any,
+    /** @deprecated old GameSDK lobbies, not sent anymore */
     ownerId?: string,
+    /** @deprecated old GameSDK lobbies, not sent anymore */
     type?: number,
   }
 
+  export interface EditLobbyChannelLinking {
+    // leave empty to unlink
+    channelId?: string,
+  }
+
   export interface EditLobbyMember {
-    metadata?: any,
+    // null clears it
+    additionalName?: null | string,
+    flags?: number,
+    metadata?: Record<string, string> | null,
+  }
+
+  export interface EditLobbyMembersBulk extends Array<LobbyMember & {removeMember?: boolean}> {
+
+  }
+
+  export interface FetchLobbyMessages {
+    limit?: number,
+  }
+
+  export interface LobbyMember extends EditLobbyMember {
+    id: string,
   }
 
   export interface EditMe {
     avatar?: Buffer | null | string,
+    banner?: Buffer | null | string,
     code?: string,
     customStatus?: {
       emojiId?: string,
@@ -1138,6 +1397,8 @@ export namespace RequestTypes {
   }
 
   export interface EditStageInstance {
+    privacyLevel?: number,
+    reason?: string,
     topic?: string,
   }
 
@@ -1183,6 +1444,8 @@ export namespace RequestTypes {
     files?: Array<File>,
     flags?: number,
     hasSpoiler?: boolean,
+    // only when editing a deferred interaction response
+    poll?: CreateMessage['poll'],
     threadId?: string,
     withComponents?: boolean,
   }
@@ -1223,7 +1486,12 @@ export namespace RequestTypes {
     files?: Array<File>,
     flags?: number,
     hasSpoiler?: boolean,
+    poll?: CreateMessage['poll'],
+    // forum and media channels, tags for the new thread
+    appliedTags?: Array<string>,
     threadId?: string,
+    // forum and media channels, creates a thread with this name
+    threadName?: string,
     tts?: boolean,
     username?: string,
     wait?: boolean,
@@ -1236,11 +1504,13 @@ export namespace RequestTypes {
       roles?: Array<string>,
       users?: Array<string>,
     },
+    applied_tags?: Array<string>,
     avatar_url?: string,
     components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
     embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
     flags?: number,
+    thread_name?: string,
     tts?: boolean,
     username?: string,
   }
@@ -1252,6 +1522,7 @@ export namespace RequestTypes {
   export interface FetchApplicationEntitlements {
     after?: string,
     before?: string,
+    excludeDeleted?: boolean,
     excludeEnded?: boolean,
     guildId?: string,
     limit?: number,
@@ -1293,8 +1564,19 @@ export namespace RequestTypes {
     withCounts?: boolean,
   }
 
+  export interface FetchThreadMember {
+    withMember?: boolean,
+  }
+
+  export interface FetchThreadMembers {
+    after?: string,
+    limit?: number,
+    withMember?: boolean,
+  }
+
   export interface FetchGuildAuditLogs {
     actionType?: number,
+    after?: string,
     before?: string,
     limit?: number,
     userId?: string,
@@ -1322,15 +1604,39 @@ export namespace RequestTypes {
     includeRoles?: Array<string>,
   }
 
+  export interface GuildScheduledEventRecurrenceRule {
+    byMonth?: Array<number> | null,
+    byMonthDay?: Array<number> | null,
+    byNWeekday?: Array<{day: number, n: number}> | null,
+    byWeekday?: Array<number> | null,
+    frequency: number,
+    interval: number,
+    start: Date | string,
+  }
+
+  export interface GuildScheduledEventRecurrenceRuleData {
+    by_month?: Array<number> | null,
+    by_month_day?: Array<number> | null,
+    by_n_weekday?: Array<{day: number, n: number}> | null,
+    by_weekday?: Array<number> | null,
+    frequency: number,
+    interval: number,
+    start: Date | string,
+  }
+
+  export interface FetchGuildScheduledEvent {
+    withUserCount?: boolean,
+  }
+
   export interface FetchGuildScheduledEvents {
-    withUserCount?: number,
+    withUserCount?: boolean,
   }
 
   export interface FetchGuildScheduledEventUsers {
     after?: string,
     before?: string,
     limit?: number,
-    withMember?: number,
+    withMember?: boolean,
   }
 
   export interface FetchGuildWidgetPng {
@@ -1361,6 +1667,15 @@ export namespace RequestTypes {
     before?: string,
     limit?: number,
     shard?: number,
+    withCounts?: boolean,
+  }
+
+  export interface FetchSkuSubscriptions {
+    after?: string,
+    before?: string,
+    limit?: number,
+    // required unless using an oauth2 token
+    userId?: string,
   }
 
   export interface FetchMentions {
@@ -1393,6 +1708,22 @@ export namespace RequestTypes {
     after?: string,
     before?: string,
     limit?: number,
+    // 0 for normal reactions, 1 for super reactions
+    type?: number,
+  }
+
+  export interface FetchChannelPins {
+    // iso8601 timestamp, get pins pinned before this
+    before?: Date | string,
+    limit?: number,
+  }
+
+  export interface BulkDeleteMessages {
+    reason?: string,
+  }
+
+  export interface PinMessage {
+    reason?: string,
   }
 
   export interface FetchTeamPayouts {
@@ -1522,15 +1853,28 @@ export namespace RequestTypes {
     attachmentFilename?: string | Array<string>,
     attachmentExtensions?: string | Array<string>,
     authorId?: string | Array<string>,
-    channelId?: string,
+    // user, bot or webhook, prefix with `-` to exclude
+    authorType?: string | Array<string>,
+    channelId?: string | Array<string>,
     content?: string,
+    embedProvider?: string | Array<string>,
+    embedType?: string | Array<string>,
     has?: string | Array<string>,
     includeNSFW?: boolean,
     limit?: number,
+    linkHostname?: string | Array<string>,
     maxId?: string,
+    mentionEveryone?: boolean,
     mentions?: string | Array<string>,
+    mentionsRoleId?: string | Array<string>,
     minId?: string,
     offset?: number,
+    pinned?: boolean,
+    repliedToMessageId?: string | Array<string>,
+    repliedToUserId?: string | Array<string>,
+    slop?: number,
+    sortBy?: 'relevance' | 'timestamp',
+    sortOrder?: 'asc' | 'desc',
   }
 
   export interface SendFriendRequest {
@@ -1664,15 +2008,54 @@ export namespace RequestTypes {
 }
 
 export namespace ResponseTypes {
+  export type CreateInteractionResponse = DiscordTypes.InteractionCallbackResponse;
+  export type FetchApplicationActivityInstance = DiscordTypes.ApplicationActivityInstance;
   export type CreateMessage = DiscordTypes.Message;
   export type EditMessage = DiscordTypes.Message;
 }
 
 
 export namespace DiscordTypes {
+  export interface ApplicationActivityInstance {
+    application_id: string,
+    instance_id: string,
+    launch_id: string,
+    location: ApplicationActivityLocation,
+    users: Array<string>,
+  }
+
+  export interface ApplicationActivityLocation {
+    channel_id: string,
+    guild_id?: null | string,
+    id: string,
+    kind: string,
+  }
+
   export interface ChannelPartial {
     id: string,
     name: string,
+  }
+
+  export interface InteractionCallback {
+    activity_instance_id?: string,
+    id: string,
+    response_message_ephemeral?: boolean,
+    response_message_id?: string,
+    response_message_loading?: boolean,
+    type: number,
+  }
+
+  export interface InteractionCallbackResource {
+    activity_instance?: {
+      id: string,
+    },
+    message?: Message,
+    type: number,
+  }
+
+  export interface InteractionCallbackResponse {
+    interaction: InteractionCallback,
+    resource?: InteractionCallbackResource,
   }
 
   export interface Message {

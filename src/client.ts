@@ -14,6 +14,7 @@ import { Bucket } from './bucket';
 import { BucketCollection } from './bucketcollection';
 import {
   bufferToBase64,
+  bufferToBase64Audio,
   Types as VerifyTypes,
   verifyData,
 } from './clientsidechecks';
@@ -29,7 +30,7 @@ import { Api } from './endpoints';
 import { RestRequest } from './request';
 import { CamelCaseToSnakeCase, spoilerfy } from './utils';
 
-import { RequestTypes, RestClientEvents } from './types';
+import { RequestTypes, ResponseTypes, RestClientEvents } from './types';
 
 
 const defaultHeaders: Record<string, string> = {
@@ -563,15 +564,19 @@ export class Client extends EventSpewer {
   async addPinnedMessage(
     channelId: string,
     messageId: string,
+    options: RequestTypes.PinMessage = {},
   ): Promise<any> {
     const params = {channelId, messageId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
       route: {
         method: HTTPMethods.PUT,
-        path: Api.CHANNEL_PIN,
+        path: Api.CHANNEL_MESSAGES_PIN,
         params,
       },
     });
@@ -580,12 +585,18 @@ export class Client extends EventSpewer {
   async addRecipient(
     channelId: string,
     userId: string,
+    options: RequestTypes.AddRecipient = {},
   ): Promise<any> {
+    const body = {
+      access_token: options.accessToken,
+      nick: options.nick,
+    };
     const params = {channelId, userId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      body,
       route: {
         method: HTTPMethods.PUT,
         path: Api.CHANNEL_RECIPIENT,
@@ -738,6 +749,7 @@ export class Client extends EventSpewer {
   async bulkDeleteMessages(
     channelId: string,
     messageIds: Array<string>,
+    options: RequestTypes.BulkDeleteMessages = {},
   ): Promise<any> {
     const body = {messages: messageIds};
     const params = {channelId};
@@ -751,6 +763,9 @@ export class Client extends EventSpewer {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
       route: {
         method: HTTPMethods.POST,
         path: Api.CHANNEL_MESSAGES_BULK_DELETE,
@@ -1062,6 +1077,7 @@ export class Client extends EventSpewer {
     const body = {
       max_age: options.maxAge,
       max_uses: options.maxUses,
+      role_ids: options.roleIds,
       target_application_id: options.targetApplicationId,
       target_type: options.targetType,
       target_user_id: options.targetUserId,
@@ -1073,8 +1089,20 @@ export class Client extends EventSpewer {
     if (this.clientsideChecks) {
 
     }
+
+    let files: Array<RequestTypes.File> | undefined;
+    if (options.targetUsersFile) {
+      const value = (Array.isArray(options.targetUsersFile)) ? options.targetUsersFile.join('\n') : options.targetUsersFile;
+      files = [{
+        contentType: 'text/csv',
+        filename: 'target_users.csv',
+        key: 'target_users_file',
+        value,
+      }];
+    }
     return this.request({
       body,
+      files,
       route: {
         method: HTTPMethods.POST,
         path: Api.CHANNEL_INVITES,
@@ -1091,6 +1119,7 @@ export class Client extends EventSpewer {
     const body = {
       auto_archive_duration: options.autoArchiveDuration,
       name: options.name,
+      rate_limit_per_user: options.rateLimitPerUser,
     };
     const params = {channelId, messageId};
     if (this.clientsideChecks) {
@@ -1129,17 +1158,27 @@ export class Client extends EventSpewer {
     channelId: string,
     options: RequestTypes.CreateChannelThread,
   ): Promise<any> {
-    const body = {
+    const body: Record<string, any> = {
+      applied_tags: options.appliedTags,
       auto_archive_duration: options.autoArchiveDuration,
+      invitable: options.invitable,
       name: options.name,
+      rate_limit_per_user: options.rateLimitPerUser,
       type: options.type,
     };
+    let files: Array<RequestTypes.File> | undefined;
+    if (options.message) {
+      const [ message, messageFiles ] = CamelCaseToSnakeCase.MessageCreate(options.message);
+      body.message = message;
+      files = messageFiles;
+    }
     const params = {channelId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
       body,
+      files,
       headers: {
         [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
@@ -1155,6 +1194,8 @@ export class Client extends EventSpewer {
     options: RequestTypes.CreateDm = {},
   ): Promise<any> {
     const body = {
+      access_tokens: options.accessTokens,
+      nicks: options.nicks,
       recipient_id: options.recipientId,
       recipients: options.recipients,
     };
@@ -1282,16 +1323,38 @@ export class Client extends EventSpewer {
     options: RequestTypes.CreateGuildChannel,
   ): Promise<any> {
     const body = {
+      available_tags: options.availableTags && options.availableTags.map((tag) => {
+        return {
+          emoji_id: tag.emojiId,
+          emoji_name: tag.emojiName,
+          id: tag.id,
+          moderated: tag.moderated,
+          name: tag.name,
+        };
+      }),
       branch_id: options.branchId,
       bitrate: options.bitrate,
+      default_auto_archive_duration: options.defaultAutoArchiveDuration,
+      default_forum_layout: options.defaultForumLayout,
+      default_reaction_emoji: (options.defaultReactionEmoji) ? {
+        emoji_id: options.defaultReactionEmoji.emojiId,
+        emoji_name: options.defaultReactionEmoji.emojiName,
+      } : options.defaultReactionEmoji,
+      default_sort_order: options.defaultSortOrder,
+      default_thread_rate_limit_per_user: options.defaultThreadRateLimitPerUser,
+      flags: options.flags,
       name: options.name,
       nsfw: options.nsfw,
       parent_id: options.parentId,
       permission_overwrites: options.permissionOverwrites,
+      position: options.position,
+      rate_limit_per_user: options.rateLimitPerUser,
+      rtc_region: options.rtcRegion,
       sku_id: options.skuId,
       topic: options.topic,
       type: options.type,
       user_limit: options.userLimit,
+      video_quality_mode: options.videoQualityMode,
     };
     const params = {guildId};
     if (this.clientsideChecks) {
@@ -1368,6 +1431,7 @@ export class Client extends EventSpewer {
   ): Promise<any> {
     const body = {
       color: options.color,
+      colors: CamelCaseToSnakeCase._RoleColors(options.colors),
       hoist: options.hoist,
       icon: bufferToBase64(options.icon),
       mentionable: options.mentionable,
@@ -1404,6 +1468,7 @@ export class Client extends EventSpewer {
       image: bufferToBase64(options.image),
       name: options.name,
       privacy_level: options.privacyLevel,
+      recurrence_rule: options.recurrenceRule && CamelCaseToSnakeCase._GuildScheduledEventRecurrenceRule(options.recurrenceRule),
       scheduled_end_time: options.scheduledEndTime,
       scheduled_start_time: options.scheduledStartTime,
     };
@@ -1419,6 +1484,34 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.POST,
         path: Api.GUILD_SCHEDULED_EVENTS,
+        params,
+      },
+    });
+  }
+
+  async createGuildSoundboardSound(
+    guildId: string,
+    options: RequestTypes.CreateGuildSoundboardSound,
+  ): Promise<any> {
+    const body = {
+      emoji_id: options.emojiId,
+      emoji_name: options.emojiName,
+      name: options.name,
+      sound: bufferToBase64Audio(options.sound),
+      volume: options.volume,
+    };
+    const params = {guildId};
+    if (this.clientsideChecks) {
+      // 512kb, 5.2 seconds limit
+    }
+    return this.request({
+      body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.GUILD_SOUNDBOARD_SOUNDS,
         params,
       },
     });
@@ -1441,7 +1534,8 @@ export class Client extends EventSpewer {
     }
     return this.request({
       body,
-      files: [file],
+      // discord reads the sticker from the `file` field, not `files[0]`
+      files: [Object.assign({key: 'file'}, file)],
       headers: {
         [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
@@ -1542,21 +1636,88 @@ export class Client extends EventSpewer {
   }
 
   async createLobby(
-    applicationId: string,
+    applicationIdOrOptions: RequestTypes.CreateLobby | string = {},
     options: RequestTypes.CreateLobby = {},
   ): Promise<any> {
+    // the old GameSDK signature passed the application id first, the bot's application is used now
+    if (typeof(applicationIdOrOptions) === 'object') {
+      options = applicationIdOrOptions;
+    }
     const body = {
-      application_id: applicationId,
-      capacity: options.capacity,
-      locked: options.locked,
+      idle_timeout_seconds: options.idleTimeoutSeconds,
+      members: options.members && options.members.map((member) => CamelCaseToSnakeCase.LobbyMember(member)),
       metadata: options.metadata,
-      owner_id: options.ownerId,
-      type: options.type,
     };
+    if (this.clientsideChecks) {
+      if (body.members && 25 < body.members.length) {
+        throw new Error('Members amount needs to be at most 25');
+      }
+    }
     return this.request({
       body,
       route: {
         method: HTTPMethods.POST,
+        path: Api.LOBBIES,
+      },
+    });
+  }
+
+  async createLobbyChannelInvite(
+    lobbyId: string,
+    userId: string = '@me',
+  ): Promise<any> {
+    const params = {lobbyId, userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.LOBBY_MEMBER_INVITES,
+        params,
+      },
+    });
+  }
+
+  async createLobbyMessage(
+    lobbyId: string,
+    options: RequestTypes.CreateLobbyMessage,
+  ): Promise<any> {
+    const body = {
+      content: options.content,
+      flags: options.flags,
+      metadata: options.metadata,
+    };
+    const params = {lobbyId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.LOBBY_MESSAGES,
+        params,
+      },
+    });
+  }
+
+  async createOrJoinLobby(
+    options: RequestTypes.CreateOrJoinLobby,
+  ): Promise<any> {
+    const body = {
+      idle_timeout_seconds: options.idleTimeoutSeconds,
+      lobby_metadata: options.lobbyMetadata,
+      member_metadata: options.memberMetadata,
+      secret: options.secret,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.PUT,
         path: Api.LOBBIES,
       },
     });
@@ -1785,6 +1946,9 @@ export class Client extends EventSpewer {
   ): Promise<any> {
     const body = {
       channel_id: options.channelId,
+      guild_scheduled_event_id: options.guildScheduledEventId,
+      privacy_level: options.privacyLevel,
+      send_start_notification: options.sendStartNotification,
       topic: options.topic,
     };
     if (this.clientsideChecks) {
@@ -1792,6 +1956,9 @@ export class Client extends EventSpewer {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
       route: {
         method: HTTPMethods.POST,
         path: Api.STAGE_INSTANCES,
@@ -1851,7 +2018,7 @@ export class Client extends EventSpewer {
     options: RequestTypes.CreateWebhook,
   ): Promise<any> {
     const body = {
-      avatar: options.avatar,
+      avatar: bufferToBase64(options.avatar),
       name: options.name,
     };
     const params = {channelId};
@@ -1860,6 +2027,9 @@ export class Client extends EventSpewer {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
       route: {
         method: HTTPMethods.POST,
         path: Api.CHANNEL_WEBHOOKS,
@@ -2160,6 +2330,27 @@ export class Client extends EventSpewer {
     });
   }
 
+  async deleteGuildSoundboardSound(
+    guildId: string,
+    soundId: string,
+    options: RequestTypes.DeleteGuildSoundboardSound = {},
+  ): Promise<any> {
+    const params = {guildId, soundId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.GUILD_SOUNDBOARD_SOUND,
+        params,
+      },
+    });
+  }
+
   async deleteGuildSticker(
     guildId: string,
     stickerId: string,
@@ -2176,6 +2367,29 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.DELETE,
         path: Api.GUILD_STICKER,
+        params,
+      },
+    });
+  }
+
+  async editGuildTemplate(
+    guildId: string,
+    templateId: string,
+    options: RequestTypes.EditGuildTemplate = {},
+  ): Promise<any> {
+    const body = {
+      description: options.description,
+      name: options.name,
+    };
+    const params = {guildId, templateId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.GUILD_TEMPLATE,
         params,
       },
     });
@@ -2331,15 +2545,19 @@ export class Client extends EventSpewer {
   async deletePinnedMessage(
     channelId: string,
     messageId: string,
+    options: RequestTypes.PinMessage = {},
   ): Promise<any> {
     const params = {channelId, messageId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
       route: {
         method: HTTPMethods.DELETE,
-        path: Api.CHANNEL_PIN,
+        path: Api.CHANNEL_MESSAGES_PIN,
         params,
       },
     });
@@ -2417,12 +2635,16 @@ export class Client extends EventSpewer {
 
   async deleteStageInstance(
     channelId: string,
+    options: RequestTypes.DeleteStageInstance = {},
   ): Promise<any> {
     const params = {channelId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
       route: {
         method: HTTPMethods.DELETE,
         path: Api.STAGE_INSTANCE,
@@ -2549,6 +2771,47 @@ export class Client extends EventSpewer {
     });
   }
 
+  async editApplication(
+    options: RequestTypes.EditApplication = {},
+    applicationId: string = '@me',
+  ): Promise<any> {
+    const body: RequestTypes.EditApplicationData = {
+      cover_image: bufferToBase64(options.coverImage),
+      custom_install_url: options.customInstallUrl,
+      description: options.description,
+      event_webhooks_status: options.eventWebhooksStatus,
+      event_webhooks_types: options.eventWebhooksTypes,
+      event_webhooks_url: options.eventWebhooksUrl,
+      flags: options.flags,
+      icon: bufferToBase64(options.icon),
+      install_params: options.installParams,
+      interactions_endpoint_url: options.interactionsEndpointUrl,
+      role_connections_verification_url: options.roleConnectionsVerificationUrl,
+      tags: options.tags,
+    };
+    if (options.integrationTypesConfig) {
+      body.integration_types_config = {};
+      for (let key in options.integrationTypesConfig) {
+        const config = options.integrationTypesConfig[key];
+        body.integration_types_config[key] = {
+          oauth2_install_params: config.oauth2InstallParams,
+        };
+      }
+    }
+    const params = {applicationId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.APPLICATION,
+        params,
+      },
+    });
+  }
+
   async editApplicationCommand(
     applicationId: string,
     commandId: string,
@@ -2665,10 +2928,28 @@ export class Client extends EventSpewer {
     options: RequestTypes.EditChannel = {},
   ): Promise<any> {
     const body = {
+      applied_tags: options.appliedTags,
       archived: options.archived,
       auto_archive_duration: options.autoArchiveDuration,
+      available_tags: options.availableTags && options.availableTags.map((tag) => {
+        return {
+          emoji_id: tag.emojiId,
+          emoji_name: tag.emojiName,
+          id: tag.id,
+          moderated: tag.moderated,
+          name: tag.name,
+        };
+      }),
       bitrate: options.bitrate,
       default_auto_archive_duration: options.defaultAutoArchiveDuration,
+      default_forum_layout: options.defaultForumLayout,
+      default_reaction_emoji: (options.defaultReactionEmoji) ? {
+        emoji_id: options.defaultReactionEmoji.emojiId,
+        emoji_name: options.defaultReactionEmoji.emojiName,
+      } : options.defaultReactionEmoji,
+      default_sort_order: options.defaultSortOrder,
+      default_thread_rate_limit_per_user: options.defaultThreadRateLimitPerUser,
+      flags: options.flags,
       icon: bufferToBase64(options.icon),
       invitable: options.invitable,
       locked: options.locked,
@@ -2697,6 +2978,27 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.PATCH,
         path: Api.CHANNEL,
+        params,
+      },
+    });
+  }
+
+  async editChannelVoiceStatus(
+    channelId: string,
+    options: RequestTypes.EditChannelVoiceStatus,
+  ): Promise<any> {
+    const body = {
+      status: options.status,
+    };
+    const params = {channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.PUT,
+        path: Api.CHANNEL_VOICE_STATUS,
         params,
       },
     });
@@ -2765,9 +3067,11 @@ export class Client extends EventSpewer {
       name: options.name,
       owner_id: options.ownerId,
       preferred_locale: options.preferredLocale,
+      premium_progress_bar_enabled: options.premiumProgressBarEnabled,
       public_updates_channel_id: options.publicUpdatesChannelId,
       region: options.region,
       rules_channel_id: options.rulesChannelId,
+      safety_alerts_channel_id: options.safetyAlertsChannelId,
       splash: bufferToBase64(options.splash),
       system_channel_flags: options.systemChannelFlags,
       system_channel_id: options.systemChannelId,
@@ -2941,6 +3245,7 @@ export class Client extends EventSpewer {
       channel_id: options.channelId,
       communication_disabled_until: options.communicationDisabledUntil,
       deaf: options.deaf,
+      flags: options.flags,
       mute: options.mute,
       nick: options.nick,
       roles: options.roles,
@@ -3040,6 +3345,7 @@ export class Client extends EventSpewer {
   ): Promise<any> {
     const body = {
       color: options.color,
+      colors: CamelCaseToSnakeCase._RoleColors(options.colors),
       hoist: options.hoist,
       icon: bufferToBase64(options.icon),
       mentionable: options.mentionable,
@@ -3110,6 +3416,7 @@ export class Client extends EventSpewer {
       image: bufferToBase64(options.image),
       name: options.name,
       privacy_level: options.privacyLevel,
+      recurrence_rule: (options.recurrenceRule) ? CamelCaseToSnakeCase._GuildScheduledEventRecurrenceRule(options.recurrenceRule) : options.recurrenceRule,
       scheduled_end_time: options.scheduledEndTime,
       scheduled_start_time: options.scheduledStartTime,
       status: options.status,
@@ -3126,6 +3433,34 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.PATCH,
         path: Api.GUILD_SCHEDULED_EVENT,
+        params,
+      },
+    });
+  }
+
+  async editGuildSoundboardSound(
+    guildId: string,
+    soundId: string,
+    options: RequestTypes.EditGuildSoundboardSound = {},
+  ): Promise<any> {
+    const body = {
+      emoji_id: options.emojiId,
+      emoji_name: options.emojiName,
+      name: options.name,
+      volume: options.volume,
+    };
+    const params = {guildId, soundId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.GUILD_SOUNDBOARD_SOUND,
         params,
       },
     });
@@ -3205,6 +3540,23 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchGuildVoiceState(
+    guildId: string,
+    userId: string = '@me',
+  ): Promise<any> {
+    const params = {guildId, userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_VOICE_STATE,
+        params,
+      },
+    });
+  }
+
   async editGuildWidget(
     guildId: string,
     options: RequestTypes.EditGuildWidget,
@@ -3235,11 +3587,9 @@ export class Client extends EventSpewer {
     options: RequestTypes.EditLobby = {},
   ): Promise<any> {
     const body = {
-      capacity: options.capacity,
-      locked: options.locked,
+      idle_timeout_seconds: options.idleTimeoutSeconds,
+      members: options.members && options.members.map((member) => CamelCaseToSnakeCase.LobbyMember(member)),
       metadata: options.metadata,
-      owner_id: options.ownerId,
-      type: options.type,
     };
     const params = {lobbyId};
     if (this.clientsideChecks) {
@@ -3255,12 +3605,36 @@ export class Client extends EventSpewer {
     });
   }
 
+  async editLobbyChannelLinking(
+    lobbyId: string,
+    options: RequestTypes.EditLobbyChannelLinking = {},
+  ): Promise<any> {
+    const body = {
+      channel_id: options.channelId,
+    };
+    const params = {lobbyId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.LOBBY_CHANNEL_LINKING,
+        params,
+      },
+    });
+  }
+
+  // adds the member, or updates them if they're already in the lobby
   async editLobbyMember(
     lobbyId: string,
     userId: string,
     options: RequestTypes.EditLobbyMember = {},
   ): Promise<any> {
     const body = {
+      additional_name: options.additionalName,
+      flags: options.flags,
       metadata: options.metadata,
     };
     const params = {lobbyId, userId};
@@ -3270,11 +3644,116 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       route: {
-        method: HTTPMethods.PATCH,
+        method: HTTPMethods.PUT,
         path: Api.LOBBY_MEMBER,
         params,
       },
     });
+  }
+
+  async editLobbyMembersBulk(
+    lobbyId: string,
+    members: RequestTypes.EditLobbyMembersBulk,
+  ): Promise<any> {
+    const body = members.map((member) => CamelCaseToSnakeCase.LobbyMember(member));
+    const params = {lobbyId};
+    if (this.clientsideChecks) {
+      if (body.length < 1 || 25 < body.length) {
+        throw new Error('Members amount needs to be between 1 and 25');
+      }
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.LOBBY_MEMBERS_BULK,
+        params,
+      },
+    });
+  }
+
+  async editLobbyMessageModerationMetadata(
+    lobbyId: string,
+    messageId: string,
+    metadata: Record<string, string>,
+  ): Promise<any> {
+    const body = metadata;
+    const params = {lobbyId, messageId};
+    if (this.clientsideChecks) {
+      if (5 < Object.keys(body).length) {
+        throw new Error('Metadata can have at most 5 keys');
+      }
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.PUT,
+        path: Api.LOBBY_MESSAGE_MODERATION_METADATA,
+        params,
+      },
+    });
+  }
+
+  async fetchLobby(
+    lobbyId: string,
+  ): Promise<any> {
+    const params = {lobbyId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.LOBBY,
+        params,
+      },
+    });
+  }
+
+  async fetchLobbyMessages(
+    lobbyId: string,
+    options: RequestTypes.FetchLobbyMessages = {},
+  ): Promise<any> {
+    const params = {lobbyId};
+    const query = {
+      limit: options.limit,
+    };
+    if (this.clientsideChecks) {
+      if (query.limit !== undefined && (query.limit < 1 || 200 < query.limit)) {
+        throw new Error('Limit has to be between 1 and 200');
+      }
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.LOBBY_MESSAGES,
+        params,
+      },
+    });
+  }
+
+  async removeLobbyMember(
+    lobbyId: string,
+    userId: string = '@me',
+  ): Promise<any> {
+    const params = {lobbyId, userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.LOBBY_MEMBER,
+        params,
+      },
+    });
+  }
+
+  leaveLobby(
+    lobbyId: string,
+  ): Promise<any> {
+    return this.removeLobbyMember(lobbyId, '@me');
   }
 
   async editMe(
@@ -3282,6 +3761,7 @@ export class Client extends EventSpewer {
   ): Promise<any> {
     const body: any = {
       avatar: bufferToBase64(options.avatar),
+      banner: bufferToBase64(options.banner),
       code: options.code,
       custom_status: undefined,
       discriminator: options.discriminator,
@@ -3312,6 +3792,7 @@ export class Client extends EventSpewer {
   }
 
   async editMeApplicationRoleConnection(
+    applicationId: string,
     options: RequestTypes.EditMeApplicationRoleConnection = {},
   ): Promise<any> {
     const body: any = {
@@ -3319,14 +3800,16 @@ export class Client extends EventSpewer {
       platform_name: options.platformName,
       platform_username: options.platformUsername,
     };
+    const params = {applicationId};
     if (this.clientsideChecks) {
   
     }
     return this.request({
       body,
       route: {
-        method: HTTPMethods.PATCH,
-        path: Api.ME,
+        method: HTTPMethods.PUT,
+        path: Api.ME_APPLICATION_ROLE_CONNECTION,
+        params,
       },
     });
   }
@@ -3490,6 +3973,7 @@ export class Client extends EventSpewer {
     options: RequestTypes.EditStageInstance = {},
   ): Promise<any> {
     const body = {
+      privacy_level: options.privacyLevel,
       topic: options.topic,
     };
     const params = {channelId};
@@ -3498,6 +3982,9 @@ export class Client extends EventSpewer {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
       route: {
         method: HTTPMethods.PATCH,
         path: Api.STAGE_INSTANCE,
@@ -3607,15 +4094,6 @@ export class Client extends EventSpewer {
         webhookId: {required: true, type: VerifyTypes.SNOWFLAKE},
         webhookToken: {required: true, type: VerifyTypes.STRING},
       });
-      if (
-        !('components' in body) &&
-        !('content' in body) &&
-        !('embed' in body) &&
-        !('sticker_ids' in body) &&
-        !(files.length)
-      ) {
-        throw new Error('Cannot send an empty message.');
-      }
     }
 
     return this.request({
@@ -3676,9 +4154,11 @@ export class Client extends EventSpewer {
       options = {content: options};
     }
     const body: RequestTypes.ExecuteWebhookData = {
+      applied_tags: options.appliedTags,
       avatar_url: options.avatarUrl,
       content: options.content,
       flags: options.flags,
+      thread_name: options.threadName,
       tts: options.tts,
       username: options.username,
     };
@@ -3718,10 +4198,11 @@ export class Client extends EventSpewer {
         webhookToken: {required: true, type: VerifyTypes.STRING},
       });
       if (
+        !compatibleType &&
         !('components' in body) &&
         !('content' in body) &&
-        !('embed' in body) &&
-        !('sticker_ids' in body) &&
+        !('embeds' in body) &&
+        !('poll' in body) &&
         !(files.length)
       ) {
         throw new Error('Cannot send an empty message.');
@@ -3828,21 +4309,40 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchApplicationEntitlement(
+    applicationId: string,
+    entitlementId: string,
+  ): Promise<any> {
+    const params = {applicationId, entitlementId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.APPLICATION_ENTITLEMENT,
+        params,
+      },
+    });
+  }
+
   async fetchApplicationEntitlements(
     applicationId: string,
     options: RequestTypes.FetchApplicationEntitlements = {},
   ): Promise<any> {
-    let skuIds: Array<string> | undefined;
+    // discord wants a comma-delimited list, arrays would be sent as repeated params
+    let skuIds: string | undefined;
     if (typeof(options.skuIds) === 'string') {
-      skuIds = [options.skuIds];
-    } else if (Array.isArray(options.skuIds)) {
       skuIds = options.skuIds;
+    } else if (Array.isArray(options.skuIds)) {
+      skuIds = options.skuIds.join(',');
     }
 
     const params = {applicationId};
     const query = {
       after: options.after,
       before: options.before,
+      exclude_deleted: options.excludeDeleted,
       exclude_ended: options.excludeEnded,
       guild_id: options.guildId,
       limit: options.limit,
@@ -4024,6 +4524,23 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.APPLICATION,
+        params,
+      },
+    });
+  }
+
+  async fetchApplicationActivityInstance(
+    applicationId: string,
+    instanceId: string,
+  ): Promise<ResponseTypes.FetchApplicationActivityInstance> {
+    const params = {applicationId, instanceId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.APPLICATION_ACTIVITY_INSTANCE,
         params,
       },
     });
@@ -4424,6 +4941,7 @@ export class Client extends EventSpewer {
     const params = {guildId};
     const query = {
       action_type: options.actionType,
+      after: options.after,
       before: options.before,
       limit: options.limit,
       user_id: options.userId,
@@ -4696,6 +5214,156 @@ export class Client extends EventSpewer {
     });
   }
 
+  async editGuildIncidentActions(
+    guildId: string,
+    options: RequestTypes.EditGuildIncidentActions = {},
+  ): Promise<any> {
+    const toTimestamp = (value?: Date | string | null) => (value instanceof Date) ? value.toISOString() : value;
+    const body = {
+      dms_disabled_until: toTimestamp(options.dmsDisabledUntil),
+      invites_disabled_until: toTimestamp(options.invitesDisabledUntil),
+    };
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.PUT,
+        path: Api.GUILD_INCIDENT_ACTIONS,
+        params,
+      },
+    });
+  }
+
+  async editGuildOnboarding(
+    guildId: string,
+    options: RequestTypes.EditGuildOnboarding = {},
+  ): Promise<any> {
+    const body = {
+      default_channel_ids: options.defaultChannelIds,
+      enabled: options.enabled,
+      mode: options.mode,
+      prompts: options.prompts && options.prompts.map((prompt) => CamelCaseToSnakeCase.GuildOnboardingPrompt(prompt)),
+    };
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.PUT,
+        path: Api.GUILD_ONBOARDING,
+        params,
+      },
+    });
+  }
+
+  async editGuildWelcomeScreen(
+    guildId: string,
+    options: RequestTypes.EditGuildWelcomeScreen = {},
+  ): Promise<any> {
+    const body = {
+      description: options.description,
+      enabled: options.enabled,
+      welcome_channels: (options.welcomeChannels) ? options.welcomeChannels.map((channel) => {
+        return {
+          channel_id: channel.channelId,
+          description: channel.description,
+          emoji_id: channel.emojiId,
+          emoji_name: channel.emojiName,
+        };
+      }) : options.welcomeChannels,
+    };
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.GUILD_WELCOME_SCREEN,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildOnboarding(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_ONBOARDING,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildRole(
+    guildId: string,
+    roleId: string,
+  ): Promise<any> {
+    const params = {guildId, roleId};
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_ROLE,
+        params,
+      },
+    });
+  }
+
+  // returns `{[roleId]: count}`, not including @everyone
+  async fetchGuildRoleMemberCounts(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_ROLES_MEMBER_COUNTS,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildThreadsActive(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_THREADS_ACTIVE,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildWelcomeScreen(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_WELCOME_SCREEN,
+        params,
+      },
+    });
+  }
+
   async fetchGuildPreview(
     guildId: string,
   ): Promise<any> {
@@ -4753,12 +5421,17 @@ export class Client extends EventSpewer {
   async fetchGuildScheduledEvent(
     guildId: string,
     scheduledEventId: string,
+    options: RequestTypes.FetchGuildScheduledEvent = {},
   ): Promise<any> {
     const params = {guildId, scheduledEventId};
+    const query = {
+      with_user_count: options.withUserCount,
+    };
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      query,
       route: {
         method: HTTPMethods.GET,
         path: Api.GUILD_SCHEDULED_EVENT,
@@ -4777,21 +5450,20 @@ export class Client extends EventSpewer {
       after: options.after,
       before: options.before,
       limit: options.limit,
-      with_members: options.withMember,
+      with_member: options.withMember,
     };
     if (this.clientsideChecks) {
-      if (this.clientsideChecks) {
-        if (query.limit !== undefined) {
-          if (query.limit < 1 || 100 < query.limit) {
-            throw new Error('Limit has to be between 1 and 100');
-          }
+      if (query.limit !== undefined) {
+        if (query.limit < 1 || 100 < query.limit) {
+          throw new Error('Limit has to be between 1 and 100');
         }
-        if (query.after && query.before) {
-          throw new Error('Choose between after or before, cannot have more than one.');
-        }
+      }
+      if (query.after && query.before) {
+        throw new Error('Choose between after or before, cannot have more than one.');
       }
     }
     return this.request({
+      query,
       route: {
         method: HTTPMethods.GET,
         path: Api.GUILD_SCHEDULED_EVENT_USERS,
@@ -4806,7 +5478,7 @@ export class Client extends EventSpewer {
   ): Promise<any> {
     const params = {guildId};
     const query = {
-      with_user_counts: options.withUserCount,
+      with_user_count: options.withUserCount,
     };
     if (this.clientsideChecks) {
 
@@ -4816,6 +5488,132 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.GUILD_SCHEDULED_EVENTS,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildSoundboardSound(
+    guildId: string,
+    soundId: string,
+  ): Promise<any> {
+    const params = {guildId, soundId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_SOUNDBOARD_SOUND,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildSoundboardSounds(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_SOUNDBOARD_SOUNDS,
+        params,
+      },
+    });
+  }
+
+  async fetchSoundboardDefaultSounds(): Promise<any> {
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.SOUNDBOARD_DEFAULT_SOUNDS,
+      },
+    });
+  }
+
+  async fetchSticker(
+    stickerId: string,
+  ): Promise<any> {
+    const params = {stickerId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.STICKER,
+        params,
+      },
+    });
+  }
+
+  async fetchStickerPack(
+    stickerPackId: string,
+  ): Promise<any> {
+    const params = {stickerPackId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.STICKER_PACK,
+        params,
+      },
+    });
+  }
+
+  async fetchStickerPacks(): Promise<any> {
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.STICKER_PACKS,
+      },
+    });
+  }
+
+  async fetchSkuSubscription(
+    skuId: string,
+    subscriptionId: string,
+  ): Promise<any> {
+    const params = {skuId, subscriptionId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.SKU_SUBSCRIPTION,
+        params,
+      },
+    });
+  }
+
+  async fetchSkuSubscriptions(
+    skuId: string,
+    options: RequestTypes.FetchSkuSubscriptions = {},
+  ): Promise<any> {
+    const params = {skuId};
+    const query = {
+      after: options.after,
+      before: options.before,
+      limit: options.limit,
+      user_id: options.userId,
+    };
+    if (this.clientsideChecks) {
+      if (query.limit !== undefined && (query.limit < 1 || 100 < query.limit)) {
+        throw new Error('Limit has to be between 1 and 100');
+      }
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.SKU_SUBSCRIPTIONS,
         params,
       },
     });
@@ -4849,6 +5647,23 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.GUILD_STICKERS,
+        params,
+      },
+    });
+  }
+
+  async syncGuildTemplate(
+    guildId: string,
+    templateId: string,
+  ): Promise<any> {
+    const params = {guildId, templateId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.PUT,
+        path: Api.GUILD_TEMPLATE,
         params,
       },
     });
@@ -4955,6 +5770,63 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchInviteTargetUsers(
+    code: string,
+  ): Promise<any> {
+    const params = {code};
+    if (this.clientsideChecks) {
+
+    }
+    // returns a csv of user ids
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.INVITE_TARGET_USERS,
+        params,
+      },
+    });
+  }
+
+  async fetchInviteTargetUsersJobStatus(
+    code: string,
+  ): Promise<any> {
+    const params = {code};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.INVITE_TARGET_USERS_JOB_STATUS,
+        params,
+      },
+    });
+  }
+
+  async editInviteTargetUsers(
+    code: string,
+    options: RequestTypes.EditInviteTargetUsers,
+  ): Promise<any> {
+    const params = {code};
+    if (this.clientsideChecks) {
+
+    }
+    const value = (Array.isArray(options.targetUsersFile)) ? options.targetUsersFile.join('\n') : options.targetUsersFile;
+    return this.request({
+      files: [{
+        contentType: 'text/csv',
+        filename: 'target_users.csv',
+        key: 'target_users_file',
+        value,
+      }],
+      route: {
+        method: HTTPMethods.PUT,
+        path: Api.INVITE_TARGET_USERS,
+        params,
+      },
+    });
+  }
+
   async fetchInvite(
     code: string,
     options: RequestTypes.FetchInvite = {},
@@ -4996,13 +5868,43 @@ export class Client extends EventSpewer {
     });
   }
 
-  fetchMeApplicationRoleConnection(): Promise<any> {
+  fetchMeApplicationRoleConnection(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
     return this.request({
       route: {
         method: HTTPMethods.GET,
         path: Api.ME_APPLICATION_ROLE_CONNECTION,
-      }
-    })
+        params,
+      },
+    });
+  }
+
+  deleteMeApplicationRoleConnection(
+    applicationId: string,
+  ): Promise<any> {
+    const params = {applicationId};
+    return this.request({
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.ME_APPLICATION_ROLE_CONNECTION,
+        params,
+      },
+    });
+  }
+
+  fetchMeGuildMember(
+    guildId: string,
+  ): Promise<any> {
+    const params = {guildId};
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.ME_GUILD_MEMBER,
+        params,
+      },
+    });
   }
 
   fetchMeBillingPaymentSources(): Promise<any> {
@@ -5117,6 +6019,7 @@ export class Client extends EventSpewer {
       before: options.before,
       limit: options.limit,
       shard: options.shard,
+      with_counts: options.withCounts,
     };
     if (this.clientsideChecks) {
 
@@ -5358,6 +6261,32 @@ export class Client extends EventSpewer {
     });
   }
 
+  // returns `{items: [{message, pinned_at}], has_more}`
+  async fetchChannelPins(
+    channelId: string,
+    options: RequestTypes.FetchChannelPins = {},
+  ): Promise<any> {
+    const params = {channelId};
+    const query = {
+      before: (options.before instanceof Date) ? options.before.toISOString() : options.before,
+      limit: options.limit,
+    };
+    if (this.clientsideChecks) {
+      if (query.limit !== undefined && (query.limit < 1 || 50 < query.limit)) {
+        throw new Error('Limit has to be between 1 and 50');
+      }
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.CHANNEL_MESSAGES_PINS,
+        params,
+      },
+    });
+  }
+
+  /** @deprecated use `fetchChannelPins`, this route is deprecated and capped at 50 pins */
   async fetchPinnedMessages(
     channelId: string,
   ): Promise<any> {
@@ -5385,6 +6314,7 @@ export class Client extends EventSpewer {
       after: options.after,
       before: options.before,
       limit: options.limit,
+      type: options.type,
     };
     if (this.clientsideChecks) {
       //params
@@ -5615,14 +6545,43 @@ export class Client extends EventSpewer {
     });
   }
 
-  async fetchThreadMembers(
+  async fetchThreadMember(
     channelId: string,
+    userId: string,
+    options: RequestTypes.FetchThreadMember = {},
   ): Promise<any> {
-    const params = {channelId};
+    const params = {channelId, userId};
+    const query = {
+      with_member: options.withMember,
+    };
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.CHANNEL_THREAD_MEMBER,
+        params,
+      },
+    });
+  }
+
+  async fetchThreadMembers(
+    channelId: string,
+    options: RequestTypes.FetchThreadMembers = {},
+  ): Promise<any> {
+    const params = {channelId};
+    const query = {
+      after: options.after,
+      limit: options.limit,
+      with_member: options.withMember,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
       route: {
         method: HTTPMethods.GET,
         path: Api.CHANNEL_THREAD_MEMBERS,
@@ -6368,15 +7327,27 @@ export class Client extends EventSpewer {
       attachment_extensions: options.attachmentExtensions,
       attachment_filename: options.attachmentFilename,
       author_id: options.authorId,
+      author_type: options.authorType,
       channel_id: options.channelId,
       content: options.content,
+      embed_provider: options.embedProvider,
+      embed_type: options.embedType,
       has: options.has,
       include_nsfw: options.includeNSFW,
       limit: options.limit,
+      link_hostname: options.linkHostname,
       max_id: options.maxId,
+      mention_everyone: options.mentionEveryone,
       mentions: options.mentions,
+      mentions_role_id: options.mentionsRoleId,
       min_id: options.minId,
       offset: options.offset,
+      pinned: options.pinned,
+      replied_to_message_id: options.repliedToMessageId,
+      replied_to_user_id: options.repliedToUserId,
+      slop: options.slop,
+      sort_by: options.sortBy,
+      sort_order: options.sortOrder,
     };
     if (this.clientsideChecks) {
 
@@ -6421,6 +7392,7 @@ export class Client extends EventSpewer {
     return this.search('guild', guildId, options, retry, retryNumber);
   }
 
+  /** @deprecated old GameSDK lobbies, this endpoint doesn't exist anymore */
   async searchLobbies(
     applicationId: string,
     options: RequestTypes.SearchLobbies = {},
@@ -6481,6 +7453,29 @@ export class Client extends EventSpewer {
     });
   }
 
+  async sendSoundboardSound(
+    channelId: string,
+    options: RequestTypes.SendSoundboardSound,
+  ): Promise<any> {
+    const body = {
+      sound_id: options.soundId,
+      source_guild_id: options.sourceGuildId,
+    };
+    const params = {channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.CHANNEL_SEND_SOUNDBOARD_SOUND,
+        params,
+      },
+    });
+  }
+
+  /** @deprecated old GameSDK lobbies, use `createLobbyMessage` */
   async sendLobbyData(
     lobbyId: string,
     data: string,

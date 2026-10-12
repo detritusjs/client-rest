@@ -44,8 +44,86 @@ export const CamelCaseToSnakeCase = Object.freeze({
     }
     return [file, attachment];
   },
+  _GuildScheduledEventRecurrenceRule: (
+    rule: RequestTypes.GuildScheduledEventRecurrenceRule,
+  ): RequestTypes.GuildScheduledEventRecurrenceRuleData => {
+    return {
+      by_month: rule.byMonth,
+      by_month_day: rule.byMonthDay,
+      by_n_weekday: rule.byNWeekday,
+      by_weekday: rule.byWeekday,
+      frequency: rule.frequency,
+      interval: rule.interval,
+      start: rule.start,
+    };
+  },
+  LobbyMember: (
+    member: RequestTypes.LobbyMember & {removeMember?: boolean},
+  ) => {
+    return {
+      additional_name: member.additionalName,
+      flags: member.flags,
+      id: member.id,
+      metadata: member.metadata,
+      remove_member: member.removeMember,
+    };
+  },
+  GuildOnboardingPrompt: (
+    prompt: RequestTypes.GuildOnboardingPrompt,
+  ) => {
+    return {
+      id: prompt.id,
+      in_onboarding: prompt.inOnboarding,
+      options: prompt.options.map((option) => {
+        return {
+          channel_ids: option.channelIds,
+          description: option.description,
+          emoji_animated: option.emojiAnimated,
+          emoji_id: option.emojiId,
+          emoji_name: option.emojiName,
+          id: option.id,
+          role_ids: option.roleIds,
+          title: option.title,
+        };
+      }),
+      required: prompt.required,
+      single_select: prompt.singleSelect,
+      title: prompt.title,
+      type: prompt.type,
+    };
+  },
+  _RoleColors: (
+    colors?: RequestTypes.CreateGuildRole['colors'],
+  ) => {
+    return colors && {
+      primary_color: colors.primaryColor,
+      secondary_color: colors.secondaryColor,
+      tertiary_color: colors.tertiaryColor,
+    };
+  },
+  _Poll: (
+    poll: NonNullable<RequestTypes.CreateMessage['poll']>,
+  ): NonNullable<RequestTypes.CreateMessageData['poll']> => {
+    return {
+      allow_multiselect: poll.allowMultiselect,
+      answers: poll.answers && poll.answers.map((answer) => {
+        return {
+          poll_media: answer.pollMedia && {
+            emoji: answer.pollMedia.emoji,
+            text: answer.pollMedia.text,
+          },
+        };
+      }),
+      duration: poll.duration,
+      layout_type: poll.layoutType,
+      question: poll.question && {
+        emoji: poll.question.emoji,
+        text: poll.question.text,
+      },
+    };
+  },
   ApplicationCommand: (
-    options: RequestTypes.CreateApplicationCommand | RequestTypes.toJSON<RequestTypes.CreateApplicationCommandData>,
+    options: RequestTypes.CreateApplicationCommand |RequestTypes.toJSON<RequestTypes.CreateApplicationCommandData>,
   ): RequestTypes.CreateApplicationCommandData | RequestTypes.toJSON<RequestTypes.CreateApplicationCommandData> => {
     if ('toJSON' in options) {
       return options;
@@ -126,6 +204,10 @@ export const CamelCaseToSnakeCase = Object.freeze({
       body.choices = options.choices.map((x) => {
         return {name: x.name, name_localizations: x.nameLocalizations, value: x.value};
       });
+    }
+
+    if (options.poll && typeof(options.poll) === 'object') {
+      body.poll = CamelCaseToSnakeCase._Poll(options.poll);
     }
 
     body.custom_id = options.customId;
@@ -283,23 +365,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
       };
     }
     if (options.poll && typeof(options.poll) === 'object') {
-      body.poll = {
-        allow_multiselect: options.poll.allowMultiselect,
-        answers: options.poll.answers && options.poll.answers.map((answer) => {
-          return {
-            poll_media: answer.pollMedia && {
-              emoji: answer.pollMedia.emoji,
-              text: answer.pollMedia.text,
-            },
-          };
-        }),
-        duration: options.poll.duration,
-        layout_type: options.poll.layoutType,
-        question: options.poll.question && {
-          emoji: options.poll.question.emoji,
-          text: options.poll.question.text,
-        },
-      };
+      body.poll = CamelCaseToSnakeCase._Poll(options.poll);
     }
 
     const files: Array<RequestTypes.File> = [];

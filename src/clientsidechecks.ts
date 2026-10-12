@@ -12,6 +12,17 @@ export const Regexes = {
 };
 
 
+export function bufferToBase64Audio(
+  buffer?: Buffer | string | null,
+): string | null | undefined {
+  if (typeof buffer === 'string' || buffer == null) {
+    return buffer;
+  }
+  // discord only accepts mp3 or ogg here
+  const mimetype = (buffer.slice(0, 4).toString() === 'OggS') ? 'audio/ogg' : 'audio/mpeg';
+  return `data:${mimetype};base64,${buffer.toString('base64')}`;
+}
+
 export function bufferToBase64(
   buffer?: Buffer | string | null,
 ): string | null | undefined {

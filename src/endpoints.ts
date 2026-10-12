@@ -391,6 +391,8 @@ export const Api = {
     '/applications/trending/global',
   APPLICATION:
     '/applications/:applicationId',
+  APPLICATION_ACTIVITY_INSTANCE:
+    '/applications/:applicationId/activity-instances/:instanceId',
   APPLICATION_BRANCHES:
     '/applications/:applicationId/branches',
   APPLICATION_BRANCH_BUILDS:
@@ -541,6 +543,10 @@ export const Api = {
     '/channels/:channelId/messages/ack',
   CHANNEL_MESSAGES_BULK_DELETE:
     '/channels/:channelId/messages/bulk-delete',
+  CHANNEL_MESSAGES_PINS:
+    '/channels/:channelId/messages/pins',
+  CHANNEL_MESSAGES_PIN:
+    '/channels/:channelId/messages/pins/:messageId',
   CHANNEL_MESSAGES_SEARCH:
     '/channels/:channelId/messages/search',
   CHANNEL_MESSAGE:
@@ -575,6 +581,8 @@ export const Api = {
     '/channels/:channelId/recipients',
   CHANNEL_RECIPIENT:
     '/channels/:channelId/recipients/:userId',
+  CHANNEL_SEND_SOUNDBOARD_SOUND:
+    '/channels/:channelId/send-soundboard-sound',
   CHANNEL_STORE_LISTING:
     '/channels/:channelId/store-listing',
   CHANNEL_STORE_LISTING_ENTITLEMENT_GRANT:
@@ -599,6 +607,8 @@ export const Api = {
     '/channels/:channelId/typing',
   CHANNEL_USER_THREADS_ARCHIVED_PRIVATE:
     '/channels/:channelId/users/:userId/threads/archived/private',
+  CHANNEL_VOICE_STATUS:
+    '/channels/:channelId/voice-status',
   CHANNEL_WEBHOOKS:
     '/channels/:channelId/webhooks',
 
@@ -751,6 +761,8 @@ export const Api = {
     '/guilds/:guildId/regions',
   GUILD_ROLES:
     '/guilds/:guildId/roles',
+  GUILD_ROLES_MEMBER_COUNTS:
+    '/guilds/:guildId/roles/member-counts',
   GUILD_ROLE:
     '/guilds/:guildId/roles/:roleId',
   GUILD_SCHEDULED_EVENTS:
@@ -763,6 +775,10 @@ export const Api = {
     '/guilds/:guildId/messages/search',
   GUILD_SPLASH:
     '/guilds/:guildId/splashes/:hash.jpg',
+  GUILD_SOUNDBOARD_SOUNDS:
+    '/guilds/:guildId/soundboard-sounds',
+  GUILD_SOUNDBOARD_SOUND:
+    '/guilds/:guildId/soundboard-sounds/:soundId',
   GUILD_STICKERS:
     '/guilds/:guildId/stickers',
   GUILD_STICKER:
@@ -777,6 +793,14 @@ export const Api = {
     '/guilds/:guildId/voice-states/:userId',
   GUILD_WEBHOOKS:
     '/guilds/:guildId/webhooks',
+  GUILD_INCIDENT_ACTIONS:
+    '/guilds/:guildId/incident-actions',
+  GUILD_ONBOARDING:
+    '/guilds/:guildId/onboarding',
+  GUILD_THREADS_ACTIVE:
+    '/guilds/:guildId/threads/active',
+  GUILD_WELCOME_SCREEN:
+    '/guilds/:guildId/welcome-screen',
   GUILD_WIDGET:
     '/guilds/:guildId/widget',
   GUILD_WIDGET_JSON:
@@ -805,6 +829,10 @@ export const Api = {
 
   INVITE:
     '/invites/:code',
+  INVITE_TARGET_USERS:
+    '/invites/:code/target-users',
+  INVITE_TARGET_USERS_JOB_STATUS:
+    '/invites/:code/target-users/job-status',
   INVITE_TARGET_USER:
     '/invites/:code/target-users/:userId',
   INVITE_TARGET_USERS_BULK_ADD:
@@ -821,8 +849,18 @@ export const Api = {
     '/lobbies/search',
   LOBBY:
     '/lobbies/:lobbyId',
+  LOBBY_CHANNEL_LINKING:
+    '/lobbies/:lobbyId/channel-linking',
   LOBBY_MEMBER:
     '/lobbies/:lobbyId/members/:userId',
+  LOBBY_MEMBER_INVITES:
+    '/lobbies/:lobbyId/members/:userId/invites',
+  LOBBY_MEMBERS_BULK:
+    '/lobbies/:lobbyId/members/bulk',
+  LOBBY_MESSAGES:
+    '/lobbies/:lobbyId/messages',
+  LOBBY_MESSAGE_MODERATION_METADATA:
+    '/lobbies/:lobbyId/messages/:messageId/moderation-metadata',
   LOBBY_SEND:
     '/lobbies/:lobbyId/send',
 
@@ -912,6 +950,8 @@ export const Api = {
     '/users/@me/guilds/premium/subscription-slots/:subscriptionId/uncancel',
   ME_GUILD:
     '/users/@me/guilds/:guildId',
+  ME_GUILD_MEMBER:
+    '/users/@me/guilds/:guildId/member',
   ME_GUILD_SETTINGS:
     '/users/@me/guilds/:guildId/settings',
   ME_HARVEST:
@@ -1075,9 +1115,21 @@ export const Api = {
   STAGE_INSTANCE:
     '/stage-instances/:channelId',
 
+  SKU_SUBSCRIPTIONS:
+    '/skus/:skuId/subscriptions',
+  SKU_SUBSCRIPTION:
+    '/skus/:skuId/subscriptions/:subscriptionId',
+
+  STICKER:
+    '/stickers/:stickerId',
   STICKER_ASSET:
     '/stickers/:stickerId/:assetId.:format',
 
+  SOUNDBOARD_DEFAULT_SOUNDS:
+    '/soundboard-default-sounds',
+
+  STICKER_PACKS:
+    '/sticker-packs',
   STICKER_PACKS_DIRECTORY:
     '/sticker-packs/directory/:directoryId',
   STICKER_PACK:
