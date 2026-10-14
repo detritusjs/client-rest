@@ -386,6 +386,12 @@ export class RestRequest {
     }
 
     if (response.statusCode === 502 && this.retries++ < this.maxRetries) {
+      // undici keeps the connection busy until an unread body gets garbage collected
+      try {
+        await response.arrayBuffer();
+      } catch(error) {
+        // the connection probably died mid-body, nothing to free
+      }
       return new Promise((resolve, reject) => {
         setTimeout(() => {
           this.send().then(resolve).catch(reject);
