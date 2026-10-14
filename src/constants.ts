@@ -2,7 +2,7 @@ export { HTTPMethods } from 'detritus-rest/lib/constants';
 
 export const Package = Object.freeze({
   URL: 'https://github.com/detritusjs/client-rest',
-  VERSION: '0.11.0-beta.30',
+  VERSION: '0.11.0-beta.31',
 });
 
 
@@ -211,6 +211,11 @@ export const INVALID_REQUEST_LIMIT = 10000;
 export const INVALID_REQUEST_LIMIT_INTERVAL = (10 * 60) * 1000; // 10 minutes
 export const INVALID_REQUEST_LIMIT_WARNING = 9000;
 
+
+// https://docs.discord.com/developers/topics/rate-limits#global-rate-limit
+// bots can make 50 requests per second, the global bucket drains its queue at this pace
+export const GLOBAL_RATELIMIT_LIMIT = 50;
+export const GLOBAL_RATELIMIT_WINDOW = 1000;
 
 export const RATELIMIT_BUCKET_MAJOR_PARAMS = Object.freeze(['channelId', 'guildId', 'webhookId', 'webhookToken']);
 

@@ -272,6 +272,7 @@ export namespace RequestTypes {
   export interface CreateChannelInvite {
     maxAge?: number,
     maxUses?: number,
+    reason?: string,
     roleIds?: Array<string>,
     targetApplicationId?: string,
     targetType?: number,
@@ -374,8 +375,8 @@ export namespace RequestTypes {
   }
 
   export interface CreateChannelOverwrite {
-    allow: number,
-    deny: number,
+    allow: bigint | number | string,
+    deny: bigint | number | string,
     id: string,
     type: number | string,
   }
@@ -410,7 +411,7 @@ export namespace RequestTypes {
     icon?: Buffer | string | null,
     name: string,
     region: string,
-    roles?: Array<CreateGuildRole>,
+    roles?: Array<CreateGuildRole & {id?: number | string}>,
     systemChannelFlags?: number,
     systemChannelId?: string,
     verificationLevel?: number,
@@ -1014,8 +1015,8 @@ export namespace RequestTypes {
   }
 
   export interface EditChannelOverwrite {
-    allow?: number,
-    deny?: number,
+    allow?: bigint | number | string,
+    deny?: bigint | number | string,
     reason?: string,
     type?: number | string,
   }
@@ -1710,15 +1711,6 @@ export namespace RequestTypes {
     userId?: string,
   }
 
-  export interface FetchMentions {
-    after?: string,
-    around?: string,
-    before?: string,
-    everyone?: boolean,
-    limit?: number,
-    roles?: boolean,
-  }
-
   export interface FetchMessages {
     after?: string,
     around?: string,
@@ -1767,6 +1759,7 @@ export namespace RequestTypes {
   }
 
   export interface FollowChannel {
+    reason?: string,
     webhookChannelId: string,
   }
 

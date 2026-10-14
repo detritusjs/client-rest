@@ -440,7 +440,7 @@ export const Api = {
   APPLICATION_SKUS:
     '/applications/:applicationId/skus',
 
-  // these ones are weird lmao
+  // these use `/application/`, not `/applications/`
   APPLICATION_ANALYTICS_ACQUISITIONS_ACQUIRERS:
     '/application/:applicationId/analytics/acquisitions/acquirers',
   APPLICATION_ANALYTICS_ACQUISITIONS_EXTERNAL:
@@ -956,8 +956,6 @@ export const Api = {
     '/users/@me/library/:applicationId/:branchId',
   ME_LIBRARY_APPLICATION_BRANCH_INSTALLED:
     '/users/@me/library/:applicationId/:branchId/installed',
-  ME_MENTIONS:
-    '/users/@me/mentions',
   ME_MENTION:
     '/users/@me/mentions/:messageId',
   ME_MFA_CODES:

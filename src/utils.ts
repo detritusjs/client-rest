@@ -1,3 +1,4 @@
+import { bufferToBase64 } from './clientsidechecks';
 import { SPOILER_ATTACHMENT_PREFIX } from './constants';
 import { RequestTypes } from './types';
 
@@ -43,6 +44,73 @@ export const CamelCaseToSnakeCase = Object.freeze({
       };
     }
     return [file, attachment];
+  },
+  _ChannelOverwrite: <T extends {allow?: bigint | number | string, deny?: bigint | number | string}>(
+    overwrite: T,
+  ): T & {allow?: string, deny?: string} => {
+    // the client's overwrites hold BigInts, JSON.stringify can't serialize those (and numbers lose precision past 2^53)
+    return Object.assign({}, overwrite, {
+      allow: (overwrite.allow !== undefined && overwrite.allow !== null) ? String(overwrite.allow) : overwrite.allow,
+      deny: (overwrite.deny !== undefined && overwrite.deny !== null) ? String(overwrite.deny) : overwrite.deny,
+    }) as T & {allow?: string, deny?: string};
+  },
+  _GuildChannel: (
+    options: RequestTypes.CreateGuildChannel & {id?: number | string},
+  ) => {
+    return {
+      available_tags: options.availableTags && options.availableTags.map((tag) => {
+        return {
+          emoji_id: tag.emojiId,
+          emoji_name: tag.emojiName,
+          id: tag.id,
+          moderated: tag.moderated,
+          name: tag.name,
+        };
+      }),
+      branch_id: options.branchId,
+      bitrate: options.bitrate,
+      default_auto_archive_duration: options.defaultAutoArchiveDuration,
+      default_forum_layout: options.defaultForumLayout,
+      default_reaction_emoji: (options.defaultReactionEmoji) ? {
+        emoji_id: options.defaultReactionEmoji.emojiId,
+        emoji_name: options.defaultReactionEmoji.emojiName,
+      } : options.defaultReactionEmoji,
+      default_sort_order: options.defaultSortOrder,
+      default_thread_rate_limit_per_user: options.defaultThreadRateLimitPerUser,
+      flags: options.flags,
+      // only used by `createGuild`, placeholder ids that `parent_id` and other channels can reference
+      id: options.id,
+      name: options.name,
+      nsfw: options.nsfw,
+      parent_id: options.parentId,
+      permission_overwrites: options.permissionOverwrites && options.permissionOverwrites.map((overwrite) => {
+        return CamelCaseToSnakeCase._ChannelOverwrite(overwrite);
+      }),
+      position: options.position,
+      rate_limit_per_user: options.rateLimitPerUser,
+      rtc_region: options.rtcRegion,
+      sku_id: options.skuId,
+      topic: options.topic,
+      type: options.type,
+      user_limit: options.userLimit,
+      video_quality_mode: options.videoQualityMode,
+    };
+  },
+  _GuildRole: (
+    options: RequestTypes.CreateGuildRole & {id?: number | string},
+  ) => {
+    return {
+      color: options.color,
+      colors: CamelCaseToSnakeCase._RoleColors(options.colors),
+      hoist: options.hoist,
+      icon: bufferToBase64(options.icon),
+      // only used by `createGuild`, placeholder ids that channel overwrites can reference
+      id: options.id,
+      mentionable: options.mentionable,
+      name: options.name,
+      permissions: (options.permissions !== undefined && options.permissions !== null) ? String(options.permissions) : options.permissions,
+      unicode_emoji: options.unicodeEmoji,
+    };
   },
   _GuildScheduledEventRecurrenceRule: (
     rule: RequestTypes.GuildScheduledEventRecurrenceRule,
@@ -345,14 +413,14 @@ export const CamelCaseToSnakeCase = Object.freeze({
           return embed;
         }
         const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;
-        if (typeof(embed.author) === 'object') {
+        if (embed.author && typeof(embed.author) === 'object') {
           raw.author = {
             name: embed.author.name,
             url: embed.author.url,
             icon_url: embed.author.iconUrl,
           };
         }
-        if (typeof(embed.footer) === 'object') {
+        if (embed.footer && typeof(embed.footer) === 'object') {
           raw.footer = {
             text: embed.footer.text,
             icon_url: embed.footer.iconUrl,

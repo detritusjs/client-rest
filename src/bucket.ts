@@ -17,8 +17,16 @@ export interface RatelimitDetails {
   resetAtLocal: number,
 }
 
+export interface BucketOptions {
+  // only send this many queued requests per `windowDuration` when draining the queue (0 = no limit)
+  maxPerWindow?: number,
+  windowDuration?: number,
+}
+
 export class Bucket {
   readonly key: string = '';
+  readonly maxPerWindow: number = 0;
+  readonly windowDuration: number = 1000;
   readonly ratelimit: RatelimitDetails = {
     limit: Infinity,
     remaining: Infinity,
@@ -35,9 +43,13 @@ export class Bucket {
   probe: RestRequest | null = null;
   probed: boolean = false;
   queue: Array<RatelimitQueue> = [];
+  windowCount: number = 0;
+  windowResetAt: number = 0;
 
-  constructor(key: string) {
+  constructor(key: string, options: BucketOptions = {}) {
     this.key = key;
+    this.maxPerWindow = options.maxPerWindow || this.maxPerWindow;
+    this.windowDuration = options.windowDuration || this.windowDuration;
 
     Object.defineProperties(this, {
       probeTimeout: {enumerable: false},
@@ -111,18 +123,26 @@ export class Bucket {
       // safety net so a probe that never settles can't block the bucket forever
       this.probeTimeout.start(BUCKET_PROBE_TIMEOUT, () => {
         if (this.probe === request) {
-          this.probe = null;
-          this.shift();
+          this.clearProbe();
         }
       });
     }
   }
 
+  clearProbe(): void {
+    this.probeTimeout.stop();
+    this.probe = null;
+    // the probe learned nothing (network error, timeout, no ratelimit headers), let the next request probe again
+    // otherwise `remaining` stays at Infinity and the whole queue goes out at once
+    if (this.ratelimit.remaining === Infinity) {
+      this.probed = false;
+    }
+    this.shift();
+  }
+
   releaseProbe(request: RestRequest): void {
     if (this.probe === request) {
-      this.probeTimeout.stop();
-      this.probe = null;
-      this.shift();
+      this.clearProbe();
     }
   }
 
@@ -164,11 +184,29 @@ export class Bucket {
     }
   }
 
+  /**
+   * Queues a request in the order requests were made (`RestRequest.sequence`)
+   * a request moving from another bucket (or retrying after a 429) goes back to its place instead of to the front/back,
+   * so a burst that gets moved between buckets keeps its order
+   * @param unshift unused, kept for compatibility (the order comes from the request)
+   */
   add(delayed: RatelimitQueue, unshift: boolean = false) {
-    if (unshift) {
-      this.queue.unshift(delayed);
+    const queue = this.queue;
+    const sequence = delayed.request.sequence;
+    if (!queue.length || queue[queue.length - 1].request.sequence < sequence) {
+      queue.push(delayed);
     } else {
-      this.queue.push(delayed);
+      // first queued request that was made after this one
+      let low = 0, high = queue.length;
+      while (low < high) {
+        const middle = (low + high) >>> 1;
+        if (queue[middle].request.sequence < sequence) {
+          low = middle + 1;
+        } else {
+          high = middle;
+        }
+      }
+      queue.splice(low, 0, delayed);
     }
     this.shift();
   }
@@ -186,6 +224,26 @@ export class Bucket {
       if (this.locked || this.probe) {
         break;
       }
+
+      if (this.maxPerWindow) {
+        // pace the drain (the global bucket), sending the whole queue at once goes over the limit and 429s again
+        const now = Date.now();
+        if (this.windowResetAt <= now) {
+          this.windowCount = 0;
+          this.windowResetAt = now + this.windowDuration;
+        }
+        if (this.maxPerWindow <= this.windowCount) {
+          // wait a full window after the last send (not the first), so no 1s span holds more than `maxPerWindow`
+          // nothing leaves the queue while locked, so the next window starts fresh
+          // the next loop starts the unlock timer and stops
+          this.windowCount = 0;
+          this.windowResetAt = 0;
+          this.lock(this.windowDuration);
+          continue;
+        }
+        this.windowCount++;
+      }
+
       const delayed = <RatelimitQueue> this.queue.shift();
       // if it gets requeued (bucket locked again), it goes back to the front instead of behind newer requests
       delayed.request.dequeued = true;

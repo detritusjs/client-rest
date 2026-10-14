@@ -24,6 +24,8 @@ import {
   HTTPMethods,
   Package,
   RestEvents,
+  GLOBAL_RATELIMIT_LIMIT,
+  GLOBAL_RATELIMIT_WINDOW,
   INVALID_REQUEST_LIMIT,
   INVALID_REQUEST_LIMIT_INTERVAL,
   INVALID_REQUEST_LIMIT_WARNING,
@@ -118,7 +120,10 @@ export class Client extends EventSpewer {
     this.errorOnRatelimit = !!options.errorOnRatelimit;
     this.errorOnRatelimitIfMoreThan = options.errorOnRatelimitIfMoreThan || this.errorOnRatelimitIfMoreThan;
     this.fingerprint = options.fingerprint,
-    this.globalBucket = options.globalBucket || new Bucket('global');
+    this.globalBucket = options.globalBucket || new Bucket('global', {
+      maxPerWindow: GLOBAL_RATELIMIT_LIMIT,
+      windowDuration: GLOBAL_RATELIMIT_WINDOW,
+    });
     this.haltOnUnauthorized = !!options.haltOnUnauthorized;
     this.routes = options.routesCollection || new BaseCollection<string, string>();
     this.token = token;
@@ -712,20 +717,20 @@ export class Client extends EventSpewer {
     guildId: string,
     options: RequestTypes.BeginGuildPrune = {},
   ): Promise<any> {
-    const params = {guildId};
-    const query = {
+    const body = {
       compute_prune_count: options.computePruneCount,
       days: options.days,
-      include_roles: (Array.isArray(options.includeRoles)) ? options.includeRoles.join(',') : options.includeRoles,
+      include_roles: options.includeRoles,
     };
+    const params = {guildId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      body,
       headers: {
         [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
-      query,
       route: {
         method: HTTPMethods.POST,
         path: Api.GUILD_PRUNE,
@@ -1147,6 +1152,9 @@ export class Client extends EventSpewer {
     return this.request({
       body,
       files,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
       route: {
         method: HTTPMethods.POST,
         path: Api.CHANNEL_INVITES,
@@ -1244,7 +1252,6 @@ export class Client extends EventSpewer {
       recipients: options.recipients,
     };
     if (this.clientsideChecks) {
-      // both cannot be empty
     }
     return this.request({
       body,
@@ -1261,24 +1268,19 @@ export class Client extends EventSpewer {
     const body = {
       afk_channel_id: options.afkChannelId,
       afk_timeout: options.afkTimeout,
-      channels: options.channels,
+      channels: options.channels && options.channels.map((channel) => CamelCaseToSnakeCase._GuildChannel(channel)),
       default_message_notifications: options.defaultMessageNotifications,
       explicit_content_filter: options.explicitContentFilter,
       icon: bufferToBase64(options.icon),
       name: options.name,
       region: options.region,
-      roles: options.roles && options.roles.map((role) => {
-        const x = Object.assign({}, role);
-        x.icon = bufferToBase64(x.icon);
-        return x;
-      }),
+      roles: options.roles && options.roles.map((role) => CamelCaseToSnakeCase._GuildRole(role)),
       system_channel_flags: options.systemChannelFlags,
       system_channel_id: options.systemChannelId,
       verification_level: options.verificationLevel,
     };
 
     if (this.clientsideChecks) {
-      // verify channel and roles
     }
     return this.request({
       body,
@@ -1341,19 +1343,19 @@ export class Client extends EventSpewer {
     userId: string,
     options: RequestTypes.CreateGuildBan = {},
   ): Promise<any> {
-    const params = {guildId, userId};
-    const query = {
-      delete_message_days: options.deleteMessageDays,
-      delete_message_seconds: options.deleteMessageSeconds,
+    const body = {
+      delete_message_days: (options.deleteMessageDays !== undefined && options.deleteMessageDays !== null) ? Number(options.deleteMessageDays) : options.deleteMessageDays,
+      delete_message_seconds: (options.deleteMessageSeconds !== undefined && options.deleteMessageSeconds !== null) ? Number(options.deleteMessageSeconds) : options.deleteMessageSeconds,
     };
+    const params = {guildId, userId};
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      body,
       headers: {
         [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
-      query,
       route: {
         method: HTTPMethods.PUT,
         path: Api.GUILD_BAN,
@@ -1366,40 +1368,7 @@ export class Client extends EventSpewer {
     guildId: string,
     options: RequestTypes.CreateGuildChannel,
   ): Promise<any> {
-    const body = {
-      available_tags: options.availableTags && options.availableTags.map((tag) => {
-        return {
-          emoji_id: tag.emojiId,
-          emoji_name: tag.emojiName,
-          id: tag.id,
-          moderated: tag.moderated,
-          name: tag.name,
-        };
-      }),
-      branch_id: options.branchId,
-      bitrate: options.bitrate,
-      default_auto_archive_duration: options.defaultAutoArchiveDuration,
-      default_forum_layout: options.defaultForumLayout,
-      default_reaction_emoji: (options.defaultReactionEmoji) ? {
-        emoji_id: options.defaultReactionEmoji.emojiId,
-        emoji_name: options.defaultReactionEmoji.emojiName,
-      } : options.defaultReactionEmoji,
-      default_sort_order: options.defaultSortOrder,
-      default_thread_rate_limit_per_user: options.defaultThreadRateLimitPerUser,
-      flags: options.flags,
-      name: options.name,
-      nsfw: options.nsfw,
-      parent_id: options.parentId,
-      permission_overwrites: options.permissionOverwrites,
-      position: options.position,
-      rate_limit_per_user: options.rateLimitPerUser,
-      rtc_region: options.rtcRegion,
-      sku_id: options.skuId,
-      topic: options.topic,
-      type: options.type,
-      user_limit: options.userLimit,
-      video_quality_mode: options.videoQualityMode,
-    };
+    const body = CamelCaseToSnakeCase._GuildChannel(options);
     const params = {guildId};
     if (this.clientsideChecks) {
 
@@ -1473,16 +1442,7 @@ export class Client extends EventSpewer {
     guildId: string,
     options: RequestTypes.CreateGuildRole = {},
   ): Promise<any> {
-    const body = {
-      color: options.color,
-      colors: CamelCaseToSnakeCase._RoleColors(options.colors),
-      hoist: options.hoist,
-      icon: bufferToBase64(options.icon),
-      mentionable: options.mentionable,
-      name: options.name,
-      permissions: (options.permissions !== undefined && options.permissions !== null) ? String(options.permissions) : options.permissions,
-      unicode_emoji: options.unicodeEmoji,
-    };
+    const body = CamelCaseToSnakeCase._GuildRole(options);
     const params = {guildId};
     if (this.clientsideChecks) {
 
@@ -3008,7 +2968,9 @@ export class Client extends EventSpewer {
       name: options.name,
       nsfw: options.nsfw,
       parent_id: options.parentId,
-      permission_overwrites: options.permissionOverwrites,
+      permission_overwrites: options.permissionOverwrites && options.permissionOverwrites.map((overwrite) => {
+        return CamelCaseToSnakeCase._ChannelOverwrite(overwrite);
+      }),
       position: options.position,
       rate_limit_per_user: options.rateLimitPerUser,
       rtc_region: options.rtcRegion,
@@ -3062,8 +3024,8 @@ export class Client extends EventSpewer {
     options: RequestTypes.EditChannelOverwrite = {},
   ): Promise<any> {
     const body = {
-      allow: options.allow,
-      deny: options.deny,
+      allow: (options.allow !== undefined && options.allow !== null) ? String(options.allow) : options.allow,
+      deny: (options.deny !== undefined && options.deny !== null) ? String(options.deny) : options.deny,
       type: options.type,
     };
     const params = {channelId, overwriteId};
@@ -3132,7 +3094,6 @@ export class Client extends EventSpewer {
     const params = {guildId};
 
     if (this.clientsideChecks) {
-      // one check is if owner_id, check if code is also in
     }
     return this.request({
       body,
@@ -4139,8 +4100,6 @@ export class Client extends EventSpewer {
     };
     const [ body, files ] = CamelCaseToSnakeCase.MessageEdit(options);
     if (this.clientsideChecks) {
-      // verify body
-      // verify files?
       verifyData(params, {
         messageId: {required: true, type: VerifyTypes.SNOWFLAKE},
         webhookId: {required: true, type: VerifyTypes.SNOWFLAKE},
@@ -4243,8 +4202,6 @@ export class Client extends EventSpewer {
     const [ bodyMessageCreate, files ] = CamelCaseToSnakeCase.MessageEdit(options);
     Object.assign(body, bodyMessageCreate);
     if (this.clientsideChecks) {
-      // verify body
-      // verify files?
       verifyData(params, {
         webhookId: {required: true, type: VerifyTypes.SNOWFLAKE},
         webhookToken: {required: true, type: VerifyTypes.STRING},
@@ -4757,7 +4714,8 @@ export class Client extends EventSpewer {
   ): Promise<any> {
     const params = {channelId};
     const query = {
-      before: options.before,
+      // discord wants an ISO8601 timestamp here
+      before: (options.before instanceof Date) ? options.before.toISOString() : options.before,
       limit: options.limit,
     };
     if (this.clientsideChecks) {
@@ -4801,7 +4759,8 @@ export class Client extends EventSpewer {
   ): Promise<any> {
     const params = {channelId};
     const query = {
-      before: options.before,
+      // discord wants an ISO8601 timestamp here
+      before: (options.before instanceof Date) ? options.before.toISOString() : options.before,
       limit: options.limit,
     };
     if (this.clientsideChecks) {
@@ -4998,7 +4957,7 @@ export class Client extends EventSpewer {
 
   async fetchGuildAuditLogs(
     guildId: string,
-    options: RequestTypes.FetchGuildAuditLogs,
+    options: RequestTypes.FetchGuildAuditLogs = {},
   ): Promise<any> {
     const params = {guildId};
     const query = {
@@ -5065,7 +5024,6 @@ export class Client extends EventSpewer {
       limit: options.limit,
     };
     if (this.clientsideChecks) {
-      // add snowflake checks
       if (query.limit !== undefined) {
         if (query.limit < 1 || 1000 < query.limit) {
           throw new Error('Limit has to be between 1 and 1000');
@@ -6094,40 +6052,6 @@ export class Client extends EventSpewer {
     });
   }
 
-  async fetchMentions(
-    options: RequestTypes.FetchMentions = {},
-  ): Promise<any> {
-    const query = {
-      after: options.after,
-      around: options.around,
-      before: options.before,
-      everyone: options.everyone,
-      limit: options.limit,
-      roles: options.roles,
-    };
-    if (this.clientsideChecks) {
-      if (query.limit !== undefined) {
-        if (query.limit < 1 || 100 < query.limit) {
-          throw new Error('Limit has to be between 1 and 100');
-        }
-      }
-      if (
-        (query.after && query.around) ||
-        (query.after && query.before) ||
-        (query.around && query.before)
-      ) {
-        throw new Error('Choose between around, before, or after, cannot have more than one.');
-      }
-    }
-    return this.request({
-      query,
-      route: {
-        method: HTTPMethods.GET,
-        path: Api.ME_MENTIONS,
-      },
-    });
-  }
-
   async fetchMessage(
     channelId: string,
     messageId: string,
@@ -6298,7 +6222,6 @@ export class Client extends EventSpewer {
   }
 
   fetchOauth2Tokens(): Promise<any> {
-    // fetchAuthorizedApplications
     return this.request({
       route: {
         method: HTTPMethods.GET,
@@ -6379,7 +6302,6 @@ export class Client extends EventSpewer {
       type: options.type,
     };
     if (this.clientsideChecks) {
-      //params
       if (query.limit !== undefined) {
         if (query.limit < 1 || 100 < query.limit) {
           throw new Error('Limit has to be between 1 and 100');
@@ -6822,6 +6744,9 @@ export class Client extends EventSpewer {
     }
     return this.request({
       body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
       route: {
         method: HTTPMethods.POST,
         path: Api.CHANNEL_FOLLOWERS,
@@ -7603,7 +7528,6 @@ export class Client extends EventSpewer {
     if (this.clientsideChecks) {
 
     }
-    // after this request, continue to callback?
     return this.request({
       route: {
         method: HTTPMethods.GET,

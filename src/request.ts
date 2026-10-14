@@ -27,8 +27,12 @@ export interface RestRequestOptions {
   skipRatelimitCheck?: boolean,
 }
 
+// every request gets a number in the order it was made, buckets keep their queues sorted by it
+let requestSequence = 0;
+
 export class RestRequest {
   readonly bucketPath?: string;
+  readonly sequence: number = requestSequence++;
 
   _bucketHash?: string;
   _bucketKey?: string;
@@ -132,8 +136,9 @@ export class RestRequest {
     let major = '';
     if (this.request.route) {
       for (let param of RATELIMIT_BUCKET_MAJOR_PARAMS) {
-        if (param in this.request.route.params) {
-          major += this.request.route.params[param].trim();
+        const value = this.request.route.params[param];
+        if (value !== undefined && value !== null) {
+          major += String(value).trim();
         }
         major += '-';
       }
@@ -176,7 +181,21 @@ export class RestRequest {
           bucket.expireRatelimit();
         }
 
-        if (!this.errorOnRatelimit) {
+        if (this.errorOnRatelimit) {
+          // never queued, but don't send what we already know will 429 (every 429 counts towards the cloudflare ban)
+          // `locked` can outlive `lockedUntil` when nothing was queued to start the unlock timer
+          const globalBucket = this.client.globalBucket;
+          let unlockIn = (globalBucket.locked) ? globalBucket.unlockIn : 0;
+          if (bucket) {
+            bucket.lockIfExhausted();
+            if (bucket.locked) {
+              unlockIn = Math.max(unlockIn, bucket.unlockIn);
+            }
+          }
+          if (unlockIn) {
+            return reject(new Error(`Refusing to send request, ratelimited for ${unlockIn}ms and errorOnRatelimit is enabled`));
+          }
+        } else {
           if (this.client.globalBucket.locked) {
             return this.waitForBucket(this.client.globalBucket, resolve, reject, dequeued);
           }
@@ -295,8 +314,7 @@ export class RestRequest {
           }
         }
 
-        if (response.statusCode === 429 && !this.errorOnRatelimit) {
-          // ratelimited, retry
+        if (response.statusCode === 429) {
           // https://docs.discord.com/developers/topics/rate-limits#exceeding-a-rate-limit
           // the body's `retry_after` (float seconds) is the source of truth, the `Retry-After` header is the fallback
           let retryAfter = 0;
@@ -306,71 +324,68 @@ export class RestRequest {
             retryAfter = (parseFloat(response.headers.get(RatelimitHeaders.RESET_AFTER) || '') || 0) * 1000;
           }
 
+          let data: {global?: boolean, message?: string, retry_after?: number} | null = null;
+          try {
+            // the body is cached, the error thrown below can still read it
+            data = await response.json() as {global?: boolean, message?: string, retry_after?: number} | null;
+          } catch(error) {
+            // cloudflare can send us a non-json body
+          }
+
+          if (data && typeof(data.retry_after) === 'number') {
+            retryAfter = data.retry_after * 1000;
+          }
+
           const scope = response.headers.get(RatelimitHeaders.SCOPE) || null;
-          const shouldRetry = (scope === RatelimitScopes.SHARED) ?
+          const isDiscordRatelimit = response.headers.has('via');
+          const isGlobal = (
+            (response.headers.get(RatelimitHeaders.GLOBAL) === 'true') ||
+            (scope === RatelimitScopes.GLOBAL) ||
+            (isDiscordRatelimit && !!data && !!data.global)
+          );
+
+          if (!retryAfter) {
+            const diff = (bucket && !isGlobal) ? bucket.ratelimit.resetAtLocal - Date.now() : 0;
+            retryAfter = (0 < diff && diff !== Infinity) ? diff : RATELIMIT_RETRY_AFTER_FALLBACK;
+          }
+
+          // lock even if we don't retry (`errorOnRatelimit`, out of retries), otherwise every other request keeps hitting the 429
+          if (isGlobal) {
+            this.client.globalBucket.lock(retryAfter);
+          } else if (bucket) {
+            bucket.ratelimit.remaining = 0;
+            bucket.ratelimit.resetAfter = retryAfter;
+            bucket.lock(retryAfter);
+          }
+
+          this.client.emit(RestEvents.RATELIMITED, {
+            global: isGlobal,
+            response,
+            restRequest: this,
+            retryAfter,
+            scope,
+          });
+
+          const shouldRetry = !this.errorOnRatelimit && ((scope === RatelimitScopes.SHARED) ?
             (this.sharedRatelimitRetries++ < this.maxSharedRatelimitRetries) :
-            (this.ratelimitRetries++ < this.maxRatelimitRetries);
+            (this.ratelimitRetries++ < this.maxRatelimitRetries));
           if (shouldRetry) {
-            const isDiscordRatelimit = response.headers.has('via');
-            return new Promise(async (resolve, reject) => {
-              const delayed = {request: this, resolve, reject};
+            if (!isGlobal && !bucket) {
+              // probably cloudflare yelling at us, no bucket to wait on so just bail
+              throw new HTTPError(response, (data) ? data.message : undefined);
+            }
 
-              try {
-                let data: {global?: boolean, message?: string, retry_after?: number} | null = null;
-                try {
-                  data = await response.json() as {global?: boolean, message?: string, retry_after?: number} | null;
-                } catch(error) {
-                  // cloudflare can send us a non-json body
-                }
+            if (this.errorOnRatelimitIfMoreThan && this.errorOnRatelimitIfMoreThan < retryAfter) {
+              throw new Error(`Refusing to send request, ratelimited for ${retryAfter}ms which is more than the allowed ${this.errorOnRatelimitIfMoreThan}ms`);
+            }
 
-                if (data && typeof(data.retry_after) === 'number') {
-                  retryAfter = data.retry_after * 1000;
-                }
-
-                const isGlobal = (
-                  (response.headers.get(RatelimitHeaders.GLOBAL) === 'true') ||
-                  (scope === RatelimitScopes.GLOBAL) ||
-                  (isDiscordRatelimit && !!data && !!data.global)
-                );
-
-                if (!retryAfter) {
-                  const diff = (bucket && !isGlobal) ? bucket.ratelimit.resetAtLocal - Date.now() : 0;
-                  retryAfter = (0 < diff && diff !== Infinity) ? diff : RATELIMIT_RETRY_AFTER_FALLBACK;
-                }
-                this.client.emit(RestEvents.RATELIMITED, {
-                  global: isGlobal,
-                  response,
-                  restRequest: this,
-                  retryAfter,
-                  scope,
-                });
-
-                if (isGlobal) {
-                  this.client.globalBucket.lock(retryAfter);
-                } else if (bucket) {
-                  bucket.ratelimit.remaining = 0;
-                  bucket.ratelimit.resetAfter = retryAfter;
-                  bucket.lock(retryAfter);
-                } else {
-                  // probably cloudflare yelling at us, no bucket to wait on so just bail
-                  return reject(new HTTPError(response, (data) ? data.message : undefined));
-                }
-
-                if (this.errorOnRatelimitIfMoreThan && this.errorOnRatelimitIfMoreThan < retryAfter) {
-                  return reject(new Error(`Refusing to send request, ratelimited for ${retryAfter}ms which is more than the allowed ${this.errorOnRatelimitIfMoreThan}ms`));
-                }
-
-                if (isGlobal) {
-                  this.client.globalBucket.add(delayed);
-                } else {
-                  (bucket as Bucket).add(delayed, true);
-                }
-              } catch(error) {
-                return reject(error);
-              } finally {
-                this.releaseProbe();
-              }
+            const waitOn = (isGlobal) ? this.client.globalBucket : bucket as Bucket;
+            const promise = new Promise<Response>((resolve, reject) => {
+              waitOn.add({request: this, resolve, reject}, true);
             });
+            // after queueing, so the probe's bucket doesn't send its queue ahead of this retry
+            this.releaseProbe();
+            return promise;
           }
 
           if (bucket && bucket.size) {
@@ -404,7 +419,12 @@ export class RestRequest {
       let data: any;
       switch ((response.headers.get(HTTPHeaders.CONTENT_TYPE) || '').split(';').shift()) {
         case ContentTypes.APPLICATION_JSON: {
-          data = await response.json();
+          try {
+            data = await response.json();
+          } catch(error) {
+            // a proxy's error page or a truncated body, don't lose the status to a bare SyntaxError
+            throw new HTTPError(response);
+          }
         }; break;
         case ContentTypes.TEXT_PLAIN: {
           data = await response.text();
