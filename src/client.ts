@@ -58,6 +58,16 @@ const requestDefaults = {
   skipRatelimitCheck: false,
 };
 
+function hasMessageValue(value: any): boolean {
+  if (value === undefined || value === null) {
+    return false;
+  }
+  if (typeof(value) === 'string' || Array.isArray(value)) {
+    return !!value.length;
+  }
+  return true;
+}
+
 export interface ClientOptions extends RestClientOptions {
   authType?: AuthTypes | string,
   bucketsExpireIn?: number,
@@ -248,24 +258,11 @@ export class Client extends EventSpewer {
 
     if (restRequest.shouldRatelimitCheck && !restRequest.errorOnRatelimit) {
       response = await new Promise((resolve, reject) => {
-        const delayed = {request: restRequest, resolve, reject};
         if (this.globalBucket.locked) {
-          this.globalBucket.add(delayed);
+          // goes through `waitForBucket()` so `errorOnRatelimitIfMoreThan` applies to the global ratelimit too
+          restRequest.waitForBucket(this.globalBucket, resolve, reject);
         } else {
-          const bucket = restRequest.bucket;
-          if (bucket) {
-            const ratelimit = bucket.ratelimit;
-
-            const { errorOnRatelimitIfMoreThan } = restRequest;
-            if (!errorOnRatelimitIfMoreThan || ratelimit.resetAfter === Infinity || ratelimit.resetAfter <= errorOnRatelimitIfMoreThan) {
-              resolve(restRequest.send());
-            } else {
-              bucket.add(delayed);
-              this.buckets.resetExpire(bucket);
-            }
-          } else {
-            resolve(restRequest.send());
-          }
+          resolve(restRequest.send());
         }
       });
     } else {
@@ -273,7 +270,7 @@ export class Client extends EventSpewer {
     }
 
     if (init.dataOnly) {
-      switch (response.headers.get(HTTPHeaders.CONTENT_TYPE)) {
+      switch ((response.headers.get(HTTPHeaders.CONTENT_TYPE) || '').split(';').shift()!.trim()) {
         case ContentTypes.APPLICATION_JSON: {
           return response.json();
         };
@@ -719,7 +716,7 @@ export class Client extends EventSpewer {
     const query = {
       compute_prune_count: options.computePruneCount,
       days: options.days,
-      include_roles: options.includeRoles,
+      include_roles: (Array.isArray(options.includeRoles)) ? options.includeRoles.join(',') : options.includeRoles,
     };
     if (this.clientsideChecks) {
 
@@ -830,8 +827,10 @@ export class Client extends EventSpewer {
       if (200 < body.user_ids.length) {
         throw new Error('User Ids amount needs to be at most 200');
       }
-      verifyData(params, {
+      verifyData(body, {
         delete_message_seconds: {type: VerifyTypes.NUMBER},
+      });
+      verifyData(params, {
         guildId: {required: true, type: VerifyTypes.SNOWFLAKE},
       });
     }
@@ -1130,7 +1129,9 @@ export class Client extends EventSpewer {
     };
     const params = {channelId};
     if (this.clientsideChecks) {
-
+      if (options.targetUserIds && options.targetUsersFile) {
+        throw new Error('`targetUserIds` and `targetUsersFile` are mutually exclusive');
+      }
     }
 
     let files: Array<RequestTypes.File> | undefined;
@@ -1479,7 +1480,7 @@ export class Client extends EventSpewer {
       icon: bufferToBase64(options.icon),
       mentionable: options.mentionable,
       name: options.name,
-      permissions: options.permissions && String(options.permissions),
+      permissions: (options.permissions !== undefined && options.permissions !== null) ? String(options.permissions) : options.permissions,
       unicode_emoji: options.unicodeEmoji,
     };
     const params = {guildId};
@@ -1579,6 +1580,7 @@ export class Client extends EventSpewer {
       body,
       // discord reads the sticker from the `file` field, not `files[0]`
       files: [Object.assign({key: 'file'}, file)],
+      multipart: true,
       headers: {
         [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
       },
@@ -1832,7 +1834,7 @@ export class Client extends EventSpewer {
         allowed_mentions: {type: VerifyTypes.OBJECT},
         application_id: {type: VerifyTypes.SNOWFLAKE},
         content: {type: VerifyTypes.STRING},
-        embed: {type: VerifyTypes.OBJECT},
+        embeds: {type: VerifyTypes.ARRAY},
         message_reference: {type: VerifyTypes.OBJECT},
         nonce: {type: VerifyTypes.STRING},
         sticker_ids: {type: VerifyTypes.ARRAY},
@@ -1845,6 +1847,12 @@ export class Client extends EventSpewer {
           type: {type: VerifyTypes.NUMBER},
         });
       }
+      if (body.embeds) {
+        for (let i = 0; i < body.embeds.length; i++) {
+          const key = `embeds[${i}]`;
+          verifyData({[key]: body.embeds[i]}, {[key]: {type: VerifyTypes.OBJECT}});
+        }
+      }
       if ('message_reference' in body) {
         verifyData(<Record<string, any>> body.message_reference, {
           channel_id: {type: VerifyTypes.STRING},
@@ -1854,21 +1862,22 @@ export class Client extends EventSpewer {
         });
       }
       if ('poll' in body) {
-        
-      }
-    }
 
-    if (
-      !('activity' in body) &&
-      !('components' in body) &&
-      !('content' in body) &&
-      !('embed' in body) &&
-      !('embeds' in body) &&
-      !('sticker_ids' in body) &&
-      !('poll' in body) &&
-      !(files.length)
-    ) {
-      throw new Error('Cannot send an empty message.');
+      }
+
+      if (
+        !hasMessageValue(body.activity) &&
+        !hasMessageValue(body.attachments) &&
+        !hasMessageValue(body.components) &&
+        !hasMessageValue(body.content) &&
+        !hasMessageValue(body.embeds) &&
+        !hasMessageValue(body.sticker_ids) &&
+        !hasMessageValue(body.poll) &&
+        !(files.length) &&
+        !(body.message_reference && body.message_reference.type === 1)
+      ) {
+        throw new Error('Cannot send an empty message.');
+      }
     }
 
     return this.request({
@@ -1896,7 +1905,7 @@ export class Client extends EventSpewer {
       body,
       route: {
         method: HTTPMethods.POST,
-        path: Api.OAUTH2_APPLICATION,
+        path: Api.OAUTH2_APPLICATIONS,
       },
     });
   }
@@ -2253,10 +2262,10 @@ export class Client extends EventSpewer {
 
   async deleteGuildAutoModerationRule(
     guildId: string,
-    autoModerationId: string,
+    autoModerationRuleId: string,
     options: RequestTypes.DeleteGuildAutoModerationRule = {},
   ): Promise<any> {
-    const params = {guildId, autoModerationId};
+    const params = {guildId, autoModerationRuleId};
     if (this.clientsideChecks) {
 
     }
@@ -3393,7 +3402,7 @@ export class Client extends EventSpewer {
       icon: bufferToBase64(options.icon),
       mentionable: options.mentionable,
       name: options.name,
-      permissions: options.permissions && String(options.permissions),
+      permissions: (options.permissions !== undefined && options.permissions !== null) ? String(options.permissions) : options.permissions,
       unicode_emoji: options.unicodeEmoji,
     };
     const params = {guildId, roleId};
@@ -4242,10 +4251,11 @@ export class Client extends EventSpewer {
       });
       if (
         !compatibleType &&
-        !('components' in body) &&
-        !('content' in body) &&
-        !('embeds' in body) &&
-        !('poll' in body) &&
+        !hasMessageValue(body.attachments) &&
+        !hasMessageValue(body.components) &&
+        !hasMessageValue(body.content) &&
+        !hasMessageValue(body.embeds) &&
+        !hasMessageValue(body.poll) &&
         !(files.length)
       ) {
         throw new Error('Cannot send an empty message.');
@@ -4484,9 +4494,10 @@ export class Client extends EventSpewer {
     applicationIds?: string | Array<string>,
   ): Promise<any> {
     // this one requires the array to be urlencoded in one param
-    const query = {
-      application_ids: String(applicationIds),
-    };
+    const query: {application_ids?: string} = {};
+    if (applicationIds !== undefined && applicationIds !== null) {
+      query.application_ids = String(applicationIds);
+    }
     if (this.clientsideChecks) {
 
     }
@@ -4723,18 +4734,21 @@ export class Client extends EventSpewer {
 
   async fetchChannelThreadsActive(
     channelId: string,
+    options: RequestTypes.FetchChannelThreadsActive = {},
   ): Promise<any> {
-    const params = {channelId};
-    if (this.clientsideChecks) {
-
+    let guildId = options.guildId;
+    if (!guildId) {
+      const channel = await this.fetchChannel(channelId);
+      guildId = channel.guild_id;
     }
-    return this.request({
-      route: {
-        method: HTTPMethods.GET,
-        path: Api.CHANNEL_THREADS_ACTIVE,
-        params,
-      },
-    });
+    if (!guildId) {
+      throw new Error('Channel is not in a guild.');
+    }
+    const data = await this.fetchGuildThreadsActive(guildId);
+    const threads = (data.threads || []).filter((thread: any) => thread.parent_id === channelId);
+    const threadIds = new Set(threads.map((thread: any) => thread.id));
+    const members = (data.members || []).filter((member: any) => threadIds.has(member.id));
+    return Object.assign({}, data, {members, threads});
   }
 
   async fetchChannelThreadsArchivedPrivate(
@@ -4830,12 +4844,17 @@ export class Client extends EventSpewer {
 
   async fetchConnectionAuthorizeUrl(
     platform: string,
+    options: RequestTypes.FetchConnectionAuthorizeUrl = {},
   ): Promise<any> {
     const params = {platform};
+    const query = {
+      continuation: options.continuation,
+    };
     if (this.clientsideChecks) {
 
     }
     return this.request({
+      query,
       route: {
         method: HTTPMethods.GET,
         path: Api.CONNECTION_AUTHORIZE,
@@ -5430,7 +5449,7 @@ export class Client extends EventSpewer {
     const params = {guildId};
     const query = {
       days: options.days,
-      include_roles: options.includeRoles,
+      include_roles: (Array.isArray(options.includeRoles)) ? options.includeRoles.join(',') : options.includeRoles,
     };
     if (this.clientsideChecks) {
 
@@ -7020,7 +7039,7 @@ export class Client extends EventSpewer {
       authorize: options.authorize,
       bot_guild_id: options.botGuildId,
       captcha_key: options.captchaKey,
-      permissions: options.permissions && String(options.permissions),
+      permissions: (options.permissions !== undefined && options.permissions !== null) ? String(options.permissions) : options.permissions,
       webhook_channel_id: options.webhookChannelId,
       webhook_guild_id: options.webhookGuildId,
     };
@@ -7411,7 +7430,7 @@ export class Client extends EventSpewer {
           this.search(searchType, searchId, options, retry, retryNumber)
             .then(resolve)
             .catch(reject);
-        }, body['retry_after'] || 5000);
+        }, (body && body['retry_after']) ? body['retry_after'] * 1000 : 5000);
       });
     }
     return body;

@@ -44,8 +44,8 @@ export const CDN = Tools.URIEncodeWrap({
 
   APP_ASSET: (applicationId: string, hash: string, format: string = 'png'): string =>
     `/app-assets/${applicationId}/${hash}.${format}`,
-  APP_ASSET_ACHIEVEMENT: (applicationId: string, achievementId: string, hash: string): string =>
-    `/app-assets/${applicationId}/achievements/${achievementId}/icons/${hash}`,
+  APP_ASSET_ACHIEVEMENT: (applicationId: string, achievementId: string, hash: string, format: string = 'png'): string =>
+    `/app-assets/${applicationId}/achievements/${achievementId}/icons/${hash}.${format}`,
   APP_ASSET_STORE: (applicationId: string, assetId: string, format: string = 'png'): string =>
     `/app-assets/${applicationId}/store/${assetId}.${format}`,
   APP_COVER: (applicationId: string, hash: string, format: string = 'png'): string =>
@@ -86,8 +86,6 @@ export const CDN = Tools.URIEncodeWrap({
     `/role-icons/${roleId}/${hash}.${format}`,
   STICKER: (stickerId: string, format: string = 'png'): string =>
     `/stickers/${stickerId}.${format}`,
-  STICKER_HASH: (stickerId: string, hash: string, format: string = 'png'): string =>
-    `/stickers/${stickerId}/${hash}.${format}`,
   TEAM_ICON: (teamId: string, hash: string, format: string = 'png'): string =>
     `/team-icons/${teamId}/${hash}.${format}`,
 
@@ -534,7 +532,7 @@ export const Api = {
   CHANNEL_FOLLOWERS:
     '/channels/:channelId/followers',
   CHANNEL_ICON:
-    '/channels/:channelId/icons/:hash.jgp',
+    '/channels/:channelId/icons/:hash.jpg',
   CHANNEL_INVITES:
     '/channels/:channelId/invites',
   CHANNEL_MESSAGES:
@@ -591,8 +589,6 @@ export const Api = {
     '/channels/:channelId/store-listings/:skuId',
   CHANNEL_THREADS:
     '/channels/:channelId/threads',
-  CHANNEL_THREADS_ACTIVE:
-    '/channels/:channelId/threads/active',
   CHANNEL_THREADS_ARCHIVED_PRIVATE:
     '/channels/:channelId/threads/archived/private',
   CHANNEL_THREADS_ARCHIVED_PUBLIC:
@@ -619,8 +615,6 @@ export const Api = {
 
   CONNECTION_AUTHORIZE:
     '/connections/:platform/authorize',
-  CONNECTION_AUTHORIZE_CONTINUATION:
-    '/connections/:platform/authorize?continuation=true',
   CONNECTION_CALLBACK:
     '/connections/:platform/callback',
   CONNECTION_CALLBACK_CONTINUATION:
@@ -660,8 +654,6 @@ export const Api = {
 
   GAME_NEWS:
     '/game-news',
-  GAME_NEWS_ID:
-    '/game-news?game_ids=:gameIds',
 
   GATEWAY:
     '/gateway',
@@ -718,7 +710,7 @@ export const Api = {
   GUILD_DISCOVERY_METADATA:
     '/guilds/:guildId/discovery-metadata',
   GUILD_DISCOVERY_VALID_TERM:
-    '/guilds/:guildId/valid-term',
+    '/discovery/valid-term',
   GUILD_EMOJIS:
     '/guilds/:guildId/emojis',
   GUILD_EMOJI:
@@ -876,7 +868,7 @@ export const Api = {
     '/users/@me/affinities/users',
   ME_AGREEMENTS:
     '/users/@me/agreements',
-  ME_APPLICATION_achievementS:
+  ME_APPLICATION_ACHIEVEMENTS:
     '/users/@me/applications/:applicationId/achievements',
   ME_APPLICATION_ENTITLEMENTS:
     '/users/@me/applications/:applicationId/entitlements',
@@ -905,7 +897,7 @@ export const Api = {
   ME_BILLING_SUBSCRIPTION:
     '/users/@me/billing/subscriptions/:subscriptionId',
   ME_BILLING_TRIAL_ELIGIBILITY:
-    '/users/@me/billings/trials/:trialId/eligibility',
+    '/users/@me/billing/trials/:trialId/eligibility',
   ME_CAPTCHA_VERIFY:
     '/users/@me/captcha/verify',
   ME_CHANNELS:

@@ -8,7 +8,8 @@ export enum Types {
 }
 
 export const Regexes = {
-  [Types.SNOWFLAKE]: /^\d+|@me$/,
+  [Types.NUMBER]: /^-?\d+$/,
+  [Types.SNOWFLAKE]: /^(?:\d+|@me|@original)$/,
 };
 
 
@@ -45,7 +46,8 @@ export function verifyData(data: {
 }): void {
   for (let key in verification) {
     const valueOptions = verification[key];
-    if (!(key in data) || data[key] === undefined) {
+    // `null` on an optional field means it isn't set, so it's left as-is
+    if (!(key in data) || data[key] === undefined || data[key] === null) {
       if (valueOptions.required) {
         throw new Error(`${key} is required.`);
       }
@@ -60,27 +62,42 @@ export function verifyData(data: {
         }
       }; break;
       case Types.BOOLEAN: {
-        value = Boolean(value);
+        if (typeof(value) !== Types.BOOLEAN) {
+          throw new Error(`${key} has to be a boolean.`);
+        }
       }; break;
       case Types.NUMBER: {
-        value = parseInt(value);
-        if (Number.isNaN(value)) {
+        if (typeof(value) === Types.STRING && Regexes[Types.NUMBER].exec(value)) {
+          value = Number(value);
+        }
+        if (typeof(value) !== Types.NUMBER || !Number.isInteger(value)) {
           throw new Error(`${key} has to be an integer.`);
         }
       }; break;
       case Types.OBJECT: {
-        if (typeof(value) !== Types.OBJECT) {
+        if (typeof(value) !== Types.OBJECT || value === null || Array.isArray(value)) {
           throw new Error(`${key} has to be an object.`);
         }
       }; break;
       case Types.SNOWFLAKE: {
-        if (typeof(value) !== Types.STRING && typeof(value) !== Types.NUMBER) {
-          if (!Regexes[Types.SNOWFLAKE].exec(value)) {
+        if (typeof(value) === 'bigint') {
+          if (value < 0n) {
             throw new Error(`${key} has to be a snowflake.`);
           }
+          // a bigint can't go through JSON.stringify, and ids are strings in discord's api anyways
+          value = String(value);
+        } else if (typeof(value) === Types.NUMBER) {
+          if (!Number.isInteger(value) || value < 0) {
+            throw new Error(`${key} has to be a snowflake.`);
+          }
+        } else if (typeof(value) !== Types.STRING || !Regexes[Types.SNOWFLAKE].exec(value)) {
+          throw new Error(`${key} has to be a snowflake.`);
         }
       }; break;
       case Types.STRING: {
+        if (typeof(value) !== Types.STRING && typeof(value) !== Types.NUMBER && typeof(value) !== 'bigint') {
+          throw new Error(`${key} has to be a string.`);
+        }
         value = String(value);
       }; break;
     }

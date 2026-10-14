@@ -1527,11 +1527,13 @@ export namespace RequestTypes {
       users?: Array<string>,
     },
     applied_tags?: Array<string>,
+    attachments?: CreateMessageData['attachments'],
     avatar_url?: string,
     components?: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>> | toJSON<Array<RawChannelMessageComponent>>,
     content?: string,
     embeds?: Array<RawChannelMessageEmbed | toJSON<RawChannelMessageEmbed>>,
     flags?: number,
+    poll?: CreateMessageData['poll'],
     thread_name?: string,
     tts?: boolean,
     username?: string,
@@ -1561,6 +1563,10 @@ export namespace RequestTypes {
     limit?: number,
   }
 
+  export interface FetchChannelThreadsActive {
+    guildId?: string,
+  }
+
   export interface FetchChannelThreadsArchivedPrivate {
     before?: Date | string,
     limit?: number,
@@ -1574,6 +1580,10 @@ export namespace RequestTypes {
   export interface FetchChannelThreadsArchivedPublic {
     before?: Date | string,
     limit?: number,
+  }
+
+  export interface FetchConnectionAuthorizeUrl {
+    continuation?: boolean,
   }
 
   export interface FetchGiftCode {

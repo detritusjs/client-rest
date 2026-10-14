@@ -1,4 +1,4 @@
-const { Client } = require('../lib');
+const { Client } = require('../../lib');
 
 
 const token = '';
@@ -12,10 +12,10 @@ const channelId = '';
 
   {
     // fetch ALL of a channel's messages since the beginning of its creation
-    const messages = [];
+    let messages = [];
 
     let atEnd = false;
-    let lastMessageId = 0;
+    let lastMessageId = '0';
     while (!atEnd) {
       const raw = await client.fetchMessages(channelId, {
         after: lastMessageId,

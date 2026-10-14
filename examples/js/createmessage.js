@@ -1,4 +1,4 @@
-const { Client } = require('../lib');
+const { Client } = require('../../lib');
 
 
 const token = '';

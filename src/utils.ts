@@ -31,7 +31,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
     } | null = null;
 
     if (file.hasSpoiler || hasSpoiler) {
-      spoilerfy(file);
+      file = spoilerfy(Object.assign({}, file));
     }
     if (file.description || file.durationSecs || file.waveform) {
       attachment = {
@@ -130,7 +130,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
     }
     return {
       contexts: options.contexts,
-      default_member_permissions: options.defaultMemberPermissions && String(options.defaultMemberPermissions),
+      default_member_permissions: (options.defaultMemberPermissions == null) ? options.defaultMemberPermissions : String(options.defaultMemberPermissions),
       default_permission: options.defaultPermission,
       description: options.description,
       description_localizations: options.descriptionLocalizations,
@@ -161,9 +161,9 @@ export const CamelCaseToSnakeCase = Object.freeze({
       description_localizations: options.descriptionLocalizations,
       file_types: options.fileTypes,
       max_length: options.maxLength,
-      max_value: options.maxValue && String(options.maxValue),
+      max_value: (options.maxValue == null) ? options.maxValue : String(options.maxValue),
       min_length: options.minLength,
-      min_value: options.minValue && String(options.minValue),
+      min_value: (options.minValue == null) ? options.minValue : String(options.minValue),
       name: options.name,
       name_localizations: options.nameLocalizations,
       options: options.options && options.options.map((x) => CamelCaseToSnakeCase.ApplicationCommandOption(x)),
@@ -325,20 +325,23 @@ export const CamelCaseToSnakeCase = Object.freeze({
         body.components = options.components.map((component) => CamelCaseToSnakeCase.MessageComponent(component));
       }
     }
+    let embeds = options.embeds;
     if (options.embed !== undefined) {
       if (options.embed) {
-        if (options.embeds) {
-          options.embeds = [options.embed, ...options.embeds];
+        if (embeds) {
+          embeds = [options.embed, ...embeds];
         } else {
-          options.embeds = [options.embed];
+          embeds = [options.embed];
         }
-      } else if (!options.embeds) {
-        options.embeds = [];
+      } else if (!embeds) {
+        embeds = [];
       }
     }
-    if (options.embeds) {
-      body.embeds = options.embeds.map((embed) => {
-        if ('toJSON' in embed) {
+    if (embeds && !Array.isArray(embeds)) {
+      body.embeds = embeds as any;
+    } else if (embeds) {
+      body.embeds = embeds.map((embed) => {
+        if (!embed || typeof(embed) !== 'object' || 'toJSON' in embed) {
           return embed;
         }
         const raw = Object.assign({}, embed) as RequestTypes.RawChannelMessageEmbed;

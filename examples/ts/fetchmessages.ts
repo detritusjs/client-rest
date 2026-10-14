@@ -1,4 +1,4 @@
-import { Client } from '../lib';
+import { Client } from '../../lib';
 
 
 const token = '';
@@ -12,10 +12,10 @@ const channelId = '';
 
   {
     // fetch ALL of a channel's messages since the beginning of its creation
-    const messages: Array<any> = [];
+    let messages: Array<any> = [];
 
     let atEnd = false;
-    let lastMessageId = 0;
+    let lastMessageId: string = '0';
     while (!atEnd) {
       const raw = await client.fetchMessages(channelId, {
         after: lastMessageId,
