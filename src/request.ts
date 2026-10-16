@@ -197,13 +197,13 @@ export class RestRequest {
           }
         } else {
           if (this.client.globalBucket.locked) {
-            return this.waitForBucket(this.client.globalBucket, resolve, reject, dequeued);
+            return this.waitForBucket(this.client.globalBucket, resolve, reject, dequeued, true);
           }
 
           if (bucket) {
             bucket.lockIfExhausted();
             if (bucket.locked || (bucket.probe && bucket.probe !== this)) {
-              return this.waitForBucket(bucket, resolve, reject, dequeued);
+              return this.waitForBucket(bucket, resolve, reject, dequeued, true);
             }
           }
         }
@@ -219,12 +219,16 @@ export class RestRequest {
     });
   }
 
-  waitForBucket(bucket: Bucket, resolve: any, reject: any, unshift: boolean = false): void {
+  /**
+   * @param raw true when called from `sendRequest()`, the queue resumes with `sendRequest()` instead of `send()`
+   * so the response only gets handled once (by the `send()` that is awaiting it)
+   */
+  waitForBucket(bucket: Bucket, resolve: any, reject: any, unshift: boolean = false, raw: boolean = false): void {
     const unlockIn = bucket.unlockIn;
     if (this.errorOnRatelimitIfMoreThan && this.errorOnRatelimitIfMoreThan < unlockIn) {
       return reject(new Error(`Refusing to send request, ratelimited for ${unlockIn}ms which is more than the allowed ${this.errorOnRatelimitIfMoreThan}ms`));
     }
-    bucket.add({request: this, resolve, reject}, unshift);
+    bucket.add({raw, request: this, resolve, reject}, unshift);
   }
 
   releaseProbe(): void {

@@ -4,6 +4,8 @@ import { RestRequest } from './request';
 
 
 export interface RatelimitQueue {
+  // queued from inside `sendRequest()`, the caller's `send()` handles the response so resume with `sendRequest()`
+  raw?: boolean,
   request: RestRequest,
   reject: any,
   resolve: any,
@@ -247,7 +249,8 @@ export class Bucket {
       const delayed = <RatelimitQueue> this.queue.shift();
       // if it gets requeued (bucket locked again), it goes back to the front instead of behind newer requests
       delayed.request.dequeued = true;
-      delayed.request.send()
+      const promise = (delayed.raw) ? delayed.request.sendRequest() : delayed.request.send();
+      promise
         .then(delayed.resolve)
         .catch(delayed.reject)
         .then(() => this.shift());
