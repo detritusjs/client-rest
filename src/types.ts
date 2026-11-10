@@ -520,6 +520,13 @@ export namespace RequestTypes {
     status?: number,
   }
 
+  export interface CreateGuildScheduledEventException {
+    isCanceled?: boolean,
+    originalScheduledStartTime: Date | string,
+    scheduledEndTime?: Date | null | string,
+    scheduledStartTime?: Date | null | string,
+  }
+
   export interface CreateGuildSoundboardSound {
     emojiId?: null | string,
     emojiName?: null | string,
@@ -1107,6 +1114,12 @@ export namespace RequestTypes {
     reason?: string,
   }
 
+  export interface EditGuildJoinRequest {
+    // `APPROVED` or `REJECTED`
+    action: string,
+    rejectionReason?: string,
+  }
+
   export interface EditGuildMember {
     avatar?: Buffer | null | string,
     banner?: Buffer | null | string,
@@ -1237,6 +1250,12 @@ export namespace RequestTypes {
     status?: number,
   }
 
+  export interface EditGuildScheduledEventException {
+    isCanceled?: boolean,
+    scheduledEndTime?: Date | null | string,
+    scheduledStartTime?: Date | null | string,
+  }
+
   export interface EditGuildSoundboardSound {
     emojiId?: null | string,
     emojiName?: null | string,
@@ -1253,6 +1272,13 @@ export namespace RequestTypes {
     soundId: string,
     // required when playing a sound from another guild
     sourceGuildId?: string,
+  }
+
+  export interface SendVoiceChannelEffect {
+    animationId?: number,
+    animationType?: number,
+    emojiId?: null | string,
+    emojiName?: null | string,
   }
 
   export interface EditGuildSticker {
@@ -1622,6 +1648,20 @@ export namespace RequestTypes {
     limit?: number,
   }
 
+  export interface FetchGuildBansSearch {
+    limit?: number,
+    query?: string,
+    userIds?: Array<string>,
+  }
+
+  export interface FetchGuildJoinRequests {
+    after?: string,
+    before?: string,
+    limit?: number,
+    // `STARTED`, `SUBMITTED`, `REJECTED`, `APPROVED`
+    status?: string,
+  }
+
   export interface FetchGuildMembers {
     after?: string,
     limit?: number,
@@ -1663,6 +1703,10 @@ export namespace RequestTypes {
 
   export interface FetchGuildScheduledEvents {
     withUserCount?: boolean,
+  }
+
+  export interface FetchGuildScheduledEventUserCounts {
+    exceptionIds?: Array<string>,
   }
 
   export interface FetchGuildScheduledEventUsers {
@@ -1865,6 +1909,27 @@ export namespace RequestTypes {
     password: string,
     ticket: string,
     token: string,
+  }
+
+  export interface SearchChannelThreads {
+    archived?: boolean,
+    limit?: number,
+    name?: string,
+    offset?: number,
+    sortBy?: string,
+    sortOrder?: string,
+    tag?: Array<string> | string,
+    tagSetting?: string,
+  }
+
+  // `andQuery`/`orQuery` are sent as-is (snake_case filter objects, e.g. `{role_ids: {and_query: [...]}}`)
+  export interface SearchGuildMembers {
+    after?: any,
+    andQuery?: Record<string, any>,
+    before?: any,
+    limit?: number,
+    orQuery?: Record<string, any>,
+    sort?: number,
   }
 
   export interface SearchLobbies {

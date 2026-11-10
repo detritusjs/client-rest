@@ -852,6 +852,32 @@ export class Client extends EventSpewer {
     });
   }
 
+  // async version of `bulkGuildBan`, the result comes through the `GUILD_BULK_BAN_UPDATE` gateway event
+  async bulkGuildBanV2(
+    guildId: string,
+    options: RequestTypes.BulkGuildBan,
+  ): Promise<any> {
+    const body = {
+      delete_message_seconds: options.deleteMessageSeconds,
+      user_ids: options.userIds,
+    };
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.GUILD_BULK_BAN_V2,
+        params,
+      },
+    });
+  }
+
   async bulkOverwriteApplicationCommands(
     applicationId: string,
     commands: Array<RequestTypes.CreateApplicationCommand | RequestTypes.toJSON<RequestTypes.CreateApplicationCommandData>>,
@@ -1488,6 +1514,31 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.POST,
         path: Api.GUILD_SCHEDULED_EVENTS,
+        params,
+      },
+    });
+  }
+
+  async createGuildScheduledEventException(
+    guildId: string,
+    scheduledEventId: string,
+    options: RequestTypes.CreateGuildScheduledEventException,
+  ): Promise<any> {
+    const body = {
+      is_canceled: options.isCanceled,
+      original_scheduled_start_time: options.originalScheduledStartTime,
+      scheduled_end_time: options.scheduledEndTime,
+      scheduled_start_time: options.scheduledStartTime,
+    };
+    const params = {guildId, scheduledEventId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.GUILD_SCHEDULED_EVENT_EXCEPTIONS,
         params,
       },
     });
@@ -2163,6 +2214,22 @@ export class Client extends EventSpewer {
     });
   }
 
+  async deleteChannelLinkedLobby(
+    channelId: string,
+  ): Promise<any> {
+    const params = {channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.CHANNEL_LINKED_LOBBY,
+        params,
+      },
+    });
+  }
+
   async deleteChannelOverwrite(
     channelId: string,
     overwriteId: string,
@@ -2337,6 +2404,24 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.DELETE,
         path: Api.GUILD_SCHEDULED_EVENT,
+        params,
+      },
+    });
+  }
+
+  async deleteGuildScheduledEventException(
+    guildId: string,
+    scheduledEventId: string,
+    exceptionId: string,
+  ): Promise<any> {
+    const params = {guildId, scheduledEventId, exceptionId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.GUILD_SCHEDULED_EVENT_EXCEPTION,
         params,
       },
     });
@@ -3246,6 +3331,29 @@ export class Client extends EventSpewer {
     });
   }
 
+  async editGuildJoinRequest(
+    guildId: string,
+    joinRequestId: string,
+    options: RequestTypes.EditGuildJoinRequest,
+  ): Promise<any> {
+    const body = {
+      action: options.action,
+      rejection_reason: options.rejectionReason,
+    };
+    const params = {guildId, joinRequestId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.GUILD_JOIN_REQUEST,
+        params,
+      },
+    });
+  }
+
   async editGuildMember(
     guildId: string,
     userId: string,
@@ -3446,6 +3554,31 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.PATCH,
         path: Api.GUILD_SCHEDULED_EVENT,
+        params,
+      },
+    });
+  }
+
+  async editGuildScheduledEventException(
+    guildId: string,
+    scheduledEventId: string,
+    exceptionId: string,
+    options: RequestTypes.EditGuildScheduledEventException = {},
+  ): Promise<any> {
+    const body = {
+      is_canceled: options.isCanceled,
+      scheduled_end_time: options.scheduledEndTime,
+      scheduled_start_time: options.scheduledStartTime,
+    };
+    const params = {guildId, scheduledEventId, exceptionId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.GUILD_SCHEDULED_EVENT_EXCEPTION,
         params,
       },
     });
@@ -4673,6 +4806,25 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchChannelPostData(
+    channelId: string,
+    threadIds: Array<string>,
+  ): Promise<any> {
+    const body = {thread_ids: threadIds};
+    const params = {channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.CHANNEL_POST_DATA,
+        params,
+      },
+    });
+  }
+
   async fetchChannelStoreListing(
     channelId: string,
   ): Promise<any> {
@@ -5043,6 +5195,29 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchGuildBansSearch(
+    guildId: string,
+    options: RequestTypes.FetchGuildBansSearch = {},
+  ): Promise<any> {
+    const params = {guildId};
+    const query = {
+      limit: options.limit,
+      query: options.query,
+      user_ids: options.userIds,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_BANS_SEARCH,
+        params,
+      },
+    });
+  }
+
   async fetchGuildBan(
     guildId: string,
     userId: string,
@@ -5136,6 +5311,47 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.GUILD_INVITES,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildJoinRequests(
+    guildId: string,
+    options: RequestTypes.FetchGuildJoinRequests = {},
+  ): Promise<any> {
+    const params = {guildId};
+    const query = {
+      after: options.after,
+      before: options.before,
+      limit: options.limit,
+      status: options.status,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_JOIN_REQUESTS,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildJoinRequestsUser(
+    guildId: string,
+    userId: string,
+  ): Promise<any> {
+    const params = {guildId, userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_JOIN_REQUESTS_USER,
         params,
       },
     });
@@ -5358,6 +5574,23 @@ export class Client extends EventSpewer {
     });
   }
 
+  async fetchGuildRoleMemberIds(
+    guildId: string,
+    roleId: string,
+  ): Promise<any> {
+    const params = {guildId, roleId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_ROLE_MEMBER_IDS,
+        params,
+      },
+    });
+  }
+
   async fetchGuildThreadsActive(
     guildId: string,
   ): Promise<any> {
@@ -5455,6 +5688,54 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.GUILD_SCHEDULED_EVENT,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildScheduledEventExceptionUsers(
+    guildId: string,
+    scheduledEventId: string,
+    exceptionId: string,
+    options: RequestTypes.FetchGuildScheduledEventUsers = {},
+  ): Promise<any> {
+    const params = {guildId, scheduledEventId, exceptionId};
+    const query = {
+      after: options.after,
+      before: options.before,
+      limit: options.limit,
+      with_member: options.withMember,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_SCHEDULED_EVENT_EXCEPTION_USERS,
+        params,
+      },
+    });
+  }
+
+  async fetchGuildScheduledEventUserCounts(
+    guildId: string,
+    scheduledEventId: string,
+    options: RequestTypes.FetchGuildScheduledEventUserCounts = {},
+  ): Promise<any> {
+    const params = {guildId, scheduledEventId};
+    const query = {
+      guild_scheduled_event_exception_ids: options.exceptionIds,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_SCHEDULED_EVENT_USERS_COUNTS,
         params,
       },
     });
@@ -6064,6 +6345,23 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.CHANNEL_MESSAGE,
+        params,
+      },
+    });
+  }
+
+  async fetchMessageInteractionData(
+    channelId: string,
+    messageId: string,
+  ): Promise<any> {
+    const params = {channelId, messageId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.CHANNEL_MESSAGE_INTERACTION_DATA,
         params,
       },
     });
@@ -7370,6 +7668,34 @@ export class Client extends EventSpewer {
     return this.search('channel', channelId, options, retry, retryNumber);
   }
 
+  async searchChannelThreads(
+    channelId: string,
+    options: RequestTypes.SearchChannelThreads = {},
+  ): Promise<any> {
+    const params = {channelId};
+    const query = {
+      archived: options.archived,
+      limit: options.limit,
+      name: options.name,
+      offset: options.offset,
+      sort_by: options.sortBy,
+      sort_order: options.sortOrder,
+      tag: (Array.isArray(options.tag)) ? options.tag.join(',') : options.tag,
+      tag_setting: options.tagSetting,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.CHANNEL_THREADS_SEARCH,
+        params,
+      },
+    });
+  }
+
   async searchGuild(
     guildId: string,
     options: RequestTypes.SearchOptions = {},
@@ -7380,6 +7706,33 @@ export class Client extends EventSpewer {
   }
 
   /** @deprecated old GameSDK lobbies, this endpoint doesn't exist anymore */
+  // responds with a 202 and `retry_after` (seconds) while the guild's member index is still being built
+  async searchGuildMembers(
+    guildId: string,
+    options: RequestTypes.SearchGuildMembers = {},
+  ): Promise<any> {
+    const body = {
+      after: options.after,
+      and_query: options.andQuery,
+      before: options.before,
+      limit: options.limit,
+      or_query: options.orQuery,
+      sort: options.sort,
+    };
+    const params = {guildId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.GUILD_MEMBERS_SEARCH_V2,
+        params,
+      },
+    });
+  }
+
   async searchLobbies(
     applicationId: string,
     options: RequestTypes.SearchLobbies = {},
@@ -7477,6 +7830,30 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.POST,
         path: Api.LOBBY_SEND,
+        params,
+      },
+    });
+  }
+
+  async sendVoiceChannelEffect(
+    channelId: string,
+    options: RequestTypes.SendVoiceChannelEffect,
+  ): Promise<any> {
+    const body = {
+      animation_id: options.animationId,
+      animation_type: options.animationType,
+      emoji_id: options.emojiId,
+      emoji_name: options.emojiName,
+    };
+    const params = {channelId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.CHANNEL_VOICE_CHANNEL_EFFECTS,
         params,
       },
     });

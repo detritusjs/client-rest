@@ -535,6 +535,8 @@ export const Api = {
     '/channels/:channelId/icons/:hash.jpg',
   CHANNEL_INVITES:
     '/channels/:channelId/invites',
+  CHANNEL_LINKED_LOBBY:
+    '/channels/:channelId/linked-lobby',
   CHANNEL_MESSAGES:
     '/channels/:channelId/messages',
   CHANNEL_MESSAGES_ACK:
@@ -553,6 +555,8 @@ export const Api = {
     '/channels/:channelId/messages/:messageId/ack',
   CHANNEL_MESSAGE_CROSSPOST:
     '/channels/:channelId/messages/:messageId/crosspost',
+  CHANNEL_MESSAGE_INTERACTION_DATA:
+    '/channels/:channelId/messages/:messageId/interaction-data',
   CHANNEL_MESSAGE_REACTIONS:
     '/channels/:channelId/messages/:messageId/reactions',
   CHANNEL_MESSAGE_REACTION:
@@ -575,6 +579,8 @@ export const Api = {
     '/channels/:channelId/polls/:messageId/answers/:answerId',
   CHANNEL_POLL_EXPIRE:
     '/channels/:channelId/polls/:messageId/expire',
+  CHANNEL_POST_DATA:
+    '/channels/:channelId/post-data',
   CHANNEL_RECIPIENTS:
     '/channels/:channelId/recipients',
   CHANNEL_RECIPIENT:
@@ -593,6 +599,8 @@ export const Api = {
     '/channels/:channelId/threads/archived/private',
   CHANNEL_THREADS_ARCHIVED_PUBLIC:
     '/channels/:channelId/threads/archived/public',
+  CHANNEL_THREADS_SEARCH:
+    '/channels/:channelId/threads/search',
   CHANNEL_THREAD_MEMBERS:
     '/channels/:channelId/thread-members',
   CHANNEL_THREAD_MEMBER:
@@ -603,6 +611,8 @@ export const Api = {
     '/channels/:channelId/typing',
   CHANNEL_USER_THREADS_ARCHIVED_PRIVATE:
     '/channels/:channelId/users/:userId/threads/archived/private',
+  CHANNEL_VOICE_CHANNEL_EFFECTS:
+    '/channels/:channelId/voice-channel-effects',
   CHANNEL_VOICE_STATUS:
     '/channels/:channelId/voice-status',
   CHANNEL_WEBHOOKS:
@@ -693,12 +703,16 @@ export const Api = {
     '/guilds/:guildId/auto-moderation/rules/:autoModerationRuleId',
   GUILD_BANS:
     '/guilds/:guildId/bans',
+  GUILD_BANS_SEARCH:
+    '/guilds/:guildId/bans/search',
   GUILD_BAN:
     '/guilds/:guildId/bans/:userId',
   GUILD_BANNER:
     '/guilds/:guildId/banners/:hash.jpg',
   GUILD_BULK_BAN:
     '/guilds/:guildId/bulk-ban',
+  GUILD_BULK_BAN_V2:
+    '/guilds/:guildId/bulk-ban/v2',
   GUILD_CHANNELS:
     '/guilds/:guildId/channels',
   GUILD_DELETE:
@@ -729,10 +743,18 @@ export const Api = {
     '/guilds/:guildId/member-verification',
   GUILD_JOIN:
     '/guilds/:guildId/members/@me',
+  GUILD_JOIN_REQUESTS:
+    '/guilds/:guildId/requests',
+  GUILD_JOIN_REQUESTS_USER:
+    '/guilds/:guildId/requests/users/:userId',
+  GUILD_JOIN_REQUEST:
+    '/guilds/:guildId/requests/:joinRequestId',
   GUILD_MEMBERS:
     '/guilds/:guildId/members',
   GUILD_MEMBERS_SEARCH:
     '/guilds/:guildId/members/search',
+  GUILD_MEMBERS_SEARCH_V2:
+    '/guilds/:guildId/members-search',
   GUILD_MEMBER:
     '/guilds/:guildId/members/:userId',
   GUILD_MEMBER_NICK:
@@ -749,6 +771,8 @@ export const Api = {
     '/guilds/:guildId/preview',
   GUILD_PRUNE:
     '/guilds/:guildId/prune',
+  GUILD_PRUNE_V2:
+    '/guilds/:guildId/prune/v2',
   GUILD_REGIONS:
     '/guilds/:guildId/regions',
   GUILD_ROLES:
@@ -757,12 +781,22 @@ export const Api = {
     '/guilds/:guildId/roles/member-counts',
   GUILD_ROLE:
     '/guilds/:guildId/roles/:roleId',
+  GUILD_ROLE_MEMBER_IDS:
+    '/guilds/:guildId/roles/:roleId/member-ids',
   GUILD_SCHEDULED_EVENTS:
     '/guilds/:guildId/scheduled-events',
   GUILD_SCHEDULED_EVENT:
     '/guilds/:guildId/scheduled-events/:scheduledEventId',
+  GUILD_SCHEDULED_EVENT_EXCEPTIONS:
+    '/guilds/:guildId/scheduled-events/:scheduledEventId/exceptions',
+  GUILD_SCHEDULED_EVENT_EXCEPTION:
+    '/guilds/:guildId/scheduled-events/:scheduledEventId/exceptions/:exceptionId',
+  GUILD_SCHEDULED_EVENT_EXCEPTION_USERS:
+    '/guilds/:guildId/scheduled-events/:scheduledEventId/:exceptionId/users',
   GUILD_SCHEDULED_EVENT_USERS:
     '/guilds/:guildId/scheduled-events/:scheduledEventId/users',
+  GUILD_SCHEDULED_EVENT_USERS_COUNTS:
+    '/guilds/:guildId/scheduled-events/:scheduledEventId/users/counts',
   GUILD_SEARCH:
     '/guilds/:guildId/messages/search',
   GUILD_SPLASH:
