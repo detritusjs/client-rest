@@ -569,6 +569,10 @@ export const Api = {
     '/channels/:channelId/permissions',
   CHANNEL_PERMISSION:
     '/channels/:channelId/permissions/:overwriteId',
+  CHANNEL_PERMISSIONS_MEMBER:
+    '/channels/:channelId/permissions/member/:userId',
+  CHANNEL_PERMISSIONS_ROLE:
+    '/channels/:channelId/permissions/role/:roleId',
   CHANNEL_PINS:
     '/channels/:channelId/pins',
   CHANNEL_PINS_ACK:
@@ -767,6 +771,10 @@ export const Api = {
     '/guilds/:guildId/premium/subscriptions',
   GUILD_PREMIUM_SUBSCRIPTION:
     '/guilds/:guildId/premium/subscriptions/:subscriptionId',
+  GUILD_PERMISSIONS_MEMBER:
+    '/guilds/:guildId/permissions/member/:userId',
+  GUILD_PERMISSIONS_ROLE:
+    '/guilds/:guildId/permissions/role/:roleId',
   GUILD_PREVIEW:
     '/guilds/:guildId/preview',
   GUILD_PRUNE:

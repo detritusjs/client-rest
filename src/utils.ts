@@ -21,6 +21,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
     duration_secs?: number,
     filename?: string,
     id: number | string,
+    is_spoiler?: boolean,
     waveform?: string,
   } | null]=> {
     let attachment: {
@@ -28,18 +29,20 @@ export const CamelCaseToSnakeCase = Object.freeze({
       duration_secs?: number,
       filename?: string,
       id: number | string,
+      is_spoiler?: boolean,
       waveform?: string,
     } | null = null;
 
     if (file.hasSpoiler || hasSpoiler) {
       file = spoilerfy(Object.assign({}, file));
     }
-    if (file.description || file.durationSecs || file.waveform) {
+    if (file.description || file.durationSecs || file.isSpoiler !== undefined || file.waveform) {
       attachment = {
         description: file.description,
         duration_secs: file.durationSecs,
         filename: file.filename,
         id: fileId,
+        is_spoiler: file.isSpoiler,
         waveform: file.waveform,
       };
     }
@@ -380,6 +383,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
           duration_secs: attachment.durationSecs,
           filename: attachment.filename,
           id: attachment.id,
+          is_spoiler: attachment.isSpoiler,
           original_content_type: attachment.originalContentType,
           uploaded_filename: attachment.uploadedFilename,
           waveform: attachment.waveform,

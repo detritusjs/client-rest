@@ -35,7 +35,10 @@ export namespace RequestTypes {
   export interface File extends RequestFile {
     description?: string,
     durationSecs?: number,
+    // prefixes the filename with `SPOILER_`
     hasSpoiler?: boolean,
+    // sets the `IS_SPOILER` attachment flag, without touching the filename
+    isSpoiler?: boolean,
     waveform?: string,
   }
 
@@ -567,6 +570,7 @@ export namespace RequestTypes {
       durationSecs?: number,
       filename?: string,
       id: number | string,
+      isSpoiler?: boolean,
       originalContentType?: string,
       uploadedFilename?: string,
       waveform?: string,
@@ -683,6 +687,7 @@ export namespace RequestTypes {
       durationSecs?: number,
       filename?: string,
       id: number | string,
+      isSpoiler?: boolean,
       originalContentType?: string,
       uploadedFilename?: string,
       waveform?: string,
@@ -1398,6 +1403,7 @@ export namespace RequestTypes {
       durationSecs?: number,
       filename?: string,
       id: number | string,
+      isSpoiler?: boolean,
       originalContentType?: string,
       uploadedFilename?: string,
       waveform?: string,
@@ -1481,6 +1487,7 @@ export namespace RequestTypes {
       durationSecs?: number,
       filename?: string,
       id: number | string,
+      isSpoiler?: boolean,
       originalContentType?: string,
       uploadedFilename?: string,
       waveform?: string,
@@ -1778,6 +1785,11 @@ export namespace RequestTypes {
     limit?: number,
     // 0 for normal reactions, 1 for super reactions
     type?: number,
+  }
+
+  export interface FetchChannelPermissions {
+    // whether to mask the permissions when `VIEW_CHANNEL` (or `CONNECT` for voice/stage) is missing, discord defaults to true
+    implicit?: boolean,
   }
 
   export interface FetchChannelPins {

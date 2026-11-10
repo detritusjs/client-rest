@@ -4782,6 +4782,52 @@ export class Client extends EventSpewer {
     });
   }
 
+  // returns `{permissions: string}`, the member's computed permissions in the channel
+  async fetchChannelMemberPermissions(
+    channelId: string,
+    userId: string,
+    options: RequestTypes.FetchChannelPermissions = {},
+  ): Promise<any> {
+    const params = {channelId, userId};
+    const query = {
+      implicit: options.implicit,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.CHANNEL_PERMISSIONS_MEMBER,
+        params,
+      },
+    });
+  }
+
+  // returns `{permissions: string}`, the role's (plus @everyone's) permissions in the channel
+  async fetchChannelRolePermissions(
+    channelId: string,
+    roleId: string,
+    options: RequestTypes.FetchChannelPermissions = {},
+  ): Promise<any> {
+    const params = {channelId, roleId};
+    const query = {
+      implicit: options.implicit,
+    };
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.CHANNEL_PERMISSIONS_ROLE,
+        params,
+      },
+    });
+  }
+
   async fetchChannelPollAnswerVoters(
     channelId: string,
     messageId: string,
@@ -5612,6 +5658,42 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.GUILD_WELCOME_SCREEN,
+        params,
+      },
+    });
+  }
+
+  // returns `{permissions: string}`, the member's computed guild-level permissions
+  async fetchGuildMemberPermissions(
+    guildId: string,
+    userId: string,
+  ): Promise<any> {
+    const params = {guildId, userId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_PERMISSIONS_MEMBER,
+        params,
+      },
+    });
+  }
+
+  // returns `{permissions: string}`, the role's (plus @everyone's) guild-level permissions
+  async fetchGuildRolePermissions(
+    guildId: string,
+    roleId: string,
+  ): Promise<any> {
+    const params = {guildId, roleId};
+    if (this.clientsideChecks) {
+
+    }
+    return this.request({
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_PERMISSIONS_ROLE,
         params,
       },
     });
