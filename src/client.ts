@@ -739,6 +739,32 @@ export class Client extends EventSpewer {
     });
   }
 
+  /**
+   * Gives a role to many members at once, the response is what discord added
+   * Only user accounts can use this, bots get a 403 (`Bots cannot use this endpoint`)
+   */
+  async bulkAddGuildRoleMembers(
+    guildId: string,
+    roleId: string,
+    options: RequestTypes.BulkAddGuildRoleMembers,
+  ): Promise<any> {
+    const body = {
+      member_ids: options.memberIds,
+    };
+    const params = {guildId, roleId};
+    return this.request({
+      body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.PATCH,
+        path: Api.GUILD_ROLE_MEMBERS,
+        params,
+      },
+    });
+  }
+
   async bulkAddInviteTargetUsers(
     code: string,
     options: RequestTypes.BulkAddInviteTargetUsers,
@@ -1227,6 +1253,34 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.POST,
         path: Api.CHANNEL_STORE_LISTING_ENTITLEMENT_GRANT,
+        params,
+      },
+    });
+  }
+
+  /**
+   * Adds one tag to a forum/media channel (editing the channel replaces the whole `availableTags` list)
+   */
+  async createChannelTag(
+    channelId: string,
+    options: RequestTypes.CreateChannelTag,
+  ): Promise<any> {
+    const body = {
+      emoji_id: options.emojiId,
+      // discord's client only sends the name for unicode emojis
+      emoji_name: (options.emojiId) ? undefined : options.emojiName,
+      moderated: options.moderated,
+      name: options.name,
+    };
+    const params = {channelId};
+    return this.request({
+      body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.CHANNEL_TAGS,
         params,
       },
     });
@@ -2251,6 +2305,24 @@ export class Client extends EventSpewer {
     });
   }
 
+  async deleteChannelTag(
+    channelId: string,
+    tagId: string,
+    options: {reason?: string} = {},
+  ): Promise<any> {
+    const params = {channelId, tagId};
+    return this.request({
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.DELETE,
+        path: Api.CHANNEL_TAG,
+        params,
+      },
+    });
+  }
+
   async deleteConnection(
     platform: string,
     accountId: string,
@@ -3045,9 +3117,14 @@ export class Client extends EventSpewer {
         emoji_name: options.defaultReactionEmoji.emojiName,
       } : options.defaultReactionEmoji,
       default_sort_order: options.defaultSortOrder,
+      default_tag_setting: options.defaultTagSetting,
       default_thread_rate_limit_per_user: options.defaultThreadRateLimitPerUser,
       flags: options.flags,
       icon: bufferToBase64(options.icon),
+      icon_emoji: (options.iconEmoji) ? {
+        id: options.iconEmoji.id,
+        name: options.iconEmoji.name,
+      } : options.iconEmoji,
       invitable: options.invitable,
       locked: options.locked,
       name: options.name,
@@ -3059,6 +3136,7 @@ export class Client extends EventSpewer {
       position: options.position,
       rate_limit_per_user: options.rateLimitPerUser,
       rtc_region: options.rtcRegion,
+      theme_color: options.themeColor,
       topic: options.topic,
       type: options.type,
       user_limit: options.userLimit,
@@ -3125,6 +3203,32 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.PUT,
         path: Api.CHANNEL_PERMISSION,
+        params,
+      },
+    });
+  }
+
+  async editChannelTag(
+    channelId: string,
+    tagId: string,
+    options: RequestTypes.EditChannelTag,
+  ): Promise<any> {
+    const body = {
+      emoji_id: options.emojiId,
+      // discord's client only sends the name for unicode emojis
+      emoji_name: (options.emojiId) ? undefined : options.emojiName,
+      moderated: options.moderated,
+      name: options.name,
+    };
+    const params = {channelId, tagId};
+    return this.request({
+      body,
+      headers: {
+        [DiscordHeaders.AUDIT_LOG_REASON]: (options.reason) ? encodeURIComponent(options.reason) : options.reason,
+      },
+      route: {
+        method: HTTPMethods.PUT,
+        path: Api.CHANNEL_TAG,
         params,
       },
     });
@@ -3670,6 +3774,7 @@ export class Client extends EventSpewer {
     const body = {
       channel_id: options.channelId,
       request_to_speak_timestamp: options.requestToSpeakTimestamp,
+      silent: options.silent,
       suppress: options.suppress,
     };
     const params = {guildId, userId};
@@ -4852,6 +4957,7 @@ export class Client extends EventSpewer {
     });
   }
 
+  // only user accounts can use this, bots get a 403 (`Bots cannot use this endpoint`)
   async fetchChannelPostData(
     channelId: string,
     threadIds: Array<string>,
@@ -5058,13 +5164,18 @@ export class Client extends EventSpewer {
 
   fetchExperiments(
     fingerprint?: string,
+    options: RequestTypes.FetchExperiments = {},
   ): Promise<any> {
     const headers: Record<string, string> = {};
     if (fingerprint) {
       headers['x-fingerprint'] = <string> fingerprint;
     }
+    const query = {
+      with_guild_experiments: options.withGuildExperiments,
+    };
     return this.request({
       headers,
+      query,
       route: {
         method: HTTPMethods.GET,
         path: Api.EXPERIMENTS,
@@ -5241,6 +5352,7 @@ export class Client extends EventSpewer {
     });
   }
 
+  // only user accounts can use this, bots get a 403 (`Bots cannot use this endpoint`)
   async fetchGuildBansSearch(
     guildId: string,
     options: RequestTypes.FetchGuildBansSearch = {},
@@ -5620,6 +5732,7 @@ export class Client extends EventSpewer {
     });
   }
 
+  // only user accounts can use this, bots get a 403 (`Bots cannot use this endpoint`)
   async fetchGuildRoleMemberIds(
     guildId: string,
     roleId: string,
@@ -6217,8 +6330,11 @@ export class Client extends EventSpewer {
     const params = {code};
     const query = {
       guild_scheduled_event_id: options.guildScheduledEventId,
+      target_channel_id: options.targetChannelId,
+      target_message_id: options.targetMessageId,
       with_counts: options.withCounts,
       with_expiration: options.withExpiration,
+      with_permissions: options.withPermissions,
     };
     if (this.clientsideChecks) {
 
@@ -6432,6 +6548,7 @@ export class Client extends EventSpewer {
     });
   }
 
+  // only user accounts can use this, bots get a 403 (`Bots cannot use this endpoint`)
   async fetchMessageInteractionData(
     channelId: string,
     messageId: string,
@@ -6954,6 +7071,25 @@ export class Client extends EventSpewer {
     });
   }
 
+  /**
+   * Fetches threads by id, the response's `items` are the threads that were found (missing ones are left out)
+   * Only user accounts can use this, bots get a 403 (`Bots cannot use this endpoint`)
+   */
+  async fetchThreadsBulk(
+    options: RequestTypes.FetchThreadsBulk,
+  ): Promise<any> {
+    const body = {
+      thread_ids: options.threadIds,
+    };
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.THREADS_BULK,
+      },
+    });
+  }
+
   async fetchUser(
     userId: string,
   ): Promise<any> {
@@ -7385,6 +7521,23 @@ export class Client extends EventSpewer {
         method: HTTPMethods.POST,
         path: Api.ENTITLEMENTS_GIFT_CODE_REDEEM,
         params,
+      },
+    });
+  }
+
+  /**
+   * Re-signs expired cdn attachment urls (their `ex`, `is` and `hm` query parameters), the results are in the same order
+   * Undocumented, discord's client uses it for urls within an hour of expiring
+   */
+  async refreshAttachmentUrls(
+    urls: Array<string>,
+  ): Promise<ResponseTypes.RefreshAttachmentUrls> {
+    const body = {attachment_urls: urls};
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.ATTACHMENTS_REFRESH_URLS,
       },
     });
   }
@@ -7875,11 +8028,36 @@ export class Client extends EventSpewer {
     });
   }
 
+  /**
+   * Plays a sound as an echo (discord's client sends this for soundboard sounds while a "soundboard echo" setting is on)
+   * Undocumented, only seen used by user accounts
+   */
+  async sendSoundboardEcho(
+    channelId: string,
+    options: RequestTypes.SendSoundboardSound,
+  ): Promise<any> {
+    const body = {
+      sound_id: options.soundId,
+      source_guild_id: options.sourceGuildId,
+    };
+    const params = {channelId};
+    return this.request({
+      body,
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.CHANNEL_SEND_SOUNDBOARD_ECHO,
+        params,
+      },
+    });
+  }
+
   async sendSoundboardSound(
     channelId: string,
     options: RequestTypes.SendSoundboardSound,
   ): Promise<any> {
     const body = {
+      emoji_id: options.emojiId,
+      emoji_name: options.emojiName,
       sound_id: options.soundId,
       source_guild_id: options.sourceGuildId,
     };
@@ -7917,6 +8095,7 @@ export class Client extends EventSpewer {
     });
   }
 
+  // only user accounts can use this, bots get a 403 (`Bots cannot use this endpoint`)
   async sendVoiceChannelEffect(
     channelId: string,
     options: RequestTypes.SendVoiceChannelEffect,

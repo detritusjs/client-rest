@@ -22,6 +22,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
     filename?: string,
     id: number | string,
     is_spoiler?: boolean,
+    title?: string,
     waveform?: string,
   } | null]=> {
     let attachment: {
@@ -30,23 +31,74 @@ export const CamelCaseToSnakeCase = Object.freeze({
       filename?: string,
       id: number | string,
       is_spoiler?: boolean,
+      title?: string,
       waveform?: string,
     } | null = null;
 
     if (file.hasSpoiler || hasSpoiler) {
       file = spoilerfy(Object.assign({}, file));
     }
-    if (file.description || file.durationSecs || file.isSpoiler !== undefined || file.waveform) {
+    if (file.description || file.durationSecs || file.isSpoiler !== undefined || file.title || file.waveform) {
       attachment = {
         description: file.description,
         duration_secs: file.durationSecs,
         filename: file.filename,
-        id: fileId,
+        id: CamelCaseToSnakeCase._FileId(file, fileId),
         is_spoiler: file.isSpoiler,
+        title: file.title,
         waveform: file.waveform,
       };
     }
     return [file, attachment];
+  },
+  /**
+   * The attachment id has to match the multipart field `files[n]`, a custom `files[n]` key wins over the position
+   */
+  _FileId: (file: RequestTypes.File, fileId: number): number => {
+    if (file.key) {
+      const match = /^files\[(\d+)\]$/.exec(file.key);
+      if (match) {
+        return parseInt(match[1]);
+      }
+    }
+    return fileId;
+  },
+  /**
+   * Adds every file to `body.attachments` once anything needs that array, a file missing from it gets dropped by
+   * discord (when editing, the array is the full list of attachments the message keeps)
+   */
+  _MessageFiles: (
+    body: {attachments?: Array<any>},
+    options: {file?: RequestTypes.File, files?: Array<RequestTypes.File>, hasSpoiler?: boolean},
+  ): Array<RequestTypes.File> => {
+    const files: Array<RequestTypes.File> = [];
+    const attachments: Array<{filename?: string, id: number | string, [key: string]: any}> = [];
+    let hasMetadata = false;
+
+    const add = (raw: RequestTypes.File) => {
+      const fileId = files.length;
+      const [ file, attachment ] = CamelCaseToSnakeCase._File(raw, fileId, options.hasSpoiler);
+      files.push(file);
+      if (attachment) {
+        hasMetadata = true;
+        attachments.push(attachment);
+      } else {
+        attachments.push({filename: file.filename, id: CamelCaseToSnakeCase._FileId(file, fileId)});
+      }
+    };
+    if (options.file) {
+      add(options.file);
+    }
+    if (options.files) {
+      for (let file of options.files) {
+        add(file);
+      }
+    }
+
+    if (attachments.length && (hasMetadata || body.attachments)) {
+      body.attachments = (body.attachments) ? body.attachments.concat(attachments) : attachments;
+    }
+    return files;
   },
   _ChannelOverwrite: <T extends {allow?: bigint | number | string, deny?: bigint | number | string}>(
     overwrite: T,
@@ -180,6 +232,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
       answers: poll.answers && poll.answers.map((answer) => {
         return {
           poll_media: answer.pollMedia && {
+            attachment_ids: answer.pollMedia.attachmentIds,
             emoji: answer.pollMedia.emoji,
             text: answer.pollMedia.text,
           },
@@ -385,6 +438,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
           id: attachment.id,
           is_spoiler: attachment.isSpoiler,
           original_content_type: attachment.originalContentType,
+          title: attachment.title,
           uploaded_filename: attachment.uploadedFilename,
           waveform: attachment.waveform,
         };
@@ -446,34 +500,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
       body.poll = CamelCaseToSnakeCase._Poll(options.poll);
     }
 
-    const files: Array<RequestTypes.File> = [];
-    if (options.file) {
-      const [ file, attachment ] = CamelCaseToSnakeCase._File(options.file, 0, options.hasSpoiler);
-      files.push(file);
-      if (attachment) {
-        if (body.attachments) {
-          body.attachments.push(attachment);
-        } else {
-          body.attachments = [attachment];
-        }
-      }
-    }
-
-    if (options.files && options.files.length) {
-      const fileIdStart = files.length;
-      for (let i = 0; i < options.files.length; i++) {
-        const [ file, attachment ] = CamelCaseToSnakeCase._File(options.files[i], i + fileIdStart, options.hasSpoiler);
-        files.push(file);
-        if (attachment) {
-          if (body.attachments) {
-            body.attachments.push(attachment);
-          } else {
-            body.attachments = [attachment];
-          }
-        }
-      }
-    }
-
+    const files = CamelCaseToSnakeCase._MessageFiles(body, options);
     return [body, files];
   },
   MessageEdit: (

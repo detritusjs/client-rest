@@ -39,6 +39,8 @@ export namespace RequestTypes {
     hasSpoiler?: boolean,
     // sets the `IS_SPOILER` attachment flag, without touching the filename
     isSpoiler?: boolean,
+    // shown instead of the filename (discord sanitizes filenames, this keeps the original)
+    title?: string,
     waveform?: string,
   }
 
@@ -104,6 +106,11 @@ export namespace RequestTypes {
     computePruneCount?: boolean,
     days?: number,
     includeRoles?: Array<string>,
+    reason?: string,
+  }
+
+  export interface BulkAddGuildRoleMembers {
+    memberIds: Array<string>,
     reason?: string,
   }
 
@@ -384,6 +391,16 @@ export namespace RequestTypes {
     type: number | string,
   }
 
+  export interface CreateChannelTag {
+    // a custom emoji, or `emojiName` for a unicode one
+    emojiId?: null | string,
+    emojiName?: null | string,
+    // only members with Manage Threads can add it to a post
+    moderated?: boolean,
+    name: string,
+    reason?: string,
+  }
+
   export interface CreateChannelThread {
     appliedTags?: Array<string>,
     autoArchiveDuration?: number,
@@ -572,6 +589,8 @@ export namespace RequestTypes {
       id: number | string,
       isSpoiler?: boolean,
       originalContentType?: string,
+      // shown instead of the filename (discord sanitizes filenames, this keeps the original)
+      title?: string,
       uploadedFilename?: string,
       waveform?: string,
     }>,
@@ -608,6 +627,7 @@ export namespace RequestTypes {
       filename?: string,
       id: number | string,
       original_content_type?: string,
+      title?: string,
       uploaded_filename?: string,
       waveform?: string,
     }>,
@@ -689,6 +709,8 @@ export namespace RequestTypes {
       id: number | string,
       isSpoiler?: boolean,
       originalContentType?: string,
+      // shown instead of the filename (discord sanitizes filenames, this keeps the original)
+      title?: string,
       uploadedFilename?: string,
       waveform?: string,
     }>,
@@ -713,6 +735,8 @@ export namespace RequestTypes {
       allowMultiselect: boolean,
       answers: Array<{
         pollMedia: {
+          // `IMAGE_ONLY_ANSWERS` polls, the `files[n]` index of the answer's uploaded image (as a string)
+          attachmentIds?: Array<string>,
           emoji?: RawEmojiPartial,
           text?: string,
         },
@@ -747,6 +771,7 @@ export namespace RequestTypes {
       filename?: string,
       id: number | string,
       original_content_type?: string,
+      title?: string,
       uploaded_filename?: string,
       waveform?: string,
     }>,
@@ -767,6 +792,7 @@ export namespace RequestTypes {
       allow_multiselect: boolean,
       answers: Array<{
         poll_media: {
+          attachment_ids?: Array<string>,
           emoji?: RawEmojiPartial,
           text?: string,
         },
@@ -1003,9 +1029,13 @@ export namespace RequestTypes {
       emojiName?: null | string,
     } | null,
     defaultSortOrder?: null | number,
+    // forums, which posts a tag filter shows: `match_some` (any selected tag) or `match_all`
+    defaultTagSetting?: null | string,
     defaultThreadRateLimitPerUser?: number,
     flags?: number,
     icon?: Buffer | string | null,
+    // an emoji shown as the channel's icon
+    iconEmoji?: {id?: null | string, name?: null | string} | null,
     invitable?: boolean,
     locked?: boolean,
     name?: string,
@@ -1016,6 +1046,7 @@ export namespace RequestTypes {
     rateLimitPerUser?: number,
     reason?: string,
     rtcRegion?: string,
+    themeColor?: null | number,
     topic?: string,
     type?: number,
     userLimit?: number,
@@ -1024,6 +1055,10 @@ export namespace RequestTypes {
 
   export interface EditChannelVoiceStatus {
     status: null | string,
+  }
+
+  export interface EditChannelTag extends CreateChannelTag {
+
   }
 
   export interface EditChannelOverwrite {
@@ -1274,6 +1309,9 @@ export namespace RequestTypes {
   }
 
   export interface SendSoundboardSound {
+    // the emoji shown in the voice channel with the sound
+    emojiId?: string,
+    emojiName?: string,
     soundId: string,
     // required when playing a sound from another guild
     sourceGuildId?: string,
@@ -1300,6 +1338,8 @@ export namespace RequestTypes {
   export interface EditGuildVoiceState {
     channelId?: string,
     requestToSpeakTimestamp?: null | Date | string,
+    // with `suppress: false`, makes the user a speaker without the "you were invited to speak" prompt
+    silent?: boolean,
     suppress?: boolean,
   }
 
@@ -1405,6 +1445,8 @@ export namespace RequestTypes {
       id: number | string,
       isSpoiler?: boolean,
       originalContentType?: string,
+      // shown instead of the filename (discord sanitizes filenames, this keeps the original)
+      title?: string,
       uploadedFilename?: string,
       waveform?: string,
     }>,
@@ -1431,6 +1473,7 @@ export namespace RequestTypes {
       filename?: string,
       id: number | string,
       original_content_type?: string,
+      title?: string,
       uploaded_filename?: string,
       waveform?: string,
     }>,
@@ -1489,6 +1532,8 @@ export namespace RequestTypes {
       id: number | string,
       isSpoiler?: boolean,
       originalContentType?: string,
+      // shown instead of the filename (discord sanitizes filenames, this keeps the original)
+      title?: string,
       uploadedFilename?: string,
       waveform?: string,
     }>,
@@ -1518,6 +1563,7 @@ export namespace RequestTypes {
       filename?: string,
       id: number | string,
       original_content_type?: string,
+      title?: string,
       uploaded_filename?: string,
       waveform?: string,
     }>,
@@ -1620,6 +1666,11 @@ export namespace RequestTypes {
     continuation?: boolean,
   }
 
+  export interface FetchExperiments {
+    // adds `guild_experiments`, the rollout rules of the experiments that are per guild
+    withGuildExperiments?: boolean,
+  }
+
   export interface FetchGiftCode {
     countryCode?: string,
     withApplication?: boolean,
@@ -1638,6 +1689,10 @@ export namespace RequestTypes {
     after?: string,
     limit?: number,
     withMember?: boolean,
+  }
+
+  export interface FetchThreadsBulk {
+    threadIds: Array<string>,
   }
 
   export interface FetchGuildAuditLogs {
@@ -1729,8 +1784,12 @@ export namespace RequestTypes {
 
   export interface FetchInvite {
     guildScheduledEventId?: string,
+    // invite links with `?channel=` (and `&message=`), the invite's guild channel/message to open
+    targetChannelId?: string,
+    targetMessageId?: string,
     withCounts?: boolean,
     withExpiration?: boolean,
+    withPermissions?: boolean,
   }
 
   export interface FetchMe {
@@ -2114,6 +2173,9 @@ export namespace ResponseTypes {
   export type FetchApplicationActivityInstance = DiscordTypes.ApplicationActivityInstance;
   export type CreateMessage = DiscordTypes.Message;
   export type EditMessage = DiscordTypes.Message;
+  export interface RefreshAttachmentUrls {
+    refreshed_urls: Array<{original: string, refreshed: string}>,
+  }
 }
 
 

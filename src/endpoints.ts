@@ -233,8 +233,8 @@ export const Routes = Tools.URIEncodeWrap({
     '/hypesquad-riot',
   INVITE: (code: string): string =>
     `/invite/${code}`,
-  INVITE_PROXY: (channelId: string): string =>
-    `/invite-proxy/${channelId}`,
+  INVITE_PROXY: (code: string, messageId?: string): string =>
+    (messageId) ? `/invite-proxy/${code}?messageId=${messageId}` : `/invite-proxy/${code}`,
   JOBS:
     '/jobs',
   JOB: (jobId: string) =>
@@ -262,7 +262,7 @@ export const Routes = Tools.URIEncodeWrap({
   OAUTH2_ERROR:
     '/oauth2/error',
   OAUTH2_WHITELIST_ACCEPT:
-    '/oauth2/whitelist/accept',
+    '/oauth2/allowlist/accept',
   OPEN_SOURCE:
     '/open-source',
   OVERLAY: (buildId: string, port: number): string =>
@@ -323,8 +323,8 @@ export const Routes = Tools.URIEncodeWrap({
     '/verify',
   WARFRAME:
     '/warframe',
-  WELCOME: (guildId: string, channelId: string, type: number | string): string =>
-    `/welcome/${guildId}/${channelId}/${type}`,
+  WELCOME: (guildId?: null | string, channelId?: null | string): string =>
+    (channelId) ? `/welcome/${guildId || '@me'}/${channelId}` : `/welcome/${guildId || '@me'}`,
   WIDGET:
     '/widget',
   XBOX_OFFER:
@@ -472,6 +472,9 @@ export const Api = {
   APPLICATION_ANALYTICS_UNITS:
     '/application/:applicationId/analytics/units',
 
+  ATTACHMENTS_REFRESH_URLS:
+    '/attachments/refresh-urls',
+
   AUTH_AUTHORIZE_IP:
     '/auth/authorize-ip',
   AUTH_CONSENT_REQUIRED:
@@ -589,6 +592,8 @@ export const Api = {
     '/channels/:channelId/recipients',
   CHANNEL_RECIPIENT:
     '/channels/:channelId/recipients/:userId',
+  CHANNEL_SEND_SOUNDBOARD_ECHO:
+    '/channels/:channelId/send-soundboard-echo',
   CHANNEL_SEND_SOUNDBOARD_SOUND:
     '/channels/:channelId/send-soundboard-sound',
   CHANNEL_STORE_LISTING:
@@ -597,6 +602,10 @@ export const Api = {
     '/channels/:channelId/store-listing/entitlement-grant',
   CHANNEL_STORE_LISTINGS_SKU:
     '/channels/:channelId/store-listings/:skuId',
+  CHANNEL_TAGS:
+    '/channels/:channelId/tags',
+  CHANNEL_TAG:
+    '/channels/:channelId/tags/:tagId',
   CHANNEL_THREADS:
     '/channels/:channelId/threads',
   CHANNEL_THREADS_ARCHIVED_PRIVATE:
@@ -789,6 +798,8 @@ export const Api = {
     '/guilds/:guildId/roles/member-counts',
   GUILD_ROLE:
     '/guilds/:guildId/roles/:roleId',
+  GUILD_ROLE_MEMBERS:
+    '/guilds/:guildId/roles/:roleId/members',
   GUILD_ROLE_MEMBER_IDS:
     '/guilds/:guildId/roles/:roleId/member-ids',
   GUILD_SCHEDULED_EVENTS:
@@ -1108,7 +1119,7 @@ export const Api = {
   OAUTH2_TOKEN_RPC:
     '/oauth2/token/rpc',
   OAUTH2_WHITELIST_ACCEPT:
-    '/oauth2/whitelist/accept',
+    '/oauth2/allowlist/accept',
 
   PARTNERS_APPLY:
     '/partners/apply',
@@ -1237,6 +1248,8 @@ export const Api = {
   TEMPLATE_ICON:
     '/templates/:templateId/icons/:hash.jpg',
 
+  THREADS_BULK:
+    '/threads/bulk',
   TRACK:
     '/science',
 
