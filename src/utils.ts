@@ -96,7 +96,31 @@ export const CamelCaseToSnakeCase = Object.freeze({
     }
 
     if (attachments.length && (hasMetadata || body.attachments)) {
-      body.attachments = (body.attachments) ? body.attachments.concat(attachments) : attachments;
+      if (body.attachments) {
+        // the caller's `attachments` can already describe an uploaded file (like alt text for `files[0]`)
+        // fill that entry in instead of adding a second one with the same id
+        const merged = body.attachments.slice();
+        for (let attachment of attachments) {
+          const index = merged.findIndex((x) => {
+            const id = ('toJSON' in x) ? x.toJSON().id : x.id;
+            return id !== undefined && id !== null && String(id) === String(attachment.id);
+          });
+          if (index === -1) {
+            merged.push(attachment);
+          } else if (!('toJSON' in merged[index])) {
+            const entry = Object.assign({}, attachment);
+            for (let key in merged[index]) {
+              if (merged[index][key] !== undefined) {
+                entry[key] = merged[index][key];
+              }
+            }
+            merged[index] = entry;
+          }
+        }
+        body.attachments = merged;
+      } else {
+        body.attachments = attachments;
+      }
     }
     return files;
   },
@@ -369,6 +393,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
         url: component.file.url,
       },
       file_types: component.fileTypes,
+      id: component.id,
       items: component.items && component.items.map((item) => {
         return {
           description: item.description,

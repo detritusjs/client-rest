@@ -87,7 +87,8 @@ export function verifyData(data: {
           // a bigint can't go through JSON.stringify, and ids are strings in discord's api anyways
           value = String(value);
         } else if (typeof(value) === Types.NUMBER) {
-          if (!Number.isInteger(value) || value < 0) {
+          // past 2^53 the number already lost digits, `123456789012345678` would target `123456789012345680`
+          if (!Number.isSafeInteger(value) || value < 0) {
             throw new Error(`${key} has to be a snowflake.`);
           }
         } else if (typeof(value) !== Types.STRING || !Regexes[Types.SNOWFLAKE].exec(value)) {

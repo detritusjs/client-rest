@@ -259,6 +259,7 @@ export namespace RequestTypes {
     channelId: string,
     description?: string,
     messageId: string,
+    thumbnail?: Buffer | string,
     thumbnailOverride?: Buffer | string,
     title?: string,
     url?: string,
@@ -310,6 +311,8 @@ export namespace RequestTypes {
     emoji?: RawEmojiPartial,
     file?: {url: string},
     fileTypes?: Array<string>,
+    // optional 32-bit identifier, unique within the message
+    id?: number,
     items?: Array<{
       description?: string,
       media: {url: string},
@@ -823,8 +826,10 @@ export namespace RequestTypes {
     clientId?: string,
     clientSecret?: string,
     code?: string,
+    codeVerifier?: string,
     grantType: string,
     redirectUri?: string,
+    refreshToken?: string,
     scope?: Array<string> | string,
   }
 
@@ -941,12 +946,12 @@ export namespace RequestTypes {
     flags?: number,
     icon?: Buffer | string | null,
     installParams?: {
-      permissions: string,
+      permissions: bigint | number | string,
       scopes: Array<string>,
     },
     integrationTypesConfig?: Record<string, {
       oauth2InstallParams?: {
-        permissions: string,
+        permissions: bigint | number | string,
         scopes: Array<string>,
       },
     }>,
@@ -989,13 +994,14 @@ export namespace RequestTypes {
   export interface EditApplicationGuildCommandPermission {
     id: Snowflake,
     permission: boolean,
-    type: string,
+    // 1 for role, 2 for user, 3 for channel
+    type: number,
   }
 
   export interface EditApplicationGuildCommandPermissionData {
     id: string,
     permission: boolean,
-    type: string,
+    type: number,
   }
 
   export interface EditApplicationGuildCommandPermissions {
@@ -1054,6 +1060,7 @@ export namespace RequestTypes {
   }
 
   export interface EditChannelVoiceStatus {
+    reason?: string,
     status: null | string,
   }
 
@@ -1840,7 +1847,6 @@ export namespace RequestTypes {
 
   export interface FetchReactions {
     after?: string,
-    before?: string,
     limit?: number,
     // 0 for normal reactions, 1 for super reactions
     type?: number,
@@ -2082,6 +2088,7 @@ export namespace RequestTypes {
     emoji?: RawEmojiPartial,
     file?: {url: string},
     file_types?: Array<string>,
+    id?: number,
     items?: Array<{
       description?: string,
       media: {url: string},

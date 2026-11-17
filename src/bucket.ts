@@ -125,26 +125,30 @@ export class Bucket {
       // safety net so a probe that never settles can't block the bucket forever
       this.probeTimeout.start(BUCKET_PROBE_TIMEOUT, () => {
         if (this.probe === request) {
-          this.clearProbe();
+          this.clearProbe(false);
         }
       });
     }
   }
 
-  clearProbe(): void {
+  /**
+   * @param learned false when the probe failed (network error, 5xx, timeout), the next request probes again
+   * otherwise `remaining` stays at Infinity and the whole queue goes out at once
+   * true when the probe got a response, if `remaining` is still Infinity the route sent no ratelimit headers,
+   * so `probed` stays set and the requests go out together instead of one probe at a time forever
+   */
+  clearProbe(learned: boolean = false): void {
     this.probeTimeout.stop();
     this.probe = null;
-    // the probe learned nothing (network error, timeout, no ratelimit headers), let the next request probe again
-    // otherwise `remaining` stays at Infinity and the whole queue goes out at once
-    if (this.ratelimit.remaining === Infinity) {
+    if (!learned && this.ratelimit.remaining === Infinity) {
       this.probed = false;
     }
     this.shift();
   }
 
-  releaseProbe(request: RestRequest): void {
+  releaseProbe(request: RestRequest, learned: boolean = false): void {
     if (this.probe === request) {
-      this.clearProbe();
+      this.clearProbe(learned);
     }
   }
 
@@ -183,6 +187,21 @@ export class Bucket {
     this.lockedUntil = lockedUntil;
     if (this.timeout.hasStarted) {
       this.timeout.start(this.unlockIn, () => this.reset(), true);
+    }
+    this.rejectOverLimit();
+  }
+
+  // `errorOnRatelimitIfMoreThan` is checked when a request is queued, a lock afterwards (a 429) can make it wait longer
+  rejectOverLimit(): void {
+    const queue = this.queue;
+    const unlockIn = this.unlockIn;
+    for (let i = queue.length - 1; 0 <= i; i--) {
+      const delayed = queue[i];
+      const max = delayed.request.errorOnRatelimitIfMoreThan;
+      if (max && max < unlockIn) {
+        queue.splice(i, 1);
+        delayed.reject(new Error(`Refusing to send request, ratelimited for ${unlockIn}ms which is more than the allowed ${max}ms`));
+      }
     }
   }
 

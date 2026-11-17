@@ -225,7 +225,8 @@ export const INVALID_REQUEST_LIMIT_WARNING = 9000;
 export const GLOBAL_RATELIMIT_LIMIT = 50;
 export const GLOBAL_RATELIMIT_WINDOW = 1000;
 
-export const RATELIMIT_BUCKET_MAJOR_PARAMS = Object.freeze(['channelId', 'guildId', 'webhookId', 'webhookToken']);
+// `interactionId` so every interaction callback doesn't share one bucket across the whole bot
+export const RATELIMIT_BUCKET_MAJOR_PARAMS = Object.freeze(['channelId', 'guildId', 'interactionId', 'webhookId', 'webhookToken']);
 
 export const SPOILER_ATTACHMENT_PREFIX = 'SPOILER_';
 

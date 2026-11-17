@@ -78,6 +78,8 @@ export const CDN = Tools.URIEncodeWrap({
     `/guild-events/${scheduledEventId}/${hash}.${format}`,
   GUILD_SPLASH: (guildId: string, hash: string, format: string = 'png'): string =>
     `/splashes/${guildId}/${hash}.${format}`,
+  GUILD_TAG_BADGE: (guildId: string, hash: string, format: string = 'png'): string =>
+    `/guild-tag-badges/${guildId}/${hash}.${format}`,
   GUILD_USER_AVATAR: (guildId: string, userId: string, hash: string, format: string = 'png') =>
     `/guilds/${guildId}/users/${userId}/avatars/${hash}.${format}`,
   GUILD_USER_BANNER: (guildId: string, userId: string, hash: string, format: string = 'png') =>
@@ -91,7 +93,7 @@ export const CDN = Tools.URIEncodeWrap({
 
   CUSTOM_SPOTIFY: (hash: string): string =>
     `https://i.scdn.co/image/${hash}`,
-  CUSTOM_TWITCH: (name: string, width: number, height: number): string =>
+  CUSTOM_TWITCH: (name: string, width: number | string, height: number | string): string =>
     `https://static-cdn.jtvnw.net/previews-ttv/live_user_${name}-${width}x${height}.jpg`,
   CUSTOM_YOUTUBE: (videoId: string): string =>
     `https://img.youtube.com/vi/${videoId}/default.jpg`,
@@ -175,14 +177,14 @@ export const Routes = Tools.URIEncodeWrap({
     `/store/skus/${skuId}` + ((slug) ? `/${slug}` : ''),
   AUTHORIZE_IP:
     '/authorize-ip',
-  BILLING_BRAINTREE_POPUP_BRIDGE_CALLBACK:
-    '/billing/braintree/popup-bridge/callback',
   BILLING_GUILD_SUBSCRIPTIONS_PURCHASE:
     '/billing/guild-subscriptions/purchase',
   BILLING_PAYMENTS:
     '/billing/payments',
   BILLING_PAYMENT_SOURCES_CREATE:
     '/billing/payment-sources/create',
+  BILLING_POPUP_BRIDGE_CALLBACK:
+    '/billing/popup-bridge/callback',
   BILLING_PREMIUM:
     '/billing/premium',
   BILLING_PREMIUM_SUBSCRIBE:
@@ -265,7 +267,7 @@ export const Routes = Tools.URIEncodeWrap({
     '/oauth2/allowlist/accept',
   OPEN_SOURCE:
     '/open-source',
-  OVERLAY: (buildId: string, port: number): string =>
+  OVERLAY: (buildId: string, port: number | string): string =>
     `/overlay?build_id=${buildId}&rpc=${port}`,
   PARTNERS:
     '/partners',
@@ -345,7 +347,8 @@ export const RoutesQuery = Object.freeze({
     if (options.username) {
       query.set('username', options.username);
     }
-    return `${Routes.INVITE(code)}?${query}`;
+    const queryString = query.toString();
+    return (queryString) ? `${Routes.INVITE(code)}?${queryString}` : Routes.INVITE(code);
   },
   WIDGET: (guildId: string, options: RequestTypes.RouteWidget = {}) => {
     const query = new URLSearchParams({id: guildId});
@@ -391,6 +394,8 @@ export const Api = {
     '/applications/:applicationId',
   APPLICATION_ACTIVITY_INSTANCE:
     '/applications/:applicationId/activity-instances/:instanceId',
+  APPLICATION_APPLICATION_IDENTITY:
+    '/applications/:applicationId/application-identities/:providerType/:providerIssuedUserId',
   APPLICATION_BRANCHES:
     '/applications/:applicationId/branches',
   APPLICATION_BRANCH_BUILDS:
@@ -439,6 +444,8 @@ export const Api = {
     '/applications/:applicationId/role-connections/metadata',
   APPLICATION_SKUS:
     '/applications/:applicationId/skus',
+  APPLICATION_USER_IDENTITY_PROFILE:
+    '/applications/:applicationId/users/:userId/identities/:providerIssuedUserId/profile',
 
   // these use `/application/`, not `/applications/`
   APPLICATION_ANALYTICS_ACQUISITIONS_ACQUIRERS:
@@ -506,12 +513,12 @@ export const Api = {
 
   BILLING_APPLE_RECEIPT:
     '/billing/apple/apply-receipt',
-  BILLING_BRAINTREE_POPUP_BRIDGE:
-    '/billing/braintree/popup-bridge',
-  BILLING_BRAINTREE_POPUP_BRIDGE_CALLBACK:
-    '/billing/braintree/popup-bridge/callback',
-  BILLING_BRAINTREE_POPUP_BRIDGE_CALLBACK_STATE:
-    '/billing/braintree/popup-bridge/callback/:state/',
+  BILLING_POPUP_BRIDGE:
+    '/billing/popup-bridge/:provider',
+  BILLING_POPUP_BRIDGE_CALLBACK:
+    '/billing/popup-bridge/:provider/callback',
+  BILLING_POPUP_BRIDGE_CALLBACK_REDIRECT_PREFIX:
+    '/billing/popup-bridge/:provider/callback/:state/:path',
 
   BRANCHES:
     '/branches',
@@ -770,6 +777,7 @@ export const Api = {
     '/guilds/:guildId/members-search',
   GUILD_MEMBER:
     '/guilds/:guildId/members/:userId',
+  /** @deprecated use `GUILD_JOIN` (`/guilds/:guildId/members/@me`) with `PATCH` */
   GUILD_MEMBER_NICK:
     '/guilds/:guildId/members/@me/nick',
   GUILD_MEMBER_ROLE:
@@ -1166,7 +1174,7 @@ export const Api = {
   STICKER:
     '/stickers/:stickerId',
   STICKER_ASSET:
-    '/stickers/:stickerId/:assetId.:format',
+    '/stickers/:stickerId.:format',
 
   SOUNDBOARD_DEFAULT_SOUNDS:
     '/soundboard-default-sounds',
@@ -1283,6 +1291,12 @@ export const Api = {
     `/users/:userId/sessions/:sessionId/activities/:activityId/${ActivityActionTypes.SPECTATE}`,
   USER_APPLICATION_ACHIEVEMENT:
     '/users/:userId/applications/:applicationId/achievements/:achievementId',
+  USER_APPLICATION_IDENTITIES:
+    '/users/:userId/application-identities',
+  USER_APPLICATION_IDENTITY:
+    '/users/:userId/application-identities/:applicationId',
+  USER_APPLICATION_IDENTITY_DELETE:
+    '/users/:userId/application-identities/:applicationId/:providerType/:providerIssuedUserId/delete',
   USER_AVATAR:
     '/users/:userId/avatars/:hash.jpg',
   USER_CHANNELS:
