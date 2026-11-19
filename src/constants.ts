@@ -1,7 +1,6 @@
 export { HTTPMethods } from 'detritus-rest/lib/constants';
 
-// package.json is in every published package and sits one folder up from both src/ and lib/, `require` keeps tsc
-// from pulling it into the build (it's outside rootDir)
+// `require` keeps tsc from pulling package.json (outside rootDir) into the build
 const { version } = require('../package.json') as {version: string};
 
 export const Package = Object.freeze({
@@ -206,22 +205,54 @@ export enum RatelimitPrecisionTypes {
   SECOND = 'second',
 }
 
+// what a `Bucket` is doing right now, derived from its fields (`Bucket.state`)
+export enum BucketStates {
+  // the route's window is used up, waiting for `resetAtLocal` before the next request decides
+  EXHAUSTED = 'exhausted',
+  // `lockedUntil` is in the future, queued requests wait for the unlock timer
+  LOCKED = 'locked',
+  // the route's window has requests left
+  OPEN = 'open',
+  // one request is out learning the route's ratelimit, the rest of the queue waits on it
+  PROBING = 'probing',
+  // nothing known about the route yet (or the window expired), the next request probes it
+  UNKNOWN = 'unknown',
+  // the probe came back without ratelimit headers, requests go out together
+  UNLIMITED = 'unlimited',
+}
+
+// why a request was refused before it was sent (`RequestRefusedError.reason`)
+export enum RefusalReasons {
+  // cloudflare 429ed us (per ip), see `Client.edgeRatelimitedUntil`
+  EDGE_RATELIMITED = 'edgeRatelimited',
+  // the bucket or global ratelimit is locked and `errorOnRatelimit` is set
+  RATELIMITED = 'ratelimited',
+  // waiting out the ratelimit would take longer than `errorOnRatelimitIfMoreThan`
+  RATELIMITED_TOO_LONG = 'ratelimitedTooLong',
+  // a previous request got a 401 with `haltOnUnauthorized` set, see `Client.tokenUnauthorized`
+  TOKEN_UNAUTHORIZED = 'tokenUnauthorized',
+}
+
 export enum RestEvents {
   INVALID_REQUEST_WARNING = 'invalidRequestWarning',
   RATELIMITED = 'ratelimited',
   REQUEST = 'request',
   RESPONSE = 'response',
+  // a 401 latched `tokenUnauthorized` (only with `haltOnUnauthorized`)
+  TOKEN_UNAUTHORIZED = 'tokenUnauthorized',
 }
 
 // https://docs.discord.com/developers/topics/rate-limits#invalid-request-limit-aka-cloudflare-bans
 // 10,000 invalid requests (401, 403, 429 excluding shared-scope 429s) per 10 minutes gets the ip temporarily banned
 export const INVALID_REQUEST_LIMIT = 10000;
-export const INVALID_REQUEST_LIMIT_INTERVAL = (10 * 60) * 1000; // 10 minutes
+export const INVALID_REQUEST_LIMIT_INTERVAL = (10 * 60) * 1000;
 export const INVALID_REQUEST_LIMIT_WARNING = 9000;
+// the warning re-arms below this, so a count hovering around the warning doesn't warn on every add
+export const INVALID_REQUEST_LIMIT_WARNING_RESET = 8000;
 
 
 // https://docs.discord.com/developers/topics/rate-limits#global-rate-limit
-// bots can make 50 requests per second, the global bucket drains its queue at this pace
+// bots can make 50 requests per second
 export const GLOBAL_RATELIMIT_LIMIT = 50;
 export const GLOBAL_RATELIMIT_WINDOW = 1000;
 
@@ -231,6 +262,6 @@ export const RATELIMIT_BUCKET_MAJOR_PARAMS = Object.freeze(['channelId', 'guildI
 export const SPOILER_ATTACHMENT_PREFIX = 'SPOILER_';
 
 // https://github.com/discordapp/discord-api-docs/issues/1092
-// add 200 ms leeway incase our clock is wrong or the request takes too long
-export const MESSAGE_DELETE_RATELIMIT_CHECK = ((10) * 1000) - 200; // 10 seconds
+// 200 ms leeway incase our clock is wrong or the request takes too long
+export const MESSAGE_DELETE_RATELIMIT_CHECK = ((10) * 1000) - 200;
 export const MESSAGE_DELETE_RATELIMIT_CHECK_OLDER = ((2 * 7 * 24 * 60 * 60) * 1000) - 200; // 2 weeks

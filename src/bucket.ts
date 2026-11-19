@@ -1,10 +1,12 @@
 import { Timers } from 'detritus-utils';
 
+import { BucketStates, RefusalReasons } from './constants';
+import { RequestRefusedError } from './errors';
 import { RestRequest } from './request';
 
 
 export interface RatelimitQueue {
-  // queued from inside `sendRequest()`, the caller's `send()` handles the response so resume with `sendRequest()`
+  // queued from inside `sendRequest()`, the caller's `send()` handles the response
   raw?: boolean,
   request: RestRequest,
   reject: any,
@@ -20,7 +22,7 @@ export interface RatelimitDetails {
 }
 
 export interface BucketOptions {
-  // only send this many queued requests per `windowDuration` when draining the queue (0 = no limit)
+  // max queued requests sent per `windowDuration` when draining (0 = no limit)
   maxPerWindow?: number,
   windowDuration?: number,
 }
@@ -70,6 +72,27 @@ export class Bucket {
 
   get unlockIn(): number {
     return Math.max(this.lockedUntil - Date.now(), 0);
+  }
+
+  /**
+   * The state the fields below encode, read-only, nothing reads it to make decisions
+   */
+  get state(): BucketStates {
+    if (this.locked && this.unlockIn) {
+      return BucketStates.LOCKED;
+    }
+    if (this.probe) {
+      return BucketStates.PROBING;
+    }
+    const ratelimit = this.ratelimit;
+    if (ratelimit.remaining === Infinity) {
+      return (this.probed) ? BucketStates.UNLIMITED : BucketStates.UNKNOWN;
+    }
+    if (ratelimit.resetAtLocal <= Date.now()) {
+      // `expireRatelimit()` resets it on the next request
+      return BucketStates.UNKNOWN;
+    }
+    return (ratelimit.remaining) ? BucketStates.OPEN : BucketStates.EXHAUSTED;
   }
 
   setRatelimit(
@@ -133,9 +156,7 @@ export class Bucket {
 
   /**
    * @param learned false when the probe failed (network error, 5xx, timeout), the next request probes again
-   * otherwise `remaining` stays at Infinity and the whole queue goes out at once
-   * true when the probe got a response, if `remaining` is still Infinity the route sent no ratelimit headers,
-   * so `probed` stays set and the requests go out together instead of one probe at a time forever
+   * true when it got a response, a route without ratelimit headers then stays `probed` so requests go out together
    */
   clearProbe(learned: boolean = false): void {
     this.probeTimeout.stop();
@@ -191,6 +212,37 @@ export class Bucket {
     this.rejectOverLimit();
   }
 
+  /**
+   * If the bucket is pacing its drain, requests sent around the queue now would go over `maxPerWindow`
+   */
+  get isPacing(): boolean {
+    return !!this.maxPerWindow && (!!this.size || Date.now() < this.windowResetAt);
+  }
+
+  /**
+   * If expiring this bucket from `BucketCollection` would lose state
+   */
+  get isBusy(): boolean {
+    return !!this.size || !!this.probe || (this.locked && !!this.unlockIn);
+  }
+
+  /**
+   * Rejects and removes every queued request `filter` matches, returns how many
+   */
+  rejectQueued(filter: (request: RestRequest) => boolean, createError: () => Error): number {
+    const queue = this.queue;
+    let rejected = 0;
+    for (let i = queue.length - 1; 0 <= i; i--) {
+      const delayed = queue[i];
+      if (filter(delayed.request)) {
+        queue.splice(i, 1);
+        delayed.reject(createError());
+        rejected++;
+      }
+    }
+    return rejected;
+  }
+
   // `errorOnRatelimitIfMoreThan` is checked when a request is queued, a lock afterwards (a 429) can make it wait longer
   rejectOverLimit(): void {
     const queue = this.queue;
@@ -200,16 +252,18 @@ export class Bucket {
       const max = delayed.request.errorOnRatelimitIfMoreThan;
       if (max && max < unlockIn) {
         queue.splice(i, 1);
-        delayed.reject(new Error(`Refusing to send request, ratelimited for ${unlockIn}ms which is more than the allowed ${max}ms`));
+        delayed.reject(new RequestRefusedError(
+          RefusalReasons.RATELIMITED_TOO_LONG,
+          `Refusing to send request, ratelimited for ${unlockIn}ms which is more than the allowed ${max}ms`,
+          unlockIn,
+        ));
       }
     }
   }
 
   /**
-   * Queues a request in the order requests were made (`RestRequest.sequence`)
-   * a request moving from another bucket (or retrying after a 429) goes back to its place instead of to the front/back,
-   * so a burst that gets moved between buckets keeps its order
-   * @param unshift unused, kept for compatibility (the order comes from the request)
+   * Queues by `RestRequest.sequence`, so a request moved between buckets or retried after a 429 keeps its place
+   * @param unshift unused, kept for compatibility
    */
   add(delayed: RatelimitQueue, unshift: boolean = false) {
     const queue = this.queue;
@@ -247,7 +301,7 @@ export class Bucket {
       }
 
       if (this.maxPerWindow) {
-        // pace the drain (the global bucket), sending the whole queue at once goes over the limit and 429s again
+        // sending the whole queue at once goes over the global limit and 429s again
         const now = Date.now();
         if (this.windowResetAt <= now) {
           this.windowCount = 0;
@@ -255,8 +309,6 @@ export class Bucket {
         }
         if (this.maxPerWindow <= this.windowCount) {
           // wait a full window after the last send (not the first), so no 1s span holds more than `maxPerWindow`
-          // nothing leaves the queue while locked, so the next window starts fresh
-          // the next loop starts the unlock timer and stops
           this.windowCount = 0;
           this.windowResetAt = 0;
           this.lock(this.windowDuration);
@@ -266,8 +318,10 @@ export class Bucket {
       }
 
       const delayed = <RatelimitQueue> this.queue.shift();
-      // if it gets requeued (bucket locked again), it goes back to the front instead of behind newer requests
+      // unused, `add()` orders the queue by `RestRequest.sequence` instead
       delayed.request.dequeued = true;
+      // so `sendRequest()` doesn't queue it right back into this bucket for pacing
+      delayed.request.dequeuedFrom = this;
       const promise = (delayed.raw) ? delayed.request.sendRequest() : delayed.request.send();
       promise
         .then(delayed.resolve)
@@ -293,7 +347,7 @@ export class Bucket {
 }
 
 
-// a probe request only blocks its bucket for this long before the queue is let through anyways
+// a probe only blocks its bucket for this long before the queue is let through
 export const BUCKET_PROBE_TIMEOUT = 30000;
 
 

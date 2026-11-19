@@ -1,13 +1,66 @@
+import { isBlob } from 'detritus-rest/lib/is';
+
 import { bufferToBase64 } from './clientsidechecks';
 import { SPOILER_ATTACHMENT_PREFIX } from './constants';
 import { RequestTypes } from './types';
 
 
+/**
+ * Mutates `file`, pass a copy if the caller's object shouldn't change
+ */
 export function spoilerfy(file: RequestTypes.File): RequestTypes.File {
-  if (file.filename && !file.filename.startsWith(SPOILER_ATTACHMENT_PREFIX)) {
-    file.filename = `${SPOILER_ATTACHMENT_PREFIX}${file.filename}`;
+  // detritus-rest falls back to a `File`'s name when there's no `filename`
+  const filename = file.filename || ((isBlob(file.value) && typeof(file.value.name) === 'string') ? file.value.name : '');
+  if (filename && !filename.startsWith(SPOILER_ATTACHMENT_PREFIX)) {
+    file.filename = `${SPOILER_ATTACHMENT_PREFIX}${filename}`;
   }
   return file;
+}
+
+
+/**
+ * Turns every bigint inside plain objects and arrays into a string, `JSON.stringify` throws on them
+ * copies only the objects on the way to a bigint, class instances (`toJSON` builders, buffers, blobs) are left alone
+ */
+export function stringifyBigInts<T>(value: T, seen: WeakSet<object> = new WeakSet()): T {
+  if (typeof(value) === 'bigint') {
+    return String(value) as any;
+  }
+  if (value === null || typeof(value) !== 'object' || seen.has(value as any)) {
+    // a circular reference is left for `JSON.stringify` to throw on
+    return value;
+  }
+  if (Array.isArray(value)) {
+    seen.add(value);
+    let copy: Array<any> | null = null;
+    for (let i = 0; i < value.length; i++) {
+      const converted = stringifyBigInts(value[i], seen);
+      if (converted !== value[i]) {
+        if (!copy) {
+          copy = value.slice();
+        }
+        copy[i] = converted;
+      }
+    }
+    return (copy || value) as any;
+  }
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) {
+    return value;
+  }
+  seen.add(value as any);
+  let copy: Record<string, any> | null = null;
+  for (let key in value) {
+    const original = (value as any)[key];
+    const converted = stringifyBigInts(original, seen);
+    if (converted !== original) {
+      if (!copy) {
+        copy = Object.assign({}, value);
+      }
+      copy[key] = converted;
+    }
+  }
+  return (copy || value) as any;
 }
 
 
@@ -64,8 +117,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
     return fileId;
   },
   /**
-   * Adds every file to `body.attachments` once anything needs that array, a file missing from it gets dropped by
-   * discord (when editing, the array is the full list of attachments the message keeps)
+   * Adds every file to `body.attachments` once anything needs that array, discord drops files missing from it
    */
   _MessageFiles: (
     body: {attachments?: Array<any>},
@@ -97,8 +149,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
 
     if (attachments.length && (hasMetadata || body.attachments)) {
       if (body.attachments) {
-        // the caller's `attachments` can already describe an uploaded file (like alt text for `files[0]`)
-        // fill that entry in instead of adding a second one with the same id
+        // the caller's `attachments` can already describe an uploaded file (like alt text), fill that entry in
         const merged = body.attachments.slice();
         for (let attachment of attachments) {
           const index = merged.findIndex((x) => {
@@ -127,7 +178,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
   _ChannelOverwrite: <T extends {allow?: bigint | number | string, deny?: bigint | number | string}>(
     overwrite: T,
   ): T & {allow?: string, deny?: string} => {
-    // the client's overwrites hold BigInts, JSON.stringify can't serialize those (and numbers lose precision past 2^53)
+    // JSON.stringify can't serialize BigInts, and numbers lose precision past 2^53
     return Object.assign({}, overwrite, {
       allow: (overwrite.allow !== undefined && overwrite.allow !== null) ? String(overwrite.allow) : overwrite.allow,
       deny: (overwrite.deny !== undefined && overwrite.deny !== null) ? String(overwrite.deny) : overwrite.deny,

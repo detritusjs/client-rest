@@ -10,13 +10,14 @@ import { Client } from './client';
 import {
   RatelimitHeaders,
   RatelimitScopes,
+  RefusalReasons,
   RestEvents,
   MESSAGE_DELETE_RATELIMIT_CHECK,
   MESSAGE_DELETE_RATELIMIT_CHECK_OLDER,
   RATELIMIT_BUCKET_MAJOR_PARAMS,
 } from './constants';
 import { Api } from './endpoints';
-import { DiscordHTTPError, HTTPError } from './errors';
+import { DiscordHTTPError, HTTPError, RequestRefusedError } from './errors';
 
 
 const RATELIMIT_RETRY_AFTER_FALLBACK = 1000;
@@ -48,6 +49,8 @@ export class RestRequest {
   maxRetries: number;
   maxSharedRatelimitRetries: number;
   dequeued: boolean = false;
+  // the bucket whose queue just sent this, cleared by `sendRequest()`
+  dequeuedFrom: Bucket | null = null;
   probeBucket: Bucket | null = null;
   ratelimitRetries: number;
   request: Request;
@@ -75,7 +78,7 @@ export class RestRequest {
             try {
               difference = Date.now() - Snowflake.timestamp(request.route.params.messageId);
             } catch(error) {
-              // not a snowflake (clientside checks off), `BigInt()` throws, let discord reject it instead
+              // not a snowflake (clientside checks off), let discord reject it instead
             }
             if (MESSAGE_DELETE_RATELIMIT_CHECK_OLDER <= difference) {
               this.bucketPath = `${this.bucketPath}.${MESSAGE_DELETE_RATELIMIT_CHECK_OLDER}`;
@@ -179,12 +182,12 @@ export class RestRequest {
   }
 
   // https://docs.discord.com/developers/topics/rate-limits#global-rate-limit
-  // the global ratelimit is per token, requests without our token (interaction callbacks, webhook tokens) aren't bound to it
+  // the global ratelimit is per token, interaction callbacks and webhook tokens aren't bound to it
   get usesGlobalRatelimit(): boolean {
     return this.isUsingClientToken;
   }
 
-  // safe to send twice, a retried POST/PATCH could create a second message if discord handled the first one
+  // safe to send twice, a retried POST/PATCH could duplicate what discord already handled
   get isIdempotent(): boolean {
     return IDEMPOTENT_METHODS.includes(this.request.method);
   }
@@ -214,19 +217,33 @@ export class RestRequest {
 
   sendRequest(): Promise<Response> {
     const dequeued = this.dequeued;
+    const dequeuedFrom = this.dequeuedFrom;
     this.dequeued = false;
+    this.dequeuedFrom = null;
     return new Promise((resolve, reject) => {
-      if (this.client.tokenUnauthorized && this.shouldRatelimitCheck && this.isUsingClientToken) {
+      if (
+        this.client.haltOnUnauthorized &&
+        this.client.tokenUnauthorized &&
+        this.shouldRatelimitCheck &&
+        this.isUsingClientToken
+      ) {
         // https://docs.discord.com/developers/topics/rate-limits#invalid-request-limit-aka-cloudflare-bans
-        // a previous request returned a 401, keep sending with this token and we will get the ip banned
-        return reject(new Error('Refusing to send request, the token was previously rejected with a 401'));
+        // after a 401, more requests with this token get the ip banned
+        return reject(new RequestRefusedError(
+          RefusalReasons.TOKEN_UNAUTHORIZED,
+          'Refusing to send request, the token was previously rejected with a 401',
+        ));
       }
 
       if (this.shouldRatelimitCheck) {
         const edgeUnlockIn = this.client.edgeRatelimitedUntil - Date.now();
         if (0 < edgeUnlockIn) {
           // every request sent into a cloudflare ban counts towards making it longer
-          return reject(new Error(`Refusing to send request, ratelimited by cloudflare for another ${edgeUnlockIn}ms`));
+          return reject(new RequestRefusedError(
+            RefusalReasons.EDGE_RATELIMITED,
+            `Refusing to send request, ratelimited by cloudflare for another ${edgeUnlockIn}ms`,
+            edgeUnlockIn,
+          ));
         }
 
         let bucket = this.bucket;
@@ -243,7 +260,7 @@ export class RestRequest {
         }
 
         if (this.errorOnRatelimit) {
-          // never queued, but don't send what we already know will 429 (every 429 counts towards the cloudflare ban)
+          // never queued, but don't send what we already know will 429
           // `locked` can outlive `lockedUntil` when nothing was queued to start the unlock timer
           const globalBucket = this.client.globalBucket;
           let unlockIn = (this.usesGlobalRatelimit && globalBucket.locked) ? globalBucket.unlockIn : 0;
@@ -254,11 +271,20 @@ export class RestRequest {
             }
           }
           if (unlockIn) {
-            return reject(new Error(`Refusing to send request, ratelimited for ${unlockIn}ms and errorOnRatelimit is enabled`));
+            return reject(new RequestRefusedError(
+              RefusalReasons.RATELIMITED,
+              `Refusing to send request, ratelimited for ${unlockIn}ms and errorOnRatelimit is enabled`,
+              unlockIn,
+            ));
           }
         } else {
-          if (this.usesGlobalRatelimit && this.client.globalBucket.locked) {
-            return this.waitForBucket(this.client.globalBucket, resolve, reject, dequeued, true);
+          const globalBucket = this.client.globalBucket;
+          if (
+            this.usesGlobalRatelimit &&
+            (globalBucket.locked || (globalBucket.isPacing && dequeuedFrom !== globalBucket))
+          ) {
+            // while the global bucket drains after a 429, new requests queue too so they count towards the window
+            return this.waitForBucket(globalBucket, resolve, reject, dequeued, true);
           }
 
           if (bucket) {
@@ -281,20 +307,23 @@ export class RestRequest {
   }
 
   /**
-   * @param raw true when called from `sendRequest()`, the queue resumes with `sendRequest()` instead of `send()`
-   * so the response only gets handled once (by the `send()` that is awaiting it)
+   * @param raw true when called from `sendRequest()`, so the awaiting `send()` is the only one handling the response
    */
   waitForBucket(bucket: Bucket, resolve: any, reject: any, unshift: boolean = false, raw: boolean = false): void {
     const unlockIn = bucket.unlockIn;
     if (this.errorOnRatelimitIfMoreThan && this.errorOnRatelimitIfMoreThan < unlockIn) {
-      return reject(new Error(`Refusing to send request, ratelimited for ${unlockIn}ms which is more than the allowed ${this.errorOnRatelimitIfMoreThan}ms`));
+      return reject(new RequestRefusedError(
+        RefusalReasons.RATELIMITED_TOO_LONG,
+        `Refusing to send request, ratelimited for ${unlockIn}ms which is more than the allowed ${this.errorOnRatelimitIfMoreThan}ms`,
+        unlockIn,
+      ));
     }
     bucket.add({raw, request: this, resolve, reject}, unshift);
   }
 
   /**
    * @param learned false when the probe failed (network error, 5xx), the bucket's next request probes again
-   * true when the probe got a real response, if it had no ratelimit headers the route has no ratelimit and the queue can go out together
+   * true when it got a real response, a route without ratelimit headers then lets the queue go out together
    */
   releaseProbe(learned: boolean = false): void {
     const bucket = this.probeBucket;
@@ -310,8 +339,7 @@ export class RestRequest {
       response = await this.sendRequest();
     } catch(error) {
       this.releaseProbe(false);
-      // undici's network failures (connection reset, dns) are a `TypeError('fetch failed')`
-      // our own refusals and timeouts aren't retried
+      // undici's network failures are a `TypeError('fetch failed')`, our own refusals and timeouts aren't retried
       if (
         this.isIdempotent &&
         (error instanceof TypeError && error.message === 'fetch failed') &&
@@ -322,8 +350,7 @@ export class RestRequest {
       throw error;
     }
 
-    // a throwing listener still fails the request, but only after the ratelimit headers are handled
-    // otherwise the probe gets released having learned nothing and the queue is sent into a known 429
+    // a throwing listener fails the request only after the ratelimit headers are handled, or the queue is sent into a known 429
     let listenerError: any = null;
     try {
       this.client.emit(RestEvents.RESPONSE, {response, restRequest: this});
@@ -331,7 +358,8 @@ export class RestRequest {
       listenerError = error;
     }
 
-    const learned = response.statusCode < 500;
+    // a global or cloudflare 429 says nothing about the route's ratelimit (set below)
+    let learned = response.statusCode < 500;
     if (this.shouldRatelimitCheck) {
       try {
         let bucket: Bucket | null = null;
@@ -339,10 +367,17 @@ export class RestRequest {
         // https://docs.discord.com/developers/topics/rate-limits#invalid-request-limit-aka-cloudflare-bans
         switch (response.statusCode) {
           case 401: {
-            if (this.client.haltOnUnauthorized && this.isUsingClientToken) {
-              this.client.tokenUnauthorized = true;
-            }
             this.client.addInvalidRequest();
+            if (this.client.haltOnUnauthorized && this.isUsingClientToken) {
+              try {
+                this.client.markTokenUnauthorized({response, restRequest: this});
+              } catch(error) {
+                // same as the `response` listener, fail after the ratelimit headers are handled
+                if (!listenerError) {
+                  listenerError = error;
+                }
+              }
+            }
           }; break;
           case 403: {
             this.client.addInvalidRequest();
@@ -355,8 +390,6 @@ export class RestRequest {
         }
 
         if (this.request.route) {
-          // reason for this check is just incase the request doesnt have one and we will still check the global ratelimit
-
           let shouldHaveBucket: boolean = false;
           if (this.client.isBot) {
             if (response.headers.has(RatelimitHeaders.BUCKET) && this.bucketPath) {
@@ -436,12 +469,15 @@ export class RestRequest {
             retryAfter = (0 < diff && diff !== Infinity) ? diff : RATELIMIT_RETRY_AFTER_FALLBACK;
           }
 
-          // lock even if we don't retry (`errorOnRatelimit`, out of retries), otherwise every other request keeps hitting the 429
-          // `waitOn` stays null when only this request has to wait
+          if (!isDiscordRatelimit || isGlobal) {
+            // otherwise the probe would mark its bucket unlimited and the queue would burst into the route's real limit
+            learned = false;
+          }
+
+          // lock even if we don't retry, otherwise every other request keeps hitting the 429
           let waitOn: Bucket | null = null;
           if (!isDiscordRatelimit) {
-            // cloudflare's 429s are per ip, every other request would hit it too (and each one counts towards a ban)
-            // refused until it's over instead of queued, `Retry-After` can be an hour
+            // cloudflare's 429s are per ip and count towards a ban, refused instead of queued since `Retry-After` can be an hour
             this.client.edgeRatelimitedUntil = Math.max(this.client.edgeRatelimitedUntil, Date.now() + retryAfter);
           } else if (isGlobal) {
             // the global ratelimit is per token, a global 429 on a webhook token or an oauth2 bearer isn't ours
@@ -450,11 +486,14 @@ export class RestRequest {
               waitOn = this.client.globalBucket;
             }
           } else if (scope === RatelimitScopes.SHARED) {
-            // a shared ratelimit is on the resource (like one message's reactions), the headers still have the bucket's real `remaining`
-            // so the rest of the bucket keeps going and only this request waits
+            // a shared ratelimit is on the resource (like one message's reactions), only this request waits
           } else if (bucket) {
             bucket.ratelimit.remaining = 0;
             bucket.ratelimit.resetAfter = retryAfter;
+            if (bucket.ratelimit.resetAtLocal === Infinity) {
+              // the 429 had no ratelimit headers, without a window end `remaining: 0` would never lock or expire
+              bucket.ratelimit.resetAtLocal = Date.now() + retryAfter;
+            }
             bucket.lock(retryAfter);
             waitOn = bucket;
           }
@@ -476,12 +515,18 @@ export class RestRequest {
             (this.ratelimitRetries++ < this.maxRatelimitRetries));
           if (shouldRetry) {
             if (!isDiscordRatelimit) {
-              // cloudflare yelling at us, retrying only counts more requests towards a ban
+              // retrying a cloudflare 429 only counts more requests towards a ban
               throw new HTTPError(response, (data) ? data.message : undefined);
             }
 
-            if (this.errorOnRatelimitIfMoreThan && this.errorOnRatelimitIfMoreThan < retryAfter) {
-              throw new Error(`Refusing to send request, ratelimited for ${retryAfter}ms which is more than the allowed ${this.errorOnRatelimitIfMoreThan}ms`);
+            // the bucket can already be locked for longer than this 429's `retry_after` (`lock()` never shortens a lock)
+            const waitFor = (waitOn) ? Math.max(retryAfter, waitOn.unlockIn) : retryAfter;
+            if (this.errorOnRatelimitIfMoreThan && this.errorOnRatelimitIfMoreThan < waitFor) {
+              throw new RequestRefusedError(
+                RefusalReasons.RATELIMITED_TOO_LONG,
+                `Refusing to send request, ratelimited for ${waitFor}ms which is more than the allowed ${this.errorOnRatelimitIfMoreThan}ms`,
+                waitFor,
+              );
             }
 
             if (waitOn) {

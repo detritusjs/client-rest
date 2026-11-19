@@ -29,11 +29,14 @@ import {
   INVALID_REQUEST_LIMIT,
   INVALID_REQUEST_LIMIT_INTERVAL,
   INVALID_REQUEST_LIMIT_WARNING,
+  INVALID_REQUEST_LIMIT_WARNING_RESET,
+  RefusalReasons,
   SPOILER_ATTACHMENT_PREFIX,
 } from './constants';
 import { Api } from './endpoints';
+import { RequestRefusedError } from './errors';
 import { RestRequest } from './request';
-import { CamelCaseToSnakeCase, spoilerfy } from './utils';
+import { CamelCaseToSnakeCase, spoilerfy, stringifyBigInts } from './utils';
 
 import { RequestTypes, ResponseTypes, RestClientEvents } from './types';
 
@@ -73,7 +76,7 @@ function installParamsToSnakeCase(
   } as {permissions: string, scopes: Array<string>};
 }
 
-// the route params get `encodeURIComponent`'d, so an already encoded emoji (like the docs say to send) would be encoded twice
+// route params get `encodeURIComponent`'d, so an already encoded emoji (as the docs say to send) would be encoded twice
 // also accepts the `<:name:id>`/`<a:name:id>` message format
 function reactionEmojiToParam(emoji: string): string {
   try {
@@ -123,7 +126,8 @@ export class Client extends EventSpewer {
   invalidRequests: Array<number> = [];
   invalidRequestsWarned: boolean = false;
   restClient: RestClient;
-  token?: string;
+  // non-writable at runtime, change it with `setToken()`
+  readonly token?: string;
   tokenUnauthorized: boolean = false;
 
   constructor(token?: string, options?: ClientOptions) {
@@ -131,7 +135,7 @@ export class Client extends EventSpewer {
 
     options = Object.assign({
       baseUrl: Api.URL_STABLE + Api.PATH,
-      bucketsExpireIn: (60 * 60) * 1000, // 1 hour
+      bucketsExpireIn: (60 * 60) * 1000,
       errorOnRatelimit: false,
     }, options);
 
@@ -214,9 +218,31 @@ export class Client extends EventSpewer {
           limit: INVALID_REQUEST_LIMIT,
         });
       }
-    } else {
+    } else if (count < INVALID_REQUEST_LIMIT_WARNING_RESET) {
       this.invalidRequestsWarned = false;
     }
+  }
+
+  /**
+   * Latches `tokenUnauthorized` after a 401 on our token, rejecting every request queued with it right away
+   */
+  markTokenUnauthorized(payload: RestClientEvents.TokenUnauthorizedPayload): void {
+    if (this.tokenUnauthorized) {
+      return;
+    }
+    this.tokenUnauthorized = true;
+
+    const filter = (restRequest: RestRequest) => restRequest.client === this && restRequest.isUsingClientToken;
+    const createError = () => new RequestRefusedError(
+      RefusalReasons.TOKEN_UNAUTHORIZED,
+      'Refusing to send request, the token was previously rejected with a 401',
+    );
+    // the global bucket can be shared with other clients (detritus-client's shards), `filter` only takes ours
+    this.globalBucket.rejectQueued(filter, createError);
+    for (let bucket of this.buckets.values()) {
+      bucket.rejectQueued(filter, createError);
+    }
+    this.emit(RestEvents.TOKEN_UNAUTHORIZED, payload);
   }
 
   pruneInvalidRequests(): void {
@@ -230,16 +256,23 @@ export class Client extends EventSpewer {
     }
   }
 
+  /**
+   * @throws on an unknown type
+   */
   setAuthType(type: AuthTypes | string): void {
-    if (typeof(type) === 'string') {
-      type = type.toUpperCase();
+    const key = String(type).trim().toUpperCase();
+    if (!Object.prototype.hasOwnProperty.call(AuthTypes, key)) {
+      throw new Error(`Invalid auth type ${JSON.stringify(type)}, expected one of ${Object.values(AuthTypes).join(', ')}`);
     }
-    for (let key in AuthTypes) {
-      if (key === type) {
-        this.authType = key as AuthTypes;
-        break;
-      }
-    }
+    this.authType = key as AuthTypes;
+  }
+
+  /**
+   * Swaps the token and clears `tokenUnauthorized`, requests already queued keep their old authorization header
+   */
+  setToken(token?: string): void {
+    Object.defineProperty(this, 'token', {configurable: true, enumerable: false, value: token, writable: false});
+    this.tokenUnauthorized = false;
   }
 
   async request(
@@ -256,6 +289,11 @@ export class Client extends EventSpewer {
         errorOnRatelimit: this.errorOnRatelimit,
         errorOnRatelimitIfMoreThan: this.errorOnRatelimitIfMoreThan,
       }, requestDefaults, init);
+    }
+
+    if (init.body !== undefined && init.body !== null) {
+      // `JSON.stringify` throws on bigints (ids, permissions), `clientsideChecks` only converts the fields it checks
+      init.body = stringifyBigInts(init.body);
     }
 
     const request = await this.restClient.createRequest(info, init);
@@ -287,7 +325,7 @@ export class Client extends EventSpewer {
     const restRequest = new RestRequest(this, request, init);
     this.emit(RestEvents.REQUEST, {request, restRequest: restRequest});
 
-    // `sendRequest()` waits on the global bucket (and applies `errorOnRatelimitIfMoreThan` to it)
+    // `sendRequest()` waits on the global bucket
     const response = await restRequest.send();
 
     if (init.dataOnly) {
@@ -365,6 +403,7 @@ export class Client extends EventSpewer {
   on(event: string | symbol, listener: (...args: any[]) => void): this;
   on(event: 'request', listener: (payload: RestClientEvents.RequestPayload) => any): this;
   on(event: 'response', listener: (payload: RestClientEvents.ResponsePayload) => any): this;
+  on(event: 'tokenUnauthorized', listener: (payload: RestClientEvents.TokenUnauthorizedPayload) => any): this;
   on(event: string | symbol, listener: (...args: any[]) => void): this {
     super.on(event, listener);
     return this;
@@ -757,7 +796,7 @@ export class Client extends EventSpewer {
 
   /**
    * Gives a role to many members at once, the response is what discord added
-   * Only user accounts can use this, bots get a 403 (`Bots cannot use this endpoint`)
+   * Only user accounts can use this, bots get a 403
    */
   async bulkAddGuildRoleMembers(
     guildId: string,
@@ -960,8 +999,7 @@ export class Client extends EventSpewer {
   }
 
   /**
-   * @deprecated Discord disabled this endpoint with Permissions v2 (https://docs.discord.com/developers/change-log#updated-command-permissions)
-   * use `editApplicationGuildCommandPermissions` for each command instead, it needs a Bearer token with `applications.commands.permissions.update`
+   * @deprecated Discord disabled this endpoint with Permissions v2, use `editApplicationGuildCommandPermissions` per command (Bearer token only)
    */
   async bulkOverwriteApplicationGuildCommandsPermissions(
     applicationId: string,
@@ -1711,7 +1749,7 @@ export class Client extends EventSpewer {
     if (typeof(optionsOrType) === 'number') {
       options = {type: optionsOrType};
     } else {
-      // copied, callers reuse response objects (`{type: 5}`) and merging into theirs would leak one reply's data into the next
+      // copied, callers reuse response objects (`{type: 5}`) and merging into them would leak data into the next reply
       options = Object.assign({}, optionsOrType);
       if (withResponse === undefined) {
         withResponse = options.withResponse;
@@ -1731,6 +1769,10 @@ export class Client extends EventSpewer {
       if (withResponse === undefined) {
         withResponse = innerData.withResponse;
       }
+    }
+    if (withResponse === undefined && options.data && !('toJSON' in options.data)) {
+      // `CreateInteractionResponseInnerPayload.withResponse`, when the data came in through `optionsOrType`
+      withResponse = options.data.withResponse;
     }
 
     const body: RequestTypes.CreateInteractionResponseData = {
@@ -4436,6 +4478,9 @@ export class Client extends EventSpewer {
     });
   }
 
+  /**
+   * @param compatibleType deprecated, only changes the path, use `executeWebhookSlack()` or `executeWebhookGitHub()`
+   */
   async executeWebhook(
     webhookId: string,
     webhookToken: string,
@@ -4505,6 +4550,79 @@ export class Client extends EventSpewer {
       files,
       query,
       route,
+      useAuth: false,
+    });
+  }
+
+
+  /**
+   * https://docs.discord.com/developers/resources/webhook#execute-githubcompatible-webhook
+   * @param event the `X-GitHub-Event` header github would send (`push`, `issues`, `pull_request`, ...)
+   * @param payload github's webhook payload, sent as is
+   */
+  async executeWebhookGitHub(
+    webhookId: string,
+    webhookToken: string,
+    event: string,
+    payload: Record<string, any>,
+    options: RequestTypes.ExecuteWebhookCompatible = {},
+  ): Promise<any> {
+    const params = {webhookId, webhookToken};
+    if (this.clientsideChecks) {
+      verifyData(params, {
+        webhookId: {required: true, type: VerifyTypes.SNOWFLAKE},
+        webhookToken: {required: true, type: VerifyTypes.STRING},
+      });
+      verifyData({event}, {
+        event: {required: true, type: VerifyTypes.STRING},
+      });
+    }
+    return this.request({
+      body: payload,
+      headers: {
+        'x-github-event': event,
+      },
+      query: {
+        thread_id: options.threadId,
+        wait: options.wait,
+      },
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.WEBHOOK_TOKEN_GITHUB,
+        params,
+      },
+      useAuth: false,
+    });
+  }
+
+  /**
+   * https://docs.discord.com/developers/resources/webhook#execute-slackcompatible-webhook
+   * @param payload slack's incoming webhook payload (`text`, `username`, `icon_url`, `attachments`), sent as is
+   */
+  async executeWebhookSlack(
+    webhookId: string,
+    webhookToken: string,
+    payload: Record<string, any>,
+    options: RequestTypes.ExecuteWebhookCompatible = {},
+  ): Promise<any> {
+    const params = {webhookId, webhookToken};
+    if (this.clientsideChecks) {
+      verifyData(params, {
+        webhookId: {required: true, type: VerifyTypes.SNOWFLAKE},
+        webhookToken: {required: true, type: VerifyTypes.STRING},
+      });
+    }
+    return this.request({
+      body: payload,
+      query: {
+        thread_id: options.threadId,
+        wait: options.wait,
+      },
+      route: {
+        method: HTTPMethods.POST,
+        path: Api.WEBHOOK_TOKEN_SLACK,
+        params,
+      },
       useAuth: false,
     });
   }
@@ -5000,7 +5118,7 @@ export class Client extends EventSpewer {
     });
   }
 
-  // only user accounts can use this, bots get a 403 (`Bots cannot use this endpoint`)
+  // only user accounts can use this, bots get a 403
   async fetchChannelPostData(
     channelId: string,
     threadIds: Array<string>,
@@ -5395,7 +5513,7 @@ export class Client extends EventSpewer {
     });
   }
 
-  // only user accounts can use this, bots get a 403 (`Bots cannot use this endpoint`)
+  // only user accounts can use this, bots get a 403
   async fetchGuildBansSearch(
     guildId: string,
     options: RequestTypes.FetchGuildBansSearch = {},
@@ -5775,7 +5893,7 @@ export class Client extends EventSpewer {
     });
   }
 
-  // only user accounts can use this, bots get a 403 (`Bots cannot use this endpoint`)
+  // only user accounts can use this, bots get a 403
   async fetchGuildRoleMemberIds(
     guildId: string,
     roleId: string,
@@ -6591,7 +6709,7 @@ export class Client extends EventSpewer {
     });
   }
 
-  // only user accounts can use this, bots get a 403 (`Bots cannot use this endpoint`)
+  // only user accounts can use this, bots get a 403
   async fetchMessageInteractionData(
     channelId: string,
     messageId: string,
@@ -7111,8 +7229,8 @@ export class Client extends EventSpewer {
   }
 
   /**
-   * Fetches threads by id, the response's `items` are the threads that were found (missing ones are left out)
-   * Only user accounts can use this, bots get a 403 (`Bots cannot use this endpoint`)
+   * Fetches threads by id, missing ones are left out of `items`
+   * Only user accounts can use this, bots get a 403
    */
   async fetchThreadsBulk(
     options: RequestTypes.FetchThreadsBulk,
@@ -8147,7 +8265,7 @@ export class Client extends EventSpewer {
     });
   }
 
-  // only user accounts can use this, bots get a 403 (`Bots cannot use this endpoint`)
+  // only user accounts can use this, bots get a 403
   async sendVoiceChannelEffect(
     channelId: string,
     options: RequestTypes.SendVoiceChannelEffect,

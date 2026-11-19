@@ -27,6 +27,11 @@ export namespace RestClientEvents {
     response: Response,
     restRequest: RestRequest,
   }
+
+  export interface TokenUnauthorizedPayload {
+    response: Response,
+    restRequest: RestRequest,
+  }
 }
 
 export namespace RequestTypes {
@@ -39,7 +44,7 @@ export namespace RequestTypes {
     hasSpoiler?: boolean,
     // sets the `IS_SPOILER` attachment flag, without touching the filename
     isSpoiler?: boolean,
-    // shown instead of the filename (discord sanitizes filenames, this keeps the original)
+    // shown instead of the filename, which discord sanitizes
     title?: string,
     waveform?: string,
   }
@@ -289,7 +294,7 @@ export namespace RequestTypes {
     targetType?: number,
     targetUserId?: string,
     targetUserIds?: Array<string>,
-    // csv of user ids allowed to accept the invite, an array of user ids gets turned into one
+    // csv of user ids allowed to accept the invite, an array gets turned into one
     targetUsersFile?: Array<string> | Buffer | string,
     temporary?: boolean,
     unique?: boolean,
@@ -592,7 +597,7 @@ export namespace RequestTypes {
       id: number | string,
       isSpoiler?: boolean,
       originalContentType?: string,
-      // shown instead of the filename (discord sanitizes filenames, this keeps the original)
+      // shown instead of the filename, which discord sanitizes
       title?: string,
       uploadedFilename?: string,
       waveform?: string,
@@ -712,7 +717,7 @@ export namespace RequestTypes {
       id: number | string,
       isSpoiler?: boolean,
       originalContentType?: string,
-      // shown instead of the filename (discord sanitizes filenames, this keeps the original)
+      // shown instead of the filename, which discord sanitizes
       title?: string,
       uploadedFilename?: string,
       waveform?: string,
@@ -1278,7 +1283,7 @@ export namespace RequestTypes {
   }
 
   export interface EditInviteTargetUsers {
-    // csv of user ids, an array of user ids gets turned into one
+    // csv of user ids, an array gets turned into one
     targetUsersFile: Array<string> | Buffer | string,
   }
 
@@ -1452,7 +1457,7 @@ export namespace RequestTypes {
       id: number | string,
       isSpoiler?: boolean,
       originalContentType?: string,
-      // shown instead of the filename (discord sanitizes filenames, this keeps the original)
+      // shown instead of the filename, which discord sanitizes
       title?: string,
       uploadedFilename?: string,
       waveform?: string,
@@ -1539,7 +1544,7 @@ export namespace RequestTypes {
       id: number | string,
       isSpoiler?: boolean,
       originalContentType?: string,
-      // shown instead of the filename (discord sanitizes filenames, this keeps the original)
+      // shown instead of the filename, which discord sanitizes
       title?: string,
       uploadedFilename?: string,
       waveform?: string,
@@ -1605,6 +1610,12 @@ export namespace RequestTypes {
     username?: string,
     wait?: boolean,
     withComponents?: boolean,
+  }
+
+  // the slack/github compatible endpoints only take these query params, the body is the other service's own payload
+  export interface ExecuteWebhookCompatible {
+    threadId?: string,
+    wait?: boolean,
   }
 
   export interface ExecuteWebhookData {

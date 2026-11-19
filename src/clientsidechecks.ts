@@ -30,8 +30,8 @@ export function bufferToBase64(
   if (typeof buffer === 'string' || buffer == null) {
     return buffer;
   }
+  // discord checks the file for the real mimetype
   const mimetype = 'image/png';
-  // just put image/png for now, discord checks the file for the mimetype anyways
   return `data:${mimetype};base64,${buffer.toString('base64')}`;
 }
 
@@ -46,7 +46,7 @@ export function verifyData(data: {
 }): void {
   for (let key in verification) {
     const valueOptions = verification[key];
-    // `null` on an optional field means it isn't set, so it's left as-is
+    // `null` on an optional field means it isn't set
     if (!(key in data) || data[key] === undefined || data[key] === null) {
       if (valueOptions.required) {
         throw new Error(`${key} is required.`);

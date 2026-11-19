@@ -1,12 +1,28 @@
 import { Response } from 'detritus-rest';
 
-import { RatelimitHeaders } from './constants';
+import { RatelimitHeaders, RefusalReasons } from './constants';
 
 class BaseError extends Error {
 
 }
 
-// a proxy's html error page can be kilobytes long, keep the message readable (the full body stays on `error.body`)
+
+/**
+ * Thrown when the client refuses to send a request, nothing reached discord
+ * `retryAfter` is ms until the refusing state clears (`undefined` when it doesn't clear by itself)
+ */
+export class RequestRefusedError extends BaseError {
+  reason: RefusalReasons;
+  retryAfter?: number;
+
+  constructor(reason: RefusalReasons, message: string, retryAfter?: number) {
+    super(message);
+    this.reason = reason;
+    this.retryAfter = retryAfter;
+  }
+}
+
+// a proxy's html error page can be kilobytes long, the full body stays on `error.body`
 const HTTP_ERROR_MESSAGE_MAX_LENGTH = 256;
 
 export class HTTPError extends BaseError {
@@ -57,7 +73,8 @@ export class DiscordHTTPError extends HTTPError {
   raw: DiscordHTTPErrorOptions;
 
   constructor(response: Response, raw: DiscordHTTPErrorOptions) {
-    super(response, raw.message, raw.code);
+    // `raw` is kept for compatibility
+    super(response, raw.message, raw.code, raw);
     this.code = raw.code;
     this.errors = raw.errors;
     this.raw = raw;
