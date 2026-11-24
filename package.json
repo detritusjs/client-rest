@@ -6,7 +6,7 @@
   "files": [
     "lib/**"
   ],
-  "description": "A minimalistic TypeScript library to interact with all, or most, of Discord's rest endpoints, requires 16.5 <= Node",
+  "description": "A minimalistic TypeScript library to interact with all, or most, of Discord's rest endpoints, requires 22.19.0 <= Node",
   "homepage": "https://github.com/detritusjs/client-rest#readme",
   "keywords": [
     "rest",
@@ -25,9 +25,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "types": "lib/index.d.ts",
-  "version": "0.11.0-beta.40",
+  "version": "0.11.0-beta.41",
   "dependencies": {
-    "detritus-rest": "^0.9.0-beta.21",
+    "detritus-rest": "^0.9.0-beta.22",
     "detritus-utils": "^0.5.0-beta.7"
   },
   "devDependencies": {
