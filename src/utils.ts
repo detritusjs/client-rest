@@ -444,6 +444,12 @@ export const CamelCaseToSnakeCase = Object.freeze({
         url: component.file.url,
       },
       file_types: component.fileTypes,
+      groups: component.groups && component.groups.map((group) => {
+        return {
+          components: group.components && group.components.map((child) => CamelCaseToSnakeCase.MessageComponent(child)),
+          label: group.label,
+        };
+      }),
       id: component.id,
       items: component.items && component.items.map((item) => {
         return {

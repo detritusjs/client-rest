@@ -316,6 +316,8 @@ export namespace RequestTypes {
     emoji?: RawEmojiPartial,
     file?: {url: string},
     fileTypes?: Array<string>,
+    // overflow menus, each group holds menu action items
+    groups?: Array<CreateChannelMessageComponentOverflowMenuGroup>,
     // optional 32-bit identifier, unique within the message
     id?: number,
     items?: Array<{
@@ -339,6 +341,11 @@ export namespace RequestTypes {
     type: number,
     url?: string,
     value?: string,
+  }
+
+  export interface CreateChannelMessageComponentOverflowMenuGroup {
+    components: Array<CreateChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
+    label?: string,
   }
 
   export interface CreateChannelMessageComponentSelectMenuOption {
@@ -2099,6 +2106,7 @@ export namespace RequestTypes {
     emoji?: RawEmojiPartial,
     file?: {url: string},
     file_types?: Array<string>,
+    groups?: Array<RawChannelMessageComponentOverflowMenuGroup>,
     id?: number,
     items?: Array<{
       description?: string,
@@ -2121,6 +2129,11 @@ export namespace RequestTypes {
     type: number,
     url?: string,
     value?: string,
+  }
+
+  export interface RawChannelMessageComponentOverflowMenuGroup {
+    components: Array<RawChannelMessageComponent | toJSON<RawChannelMessageComponent>>,
+    label?: string,
   }
 
   export interface RawChannelMessageComponentSelectMenuOption {
