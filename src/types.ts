@@ -485,6 +485,8 @@ export namespace RequestTypes {
   }
 
   export interface CreateGuildChannel {
+    // required by Discord when `type` is ChannelTypes.GUILD_APP (21), the app the channel runs
+    applicationId?: string,
     availableTags?: EditChannel['availableTags'],
     branchId?: string,
     bitrate?: number,
@@ -1029,6 +1031,9 @@ export namespace RequestTypes {
   }
 
   export interface EditChannel {
+    // app channels only, rebinds the channel to another installed app, can't be null
+    // needs MANAGE_CHANNELS + MANAGE_ROLES and every bot minimum permission in the channel
+    applicationId?: string,
     appliedTags?: Array<string>,
     archived?: boolean,
     autoArchiveDuration?: number,
@@ -1757,6 +1762,11 @@ export namespace RequestTypes {
   export interface FetchGuildMembersSearch {
     limit?: number,
     query: string,
+  }
+
+  export interface FetchGuildEmbeddedApplications {
+    // run the permission check against an existing channel
+    channelId?: string,
   }
 
   export interface FetchGuildPruneCount {

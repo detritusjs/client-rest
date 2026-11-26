@@ -3170,6 +3170,7 @@ export class Client extends EventSpewer {
     options: RequestTypes.EditChannel = {},
   ): Promise<any> {
     const body = {
+      application_id: options.applicationId,
       applied_tags: options.appliedTags,
       archived: options.archived,
       auto_archive_duration: options.autoArchiveDuration,
@@ -5598,6 +5599,25 @@ export class Client extends EventSpewer {
       route: {
         method: HTTPMethods.GET,
         path: Api.GUILD_EMOJI,
+        params,
+      },
+    });
+  }
+
+  // the guild's installed apps and whether each can be bound to an app channel, needs MANAGE_CHANNELS
+  async fetchGuildEmbeddedApplications(
+    guildId: string,
+    options: RequestTypes.FetchGuildEmbeddedApplications = {},
+  ): Promise<any> {
+    const params = {guildId};
+    const query = {
+      channel_id: options.channelId,
+    };
+    return this.request({
+      query,
+      route: {
+        method: HTTPMethods.GET,
+        path: Api.GUILD_EMBEDDED_APPLICATIONS,
         params,
       },
     });

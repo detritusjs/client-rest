@@ -188,6 +188,7 @@ export const CamelCaseToSnakeCase = Object.freeze({
     options: RequestTypes.CreateGuildChannel & {id?: number | string},
   ) => {
     return {
+      application_id: options.applicationId,
       available_tags: options.availableTags && options.availableTags.map((tag) => {
         return {
           emoji_id: tag.emojiId,
